@@ -3,7 +3,7 @@
         <div class="panel empty">There are no active courts. An owner can add one in Settings.</div>
     @else
         <div class="compact-calendar-scroll" data-calendar-scroll tabindex="0" aria-label="Court calendar. Scroll to see all courts and times.">
-            <div class="compact-calendar-grid" style="--court-count:{{ $courts->count() }}; --slot-count:{{ count($grid['slots']) }}">
+            <div class="compact-calendar-grid" style="--court-count:{{ $courts->count() }}; --slot-count:{{ max(1, count($grid['slots'])) }}">
                 <div class="calendar-corner">Time</div>
                 @foreach($courts->values() as $i => $court)
                     <div class="calendar-column-header" style="grid-column:{{ $i + 2 }};grid-row:1">
