@@ -47,3 +47,13 @@ An unpaid hold expires after 20 minutes or when the booking starts, whichever co
 Run `php artisan test` with PDO SQLite for the default feature suite. To also exercise InnoDB's behavior, create a **dedicated, disposable** MySQL test database and run the suite with `DB_CONNECTION=mysql` and the corresponding `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` exported in your shell. The test suite runs fresh migrations against the configured test database.
 
 For hosting, point the web root at `public/`, set `APP_ENV=production`, `APP_DEBUG=false`, and `APP_URL` to the HTTPS hostname. Run `php artisan migrate --force` during deployment.
+
+
+## Open Play
+
+- Staff can publish a one-time session or a bounded series of up to 30 daily or weekly occurrences, assign active courts, and set a per-player price, capacity and skill level. Publishing checks the venue hours, existing reservations, holds and blocks for every occurrence; a conflicting occurrence rejects the entire series.
+- Assigned courts are blocked until the session ends or is cancelled. Staff must cancel a session through Open Play, not remove individual court blocks.
+- Players choose a date and session and register individually. The venue must enable QR payments and configure its merchant QR and Messenger link. An unpaid player spot is held up to 20 minutes, bounded by the session start for online registrations and the session end for staff walk-ins.
+- Staff match the actual incoming payment with the Messenger receipt, verify the exact fee and record its unique reference. The same reference cannot be reused for a court booking or an Open Play registration. Paid players can be checked in manually.
+- Staff can cancel upcoming sessions and individual registrations; any refunds or late payments must be reconciled manually in Messenger. Existing payment records are retained. No automatic player rotations or refunds are included.
+- Do not run a destructive migration rollback against a production database containing Open Play registrations. Roll back application code only after accounting for published sessions and their linked court blocks.
