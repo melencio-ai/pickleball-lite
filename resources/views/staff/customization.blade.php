@@ -15,6 +15,7 @@
         <a href="#booking-rules">Booking rules</a>
         <a href="#rates">Rates</a>
         <a href="#closures">Closures</a>
+        <a href="#payments">Payments</a>
         <a href="#sharing">Booking QR</a>
     </nav>
 
@@ -141,6 +142,23 @@
                     <label>Date<input type="date" name="date" min="{{ now($venue->timezone)->toDateString() }}" required></label>
                     <label>Reason<input name="reason" maxlength="120" required></label>
                     <button>Close date</button>
+                </form>
+            </section>
+
+            <section class="panel" id="payments">
+                <h2>QR payments</h2>
+                <form class="form-stack" method="post" action="{{ route('settings.payments') }}">
+                    @csrf
+                    @method('PATCH')
+                    <label>Base merchant EMV code
+                        <textarea name="payment_qr_base" rows="3" maxlength="512" autocomplete="off">{{ $venue->payment_qr_base }}</textarea>
+                    </label>
+                    <label>Payment verification Messenger link
+                        <input type="url" name="payment_messenger_url" value="{{ $venue->payment_messenger_url }}" placeholder="https://m.me/yourvenue">
+                    </label>
+                    <label class="checkbox"><input type="checkbox" name="qr_payments_enabled" value="1" @checked($venue->qr_payments_enabled)> Require QR payment for new bookings</label>
+                    <label class="checkbox"><input type="checkbox" name="provider_confirmed" value="1"> My payment provider supports generating amount-prefilled QR codes from this base code.</label>
+                    <button>Save payment settings</button>
                 </form>
             </section>
 

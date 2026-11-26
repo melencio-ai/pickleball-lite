@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venue;
+use App\Services\Pricing;
 use App\Services\Schedule;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -43,9 +45,9 @@ class StaffCalendarController extends Controller
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
         ]);
-        $schedule->reserve($venue, $data, 'staff');
+        $booking = $schedule->reserve($venue, $data, 'staff');
 
-        return $this->calendar($data['date'], 'Booking confirmed.');
+        return $this->calendar($data['date'], $booking->payment_token ? 'Court held pending QR payment.' : 'Booking confirmed.');
     }
 
     public function block(Request $request, Schedule $schedule)
@@ -62,7 +64,11 @@ class StaffCalendarController extends Controller
 
     public function paid(Request $request, int $booking)
     {
-        return $this->updateBooking($request, $booking, true);
+        try {
+            return $this->updateBooking($request, $booking, true);
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['payment_reference' => 'That transaction reference is already recorded on a booking.']);
+        }
     }
 
     public function cancel(Request $request, int $booking)
@@ -73,7 +79,7 @@ class StaffCalendarController extends Controller
     private function updateBooking(Request $request, int $booking, bool $pay)
     {
         $venue = $this->venue($request);
-        $date = DB::transaction(function () use ($venue, $booking, $pay) {
+        $date = DB::transaction(function () use ($request, $venue, $booking, $pay) {
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
             $court = $venue->courts()->whereHas('bookings', fn ($query) => $query->whereKey($booking))
                 ->lockForUpdate()->firstOrFail();
@@ -84,6 +90,24 @@ class StaffCalendarController extends Controller
 
             $field = $pay ? 'paid_at' : 'cancelled_at';
             if (! $record->$field) {
+                if ($pay && $record->payment_token) {
+                    if ($record->paymentExpired()) {
+                        throw ValidationException::withMessages(['booking' => 'This hold expired. Reconcile the payment with the player in Messenger.']);
+                    }
+
+                    $proof = $request->validate([
+                        'received_amount' => ['required', 'regex:'.Pricing::PESOS],
+                        'payment_reference' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{4,64}$/D'],
+                        'verified_in_messenger' => ['accepted'],
+                    ]);
+                    if (Pricing::centavos($proof['received_amount']) !== $record->total) {
+                        throw ValidationException::withMessages(['received_amount' => 'The amount received must match the booking total.']);
+                    }
+
+                    $record->payment_reference = strtoupper($proof['payment_reference']);
+                    $record->payment_verified_by = $request->user()->id;
+                }
+
                 $record->$field = now();
                 $record->save();
             }

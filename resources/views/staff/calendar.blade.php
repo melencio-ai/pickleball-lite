@@ -72,7 +72,7 @@
                     @else
                         <label>Reason<input name="reason" value="{{ is_string(old('reason')) ? old('reason') : '' }}" maxlength="120" required></label>
                     @endif
-                    <button>{{ $action === 'book' ? 'Confirm booking' : 'Save block' }}</button>
+                    <button>{{ $action === 'block' ? 'Save block' : ($venue->qr_payments_enabled ? 'Hold for QR payment' : 'Confirm booking') }}</button>
                 </div>
             </form>
         </section>
@@ -100,20 +100,38 @@
                                         <span class="status-chip">Cancelled</span>
                                     @endif
                                     @if(!$entry->cancelled_at || $entry->paid_at)
-                                        <span class="status-chip {{ $entry->paid_at ? 'paid' : 'unpaid' }}">{{ $entry->paid_at ? 'Paid' : 'Unpaid' }}</span>
+                                        <span class="status-chip {{ $entry->paid_at ? 'paid' : 'unpaid' }}">{{ $entry->paid_at ? 'Paid' : ($entry->paymentExpired() ? 'Payment hold expired' : ($entry->payment_token ? 'Awaiting QR payment' : 'Unpaid')) }}</span>
                                     @endif
                                 </div>
                             </div>
                             @unless($entry->cancelled_at)
                                 <div class="actions">
-                                    @unless($entry->paid_at)
+                                    @if(!$entry->paid_at && !$entry->payment_token)
                                         <form method="post" action="{{ route('staff.paid', $entry->id) }}">@csrf @method('PATCH')<button class="small secondary">Mark paid</button></form>
-                                    @endunless
+                                    @endif
                                     <form method="post" action="{{ route('staff.cancel', $entry->id) }}" onsubmit="return confirm('Cancel this booking and release the time?')">
                                         @csrf @method('PATCH')<button class="small quiet">Cancel booking</button>
                                     </form>
                                 </div>
                             @endunless
+                            @if($entry->payment_token && !$entry->paid_at && !$entry->cancelled_at && !$entry->paymentExpired())
+                                <details class="settings-row">
+                                    <summary>Verify Messenger payment</summary>
+                                    <div class="actions">
+                                        <a href="{{ route('book.payment', $entry->payment_token) }}" target="_blank" rel="noopener">Open payment link</a>
+                                        <a href="{{ $entry->payment_messenger_url }}" target="_blank" rel="noopener noreferrer">Open Messenger</a>
+                                    </div>
+                                    <form class="form-stack" method="post" action="{{ route('staff.paid', $entry->id) }}">
+                                        @csrf @method('PATCH')
+                                        <label>Amount received (₱)<input type="number" step=".01" min=".01" name="received_amount" required></label>
+                                        <label>Transaction reference<input name="payment_reference" maxlength="64" required></label>
+                                        <label class="checkbox"><input type="checkbox" name="verified_in_messenger" value="1" required> I matched the Messenger receipt to the incoming payment.</label>
+                                        <button class="small secondary">Confirm payment</button>
+                                    </form>
+                                </details>
+                            @elseif($entry->payment_reference)
+                                <span class="muted">Transaction {{ $entry->payment_reference }}</span>
+                            @endif
                         @else
                             <strong>Blocked · {{ $entry->reason }}</strong>
                             <form method="post" action="{{ route('staff.unblock', $entry->id) }}">@csrf @method('DELETE')<button class="small quiet">Remove block</button></form>

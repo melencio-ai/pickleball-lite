@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Venue;
+use App\Services\EmvPaymentQr;
 use App\Services\Pricing;
 use App\Services\Schedule;
 use Carbon\CarbonImmutable;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class VenueCustomizationController extends Controller
 {
@@ -63,6 +65,34 @@ class VenueCustomizationController extends Controller
         return $this->saved('Booking page branding saved.', 'branding');
     }
 
+    public function payment(Request $request, EmvPaymentQr $generator)
+    {
+        $enabled = $request->boolean('qr_payments_enabled');
+        $isRequired = Rule::requiredIf($enabled);
+        $data = $request->validate([
+            'qr_payments_enabled' => ['sometimes', 'boolean'],
+            'payment_qr_base' => [$isRequired, 'nullable', 'string', 'max:512'],
+            'payment_messenger_url' => [$isRequired, 'nullable', 'regex:~^https://m\.me/[a-zA-Z0-9._-]+/?$~D', 'max:255'],
+            'provider_confirmed' => $enabled ? ['required', 'accepted'] : ['sometimes', 'accepted'],
+        ]);
+
+        if ($data['payment_qr_base'] ?? null) {
+            try {
+                $generator->generate($data['payment_qr_base'], 100);
+            } catch (InvalidArgumentException $exception) {
+                throw ValidationException::withMessages(['payment_qr_base' => $exception->getMessage()]);
+            }
+        }
+
+        $this->withVenueLock($request, fn (Venue $venue) => $venue->update([
+            'qr_payments_enabled' => $enabled,
+            'payment_qr_base' => $data['payment_qr_base'] ?? null,
+            'payment_messenger_url' => $data['payment_messenger_url'] ?? null,
+        ]));
+
+        return $this->saved('Payment settings saved.', 'payments');
+    }
+
     public function rules(Request $request)
     {
         $data = $request->validate([
@@ -98,7 +128,7 @@ class VenueCustomizationController extends Controller
             $end = $schedule->time($venue, $data['date'], '24:00');
             $hasBookings = Booking::query()->whereIn('court_id', $venue->courts()->select('id'))
                 ->where('starts_at', '<', $end)->where('ends_at', '>', $start)
-                ->whereNull('cancelled_at')->where('ends_at', '>', now())->exists();
+                ->occupying()->where('ends_at', '>', now())->exists();
             if ($hasBookings) {
                 throw ValidationException::withMessages(['date' => 'Cancel or move the remaining reservations before closing this date.']);
             }

@@ -12,10 +12,11 @@ class Venue extends Model
     protected $fillable = [
         'name', 'address', 'phone', 'timezone', 'brand_color', 'map_url', 'messenger_url',
         'booking_durations', 'advance_days', 'minimum_notice', 'cancellation_policy',
+        'qr_payments_enabled', 'payment_qr_base', 'payment_messenger_url',
     ];
 
     protected $casts = [
-        'booking_durations' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer',
+        'booking_durations' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer', 'qr_payments_enabled' => 'boolean',
     ];
 
     public function durations(): array

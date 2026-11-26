@@ -18,7 +18,7 @@
                 <p>{{ $venue->address }}</p>
             @endif
         </div>
-        <span class="pay-label">Pay at venue</span>
+        <span class="pay-label">{{ $venue->qr_payments_enabled ? 'Pay by QR' : 'Pay at venue' }}</span>
     </header>
     @if($venue->map_url || $venue->messenger_url)
         <nav class="venue-links" aria-label="Venue information">
@@ -45,7 +45,7 @@
         <section class="panel checkout" id="booking-form" tabindex="-1">
             <div class="section-heading">
                 <div>
-                    <h2>Confirm your booking</h2>
+                    <h2>{{ $venue->qr_payments_enabled ? 'Review your reservation' : 'Confirm your booking' }}</h2>
                     <p>{{ $selection['court']->name }} · {{ $selection['slots'][$selectedStart]['label'] }} · {{ $duration }} minutes</p>
                 </div>
                 <strong class="price">₱{{ number_format($selection['slots'][$selectedStart]['total'] / 100, 2) }}</strong>
@@ -62,7 +62,7 @@
                 <input type="hidden" name="quoted_total" value="{{ $selection['slots'][$selectedStart]['total'] }}">
                 <label>Full name<input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}" maxlength="100" autocomplete="name" required></label>
                 <label>Mobile number<input name="customer_phone" type="tel" value="{{ is_string(old('customer_phone')) ? old('customer_phone') : '' }}" maxlength="32" autocomplete="tel" required></label>
-                <button>Confirm booking</button>
+                <button>{{ $venue->qr_payments_enabled ? 'Continue to QR payment' : 'Confirm booking' }}</button>
             </form>
         </section>
     @endif

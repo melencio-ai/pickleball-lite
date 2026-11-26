@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class Schedule
 {
@@ -20,7 +21,7 @@ class Schedule
 
     public const PHONE = '/^\+?[0-9][0-9() .-]{5,29}[0-9]$/D';
 
-    public function __construct(private Pricing $pricing) {}
+    public function __construct(private Pricing $pricing, private EmvPaymentQr $paymentQr) {}
 
     public function hours(Venue $venue, string $date): ?VenueHour
     {
@@ -63,7 +64,7 @@ class Schedule
         return $venue->courts()->where('active', true)->orderBy('id')->get()
             ->map(function ($court) use ($open, $close, $earliest, $duration, $venue, $date, $rates) {
                 $busy = $this->overlaps($court->bookings(), $open, $close)
-                    ->whereNull('cancelled_at')->get()
+                    ->occupying()->get()
                     ->concat($this->overlaps($court->blocks(), $open, $close)->get());
 
                 $slots = [];
@@ -77,9 +78,13 @@ class Schedule
                         continue;
                     }
 
+                    $total = $this->pricing->quote($court, $start, $end, $venue->timezone, $rates);
+                    if ($venue->qr_payments_enabled && $total === 0) {
+                        continue;
+                    }
                     $slots[$local->format('H:i')] = [
                         'label' => $local->format('g:i A'),
-                        'total' => $this->pricing->quote($court, $start, $end, $venue->timezone, $rates),
+                        'total' => $total,
                     ];
                 }
 
@@ -133,7 +138,7 @@ class Schedule
                 }
             }
 
-            $bookingExists = $this->overlaps($court->bookings(), $start, $end)->whereNull('cancelled_at')->exists();
+            $bookingExists = $this->overlaps($court->bookings(), $start, $end)->occupying()->exists();
             $blockExists = $this->overlaps($court->blocks(), $start, $end)->exists();
             if ($bookingExists || $blockExists) {
                 throw ValidationException::withMessages(['start' => 'That time is no longer available. Choose another slot.']);
@@ -148,6 +153,25 @@ class Schedule
                 throw ValidationException::withMessages(['start' => 'The rate has changed. Review the new price before booking.']);
             }
 
+            $payment = [];
+            if ($venue->qr_payments_enabled) {
+                if (! $venue->payment_qr_base || ! $venue->payment_messenger_url) {
+                    throw ValidationException::withMessages(['start' => 'This venue’s QR payment setup is incomplete.']);
+                }
+                try {
+                    $payload = $this->paymentQr->generate($venue->payment_qr_base, $total);
+                } catch (InvalidArgumentException $exception) {
+                    throw ValidationException::withMessages(['start' => $exception->getMessage()]);
+                }
+
+                $payment = [
+                    'payment_token' => Str::random(48),
+                    'payment_qr_payload' => $payload,
+                    'payment_messenger_url' => $venue->payment_messenger_url,
+                    'payment_expires_at' => min(now()->toImmutable()->addMinutes(20), $start),
+                ];
+            }
+
             return $court->bookings()->create([
                 'reference' => (string) Str::ulid(),
                 'starts_at' => $start,
@@ -157,7 +181,7 @@ class Schedule
                 'total' => $total,
                 'source' => $source,
                 'cancellation_policy' => $venue->cancellation_policy,
-            ]);
+            ] + $payment);
         }, 3);
     }
 }

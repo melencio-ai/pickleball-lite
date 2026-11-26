@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Venue;
 use App\Services\Schedule;
 use Carbon\CarbonImmutable;
@@ -55,6 +56,10 @@ class PublicBookingController extends Controller
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
         ]);
         $booking = $schedule->reserve($venue, $data, 'online');
+        if ($booking->payment_token) {
+            return redirect()->route('book.payment', ['token' => $booking->payment_token]);
+        }
+
         $court = $venue->courts()->findOrFail($booking->court_id);
         $request->session()->put('booking_confirmation', [
             'reference' => strtoupper($booking->reference),
@@ -66,6 +71,20 @@ class PublicBookingController extends Controller
         ]);
 
         return redirect()->route('book.confirmed');
+    }
+
+    public function payment(string $token)
+    {
+        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $booking = Booking::query()->with('court')
+            ->whereIn('court_id', $venue->courts()->select('id'))
+            ->where('payment_token', $token)->firstOrFail();
+
+        return response()->view('book.payment', compact('venue', 'booking'))->withHeaders([
+            'Cache-Control' => 'private, no-store',
+            'Referrer-Policy' => 'no-referrer',
+            'X-Robots-Tag' => 'noindex, nofollow',
+        ]);
     }
 
     public function image(string $kind, string $version)

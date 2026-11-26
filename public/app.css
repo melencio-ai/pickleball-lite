@@ -130,3 +130,6 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border
 .media-preview { max-width: 7rem; max-height: 4rem; object-fit: contain; }
 .share-qr svg { display: block; max-width: 100%; height: auto; margin: .5rem 0; }
 [hidden] { display: none !important; }
+
+.payment-qr { display: block; width: min(100%, 20rem); height: auto; margin: .75rem auto; }
+.payment-instructions { margin: .8rem 0; }
