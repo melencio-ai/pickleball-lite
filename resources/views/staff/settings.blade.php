@@ -4,7 +4,7 @@
 @section('content')
     <header class="section-heading page-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Venue settings</h1></div>
-        <a class="button" href="{{ route('settings.customization') }}">Booking setup</a>
+        <div class="actions"><a class="button secondary" href="{{ route('settings.website') }}">Website settings</a><a class="button" href="{{ route('settings.customization') }}">Booking setup</a></div>
     </header>
     <div class="settings-grid">
         <section class="panel">

@@ -104,7 +104,8 @@ class VenueCustomizationTest extends TestCase
         $media = $this->venue->media()->firstOrFail();
         $image = route('book.image', ['kind' => 'logo', 'version' => $media->version]);
         $this->get($image)->assertOk()->assertHeader('Content-Type', 'image/png');
-        $this->get(route('book'))->assertOk()->assertSee('#113355')->assertSee('Get directions');
+        $this->get(route('landing'))->assertOk()->assertSee('#113355')->assertSee('Get directions');
+        $this->get(route('book', ['step' => 1]))->assertOk()->assertSee('#113355')->assertSee('Get directions');
 
         $this->actingAs($this->venue->users()->create([
             'name' => 'Staff', 'email' => 'staff@example.test',

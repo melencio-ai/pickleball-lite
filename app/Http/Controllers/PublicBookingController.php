@@ -19,6 +19,12 @@ class PublicBookingController extends Controller
             return response()->view('book.setup', [], 503);
         }
 
+        if (!$request->hasAny(['step', 'date', 'duration', 'court', 'start']) && !$request->session()->has('errors')) {
+            $media = $venue->media()->get(['kind', 'version'])->keyBy('kind');
+
+            return view('book.choose', compact('venue', 'media'));
+        }
+
         $today = CarbonImmutable::today($venue->timezone);
         $lastDay = $today->addDays($venue->advance_days);
         $date = $request->query('date');

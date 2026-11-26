@@ -57,3 +57,10 @@ For hosting, point the web root at `public/`, set `APP_ENV=production`, `APP_DEB
 - Staff match the actual incoming payment with the Messenger receipt, verify the exact fee and record its unique reference. The same reference cannot be reused for a court booking or an Open Play registration. Paid players can be checked in manually.
 - Staff can cancel upcoming sessions and individual registrations; any refunds or late payments must be reconciled manually in Messenger. Existing payment records are retained. No automatic player rotations or refunds are included.
 - Do not run a destructive migration rollback against a production database containing Open Play registrations. Roll back application code only after accounting for published sessions and their linked court blocks.
+
+
+## Venue website
+
+The public root URL displays the branded venue website. The direct booking URL is `/book`, where players choose a private court reservation or Open Play. Recognized legacy booking query parameters on the old root URL redirect to `/book`; existing payment and Open Play URLs are unchanged.
+
+Owners can edit website copy, confirmed facilities, up to five FAQs, SEO metadata and six gallery photos in Staff > Website settings. The website reads existing logo and cover images, venue details, active courts, weekly hours, closures, effective court-specific and time-based rates, booking rules and upcoming Open Play sessions. Rates and session availability are checked again at booking.
