@@ -75,6 +75,10 @@ class OpenPlay
             if ($session->cancelled_at || $cutoff->lte(now())) {
                 $this->reject('session', 'This Open Play session is no longer accepting registrations.');
             }
+            if ($source === 'online' && $session->starts_at->setTimezone($venue->timezone)->toDateString() >
+                CarbonImmutable::today($venue->timezone)->addDays($venue->advance_days)->toDateString()) {
+                $this->reject('session', 'This session is outside the online booking window.');
+            }
             if ($session->spotsLeft() < 1) {
                 $this->reject('session', 'This session is full. Choose another session.');
             }
