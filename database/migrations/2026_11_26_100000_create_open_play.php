@@ -49,7 +49,7 @@ return new class extends Migration
             $table->dateTime('cancelled_at')->nullable();
             $table->dateTime('checked_in_at')->nullable();
             $table->timestamps();
-            $table->index(['open_play_session_id', 'cancelled_at', 'payment_expires_at']);
+            $table->index(['open_play_session_id', 'cancelled_at', 'payment_expires_at'], 'open_play_occupancy_idx');
         });
         Schema::create('payment_references', function (Blueprint $table) {
             $table->string('reference', 64)->primary();
