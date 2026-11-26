@@ -12,6 +12,8 @@ use App\Http\Controllers\VenueSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
+Route::get('/demo-gallery/{image}.webp', [VenueLandingController::class, 'demoImage'])
+    ->whereIn('image', array_keys(\App\Services\VenueWebsite::DEMO_GALLERY))->name('landing.demo-image');
 Route::get('/book', [PublicBookingController::class, 'index'])->name('book');
 Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
 Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
