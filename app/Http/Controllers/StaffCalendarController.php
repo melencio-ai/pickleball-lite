@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Venue;
 use App\Services\Pricing;
+use App\Services\PaymentReferences;
 use App\Services\Schedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -104,7 +105,7 @@ class StaffCalendarController extends Controller
                         throw ValidationException::withMessages(['received_amount' => 'The amount received must match the booking total.']);
                     }
 
-                    $record->payment_reference = strtoupper($proof['payment_reference']);
+                    $record->payment_reference = PaymentReferences::claim($proof['payment_reference']);
                     $record->payment_verified_by = $request->user()->id;
                 }
 
@@ -127,6 +128,9 @@ class StaffCalendarController extends Controller
                 ->lockForUpdate()->firstOrFail();
             $record = $court->blocks()->lockForUpdate()->findOrFail($block);
             $date = $record->starts_at->setTimezone($venue->timezone)->toDateString();
+            if ($record->open_play_session_id) {
+                throw ValidationException::withMessages(['block' => 'Cancel the Open Play session to release its courts.']);
+            }
             $record->delete();
 
             return $date;
