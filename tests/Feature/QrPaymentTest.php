@@ -87,7 +87,9 @@ class QrPaymentTest extends TestCase
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
             ->assertSee('Ready to book your court?')->assertSee('Court held for')->assertSee('20:00')->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
             ->assertDontSee($booking->customer_phone);
-        $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Verify Messenger payment');
+        $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Pending QR')->assertDontSee('Verify Messenger payment');
+        $this->get(route('staff.calendar.modal', ['kind' => 'booking', 'record' => $booking->id, 'date' => '2030-01-11']), ['X-Calendar-Fragment' => '1'])
+            ->assertOk()->assertSee('Verify Messenger payment');
 
         $proof = ['received_amount' => '400.00', 'payment_reference' => 'AB-123', 'verified_in_messenger' => '1'];
         $this->patch(route('staff.paid', $booking->id))->assertSessionHasErrors('verified_in_messenger');
