@@ -11,6 +11,8 @@ Route::get('/', [PublicBookingController::class, 'index'])->name('book');
 Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
 Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
     ->whereIn('kind', ['logo', 'cover'])->where('version', '[a-f0-9]{64}')->name('book.image');
+Route::get('/payments/{token}', [PublicBookingController::class, 'payment'])
+    ->where('token', '[a-zA-Z0-9]{48}')->name('book.payment');
 Route::get('/bookings/confirmed', [PublicBookingController::class, 'confirmation'])->name('book.confirmed');
 
 Route::prefix('staff')->group(function () {
@@ -31,6 +33,7 @@ Route::prefix('staff')->group(function () {
         Route::middleware('can:manage-venue')->group(function () {
             Route::get('/booking-setup', [VenueCustomizationController::class, 'index'])->name('settings.customization');
             Route::patch('/booking-setup/branding', [VenueCustomizationController::class, 'branding'])->name('settings.branding');
+            Route::patch('/booking-setup/payments', [VenueCustomizationController::class, 'payment'])->name('settings.payments');
             Route::patch('/booking-setup/rules', [VenueCustomizationController::class, 'rules'])->name('settings.rules');
             Route::post('/booking-setup/closures', [VenueCustomizationController::class, 'closeDate'])->name('settings.closures.add');
             Route::delete('/booking-setup/closures/{closure}', [VenueCustomizationController::class, 'removeClosure'])->name('settings.closures.remove');
