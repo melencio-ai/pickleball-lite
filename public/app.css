@@ -207,3 +207,29 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border
 .survey-panel .booking-details { margin: 0; }
 .survey-panel .booking-details .form-row > label { flex-basis: 100%; }
 .survey-panel .booking-details .booking-button { width: 100%; white-space: normal; }
+
+/* Open Play */
+.booking-types { display:grid; gap:.5rem; margin: .9rem 0; }
+.booking-types .survey-choice { justify-content:flex-start; gap:.75rem; text-decoration:none; }
+.booking-types .survey-choice span { display:grid; gap:.2rem; }
+.booking-types .survey-choice[aria-current="page"] { border-color:var(--accent,#155542); background:#edf7ef; }
+.open-play-progress { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.open-play-card { border:1px solid #dce5df; border-radius:.75rem; padding:.9rem; display:grid; gap:.45rem; margin:.45rem 0; }
+.open-play-capacity { width:100%; height:.65rem; accent-color:#155542; display:block; }
+.open-play-create,.open-play-admin-list { margin:1rem 0; }
+.open-play-form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:.75rem; }
+.open-play-list-row { display:grid; grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr)) auto; gap:.8rem; align-items:center; border-bottom:1px solid #dce5df; padding:.85rem 0; }
+.session-name { font-weight:650; }
+.open-play-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(7rem,1fr)); gap:.75rem; margin-bottom:1rem; }
+.open-play-stats div { display:grid; gap:.2rem; }
+.open-play-stats small { color:#637269; }
+.open-play-stats strong { font-size:1.4rem; }
+.open-play-table-wrap { overflow-x:auto; }
+.open-play-table { width:100%; border-collapse:collapse; text-align:left; font-size:.9rem; }
+.open-play-table th,.open-play-table td { border-bottom:1px solid #dce5df; padding:.7rem .5rem; vertical-align:top; }
+.open-play-table td small { display:block; overflow-wrap:anywhere; }
+.open-play-table td details { margin-bottom:.5rem; }
+.open-play-table td:last-child { min-width:13rem; }
+.open-play-entry { border-color:#5275b7; background:#f0f4ff; }
+[data-occurrences][hidden] { display:none; }
+@media(max-width:640px){.open-play-list-row{grid-template-columns:repeat(2,minmax(0,1fr));}.open-play-list-row>div:first-child{grid-column:1/-1;}}
