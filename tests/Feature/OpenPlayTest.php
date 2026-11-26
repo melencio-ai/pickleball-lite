@@ -58,7 +58,7 @@ class OpenPlayTest extends TestCase
         $this->get(route('book'))->assertOk()->assertSee('Join Open Play');
         $this->get(route('open-play'))->assertOk()->assertSee('Step 1 of 4')->assertSee('When do you want to play?');
         $this->get(route('open-play', ['date' => '2030-01-11']))->assertOk()
-            ->assertSee('Step 2 of 4')->assertSee('Evening Open Play')->assertSee('1 spots left');
+            ->assertSee('Step 2 of 4')->assertSee('Evening Open Play')->assertSee('1 spot left');
         $this->get(route('open-play', ['date' => '2030-01-11', 'session' => $session->id]))->assertOk()
             ->assertSee('Step 3 of 4')->assertSee('Who is joining?');
         $this->post(route('open-play.join', $session->id), array_replace($this->player(), ['quoted_total' => 19900]))
@@ -186,8 +186,8 @@ class OpenPlayTest extends TestCase
 
     private function booking(): array
     {
-        return $this->player() + ['court_id' => $this->venue->courts()->firstOrFail()->id,
-            'date' => '2030-01-11', 'start' => '19:00', 'duration' => 60, 'quoted_total' => 40000];
+        return array_replace($this->player(), ['court_id' => $this->venue->courts()->firstOrFail()->id,
+            'date' => '2030-01-11', 'start' => '19:00', 'duration' => 60, 'quoted_total' => 40000]);
     }
 
     private function proof(): array
