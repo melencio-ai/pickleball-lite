@@ -14,6 +14,8 @@ class QrPaymentTest extends TestCase
 
     private const BASE = '00020101021126320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085802PH5910LITE COURT6006MANILA63041052';
 
+    private const BASE_WITH_AMOUNT = '00020101021126320014PH.PPMI.TESTQR0110TESTVENUE152044799530360854045.005802PH5910LITE COURT6006MANILA63045B8A';
+
     private const EXPECTED = '00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406400.005802PH5910LITE COURT6006MANILA63041D5C';
 
     private Venue $venue;
@@ -30,8 +32,16 @@ class QrPaymentTest extends TestCase
     {
         $generator = app(EmvPaymentQr::class);
         $this->assertSame(self::EXPECTED, $generator->generate(self::BASE, 40000));
+        $this->assertSame(self::EXPECTED, $generator->generate(self::BASE_WITH_AMOUNT, 40000));
         $this->expectException(\InvalidArgumentException::class);
         $generator->generate(substr(self::BASE, 0, -1).'3', 40000);
+    }
+
+    public function test_qr_for_a_specific_transaction_cannot_be_used_as_a_base(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('This code is marked for a specific transaction.');
+        app(EmvPaymentQr::class)->generate(self::EXPECTED, 20000);
     }
 
     public function test_booking_needs_staff_to_verify_exact_payment_from_messenger(): void
@@ -42,7 +52,7 @@ class QrPaymentTest extends TestCase
         $this->actingAs($owner);
         $settings = [
             'qr_payments_enabled' => '1',
-            'payment_qr_base' => self::BASE,
+            'payment_qr_base' => self::BASE_WITH_AMOUNT,
             'payment_messenger_url' => 'https://m.me/litecourts',
         ];
         $this->patch(route('settings.payments'), $settings)->assertSessionHasErrors('provider_confirmed');

@@ -17,7 +17,7 @@ class EmvPaymentQr
         $output = '000201010212';
         $amountWritten = false;
         foreach ($fields as $id => $value) {
-            if (in_array((string) $id, ['00', '01', '63'], true)) {
+            if (in_array((string) $id, ['00', '01', '54', '63'], true)) {
                 continue;
             }
             if ((string) $id === '58') {
@@ -69,9 +69,19 @@ class EmvPaymentQr
         if (! $hasAccount || count($fields) < 8 || array_key_last($fields) !== 63
             || ($fields[63] ?? null) !== $match[1] || ($fields[53] ?? null) !== '608'
             || ($fields[58] ?? null) !== 'PH' || ! preg_match('/^[0-9]{4}$/D', $fields[52] ?? '')
-            || ! isset($fields[59], $fields[60]) || ($fields['01'] ?? '11') !== '11'
-            || isset($fields[54]) || isset($fields[55]) || isset($fields[56]) || isset($fields[57])) {
-            throw new InvalidArgumentException('Use a reusable Philippine peso merchant QR without a fixed amount or convenience fee.');
+            || ! isset($fields[59], $fields[60])) {
+            throw new InvalidArgumentException('Use a Philippine peso merchant QR.');
+        }
+        if (($fields['01'] ?? '11') !== '11') {
+            throw new InvalidArgumentException('Use a reusable merchant QR. This code is marked for a specific transaction.');
+        }
+        if (isset($fields[55]) || isset($fields[56]) || isset($fields[57])) {
+            throw new InvalidArgumentException('Use a merchant QR without a tip prompt or convenience fee.');
+        }
+        if (isset($fields[54]) && (strlen($fields[54]) > 13
+            || ! preg_match('/^[0-9]+(?:\.[0-9]{0,2})?$/D', $fields[54])
+            || strpbrk($fields[54], '123456789') === false)) {
+            throw new InvalidArgumentException('The base QR contains an invalid payment amount.');
         }
 
         return $fields;

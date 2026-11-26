@@ -152,6 +152,7 @@
                     @method('PATCH')
                     <label>Base merchant EMV code
                         <textarea name="payment_qr_base" rows="3" maxlength="512" autocomplete="off">{{ $venue->payment_qr_base }}</textarea>
+                        <span class="muted">Pickle Lite replaces any amount in the base code with the booking total.</span>
                     </label>
                     <label>Payment verification Messenger link
                         <input type="url" name="payment_messenger_url" value="{{ $venue->payment_messenger_url }}" placeholder="https://m.me/yourvenue">
