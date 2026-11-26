@@ -45,7 +45,7 @@ class BookingTest extends TestCase
         $date = '2030-01-11';
         $court = $this->venue->courts()->firstOrFail();
         $base = ['date' => $date, 'duration' => 60];
-        $this->get(route('book'))->assertOk()
+        $this->get(route('book', ['step' => 1]))->assertOk()
             ->assertSee('Step 1 of 6')->assertSee('When do you want to play?')->assertDontSee('Add your details');
         $this->get(route('book', ['step' => 2] + $base))->assertOk()
             ->assertSee('Step 2 of 6')->assertSee('How long do you want to play?');
