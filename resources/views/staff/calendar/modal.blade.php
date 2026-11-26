@@ -74,7 +74,7 @@
             <div><dt>Court</dt><dd>{{ $entry->court->name }}</dd></div>
             <div><dt>Date</dt><dd>{{ $entry->starts_at->setTimezone($venue->timezone)->format('D, M j, Y') }}</dd></div>
             <div><dt>Time</dt><dd>{{ $entry->starts_at->setTimezone($venue->timezone)->format('g:i A') }} – {{ $entry->ends_at->setTimezone($venue->timezone)->format('g:i A') }}</dd></div>
-            <div><dt>Duration</dt><dd>{{ \App\Models\Venue::durationLabel((int)$entry->starts_at->diffInMinutes($entry->ends_at)) }}</dd></div>
+            <div><dt>Duration</dt><dd>{{ $entry->starts_at->diffInMinutes($entry->ends_at) < 60 ? (int)$entry->starts_at->diffInMinutes($entry->ends_at).' minutes' : \App\Models\Venue::durationLabel((int)$entry->starts_at->diffInMinutes($entry->ends_at)) }}</dd></div>
             <div><dt>Source</dt><dd>{{ ucfirst($entry->source) }}</dd></div>
         </dl>
         <div class="calendar-payment-summary">
