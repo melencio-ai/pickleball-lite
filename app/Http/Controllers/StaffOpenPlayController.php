@@ -44,6 +44,10 @@ class StaffOpenPlayController extends Controller
         ]);
         $sessions = $openPlay->create($venue, $data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => count($sessions).' session(s) published.']);
+        }
+
         return redirect()->route('staff.open-play.show', $sessions[0]->id)->with('status', count($sessions).' session(s) published.');
     }
 
@@ -67,7 +71,7 @@ class StaffOpenPlayController extends Controller
         ]);
         $openPlay->register($request->user()->venue, $session, $data, 'staff');
 
-        return back()->with('status', 'Player slot held. Share the payment link with the player.');
+        return $this->result($request, 'Player slot held. Share the payment link with the player.');
     }
 
     public function action(Request $request, OpenPlay $openPlay, int $session, int $registration, string $action)
@@ -80,7 +84,7 @@ class StaffOpenPlayController extends Controller
         ]) : [];
         $openPlay->updateRegistration($request->user()->venue, $session, $registration, $action, $data, $request->user()->id);
 
-        return back()->with('status', match ($action) {
+        return $this->result($request, match ($action) {
             'paid' => 'Payment verified.',
             'cancel' => 'Registration cancelled. Reconcile any payment in Messenger.',
             'check-in' => 'Player checked in.',
@@ -91,6 +95,11 @@ class StaffOpenPlayController extends Controller
     {
         $openPlay->cancelSession($request->user()->venue, $session);
 
-        return back()->with('status', 'Session cancelled and courts released. Reconcile any paid registrations in Messenger.');
+        return $this->result($request, 'Session cancelled and courts released. Reconcile any paid registrations in Messenger.');
+    }
+
+    private function result(Request $request, string $message)
+    {
+        return $request->expectsJson() ? response()->json(['message' => $message]) : back()->with('status', $message);
     }
 }
