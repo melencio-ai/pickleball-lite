@@ -21,6 +21,7 @@ class VenueWebsiteController extends Controller
     public function save(Request $request)
     {
         $data = $request->validate([
+            'show_demo_gallery' => ['sometimes', 'boolean'],
             'headline' => ['nullable', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:350'],
             'introduction' => ['nullable', 'string', 'max:1500'],
@@ -51,6 +52,9 @@ class VenueWebsiteController extends Controller
         }
         DB::transaction(function () use ($request, $content) {
             $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $content['show_demo_gallery'] = $request->has('show_demo_gallery')
+                ? $request->boolean('show_demo_gallery')
+                : ($venue->website_content['show_demo_gallery'] ?? true);
             $venue->update(['website_content' => $content]);
         }, 3);
 
