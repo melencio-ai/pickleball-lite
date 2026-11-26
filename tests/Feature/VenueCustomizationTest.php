@@ -56,13 +56,13 @@ class VenueCustomizationTest extends TestCase
     public function test_closure_and_public_rules_apply_to_availability_and_booking(): void
     {
         $rules = [
-            'booking_durations' => [30], 'advance_days' => 2, 'minimum_notice' => 120,
+            'booking_durations' => [90], 'advance_days' => 2, 'minimum_notice' => 120,
             'cancellation_policy' => 'Call the venue at least two hours before play.',
         ];
         $this->patch(route('settings.rules'), $rules)->assertSessionHasNoErrors();
         $booking = $this->bookingData();
         $this->post(route('book.store'), $booking)->assertSessionHasErrors('duration');
-        $booking = array_replace($booking, ['duration' => 30, 'quoted_total' => 20000]);
+        $booking = array_replace($booking, ['duration' => 90, 'quoted_total' => 60000]);
         $this->post(route('book.store'), array_replace($booking, ['date' => '2030-01-10', 'start' => '09:30']))
             ->assertSessionHasErrors('start');
         $this->post(route('book.store'), array_replace($booking, ['date' => '2030-01-13']))
@@ -76,6 +76,21 @@ class VenueCustomizationTest extends TestCase
         $this->post(route('book.store'), $booking)->assertRedirect(route('book.confirmed'));
         $this->get(route('book.confirmed'))->assertOk()->assertSee($rules['cancellation_policy']);
         $this->post(route('settings.closures.add'), $closure)->assertSessionHasErrors('date');
+    }
+
+    public function test_owner_can_configure_the_full_new_duration_range(): void
+    {
+        $rules = [
+            'booking_durations' => [60, 90, 120, 150, 180, 210, 240, 270, 300],
+            'advance_days' => 30, 'minimum_notice' => 0,
+        ];
+        $this->patch(route('settings.rules'), $rules)->assertSessionHasNoErrors();
+        $this->assertSame($rules['booking_durations'], $this->venue->fresh()->durations());
+
+        foreach ([30, 75, 330] as $invalid) {
+            $this->patch(route('settings.rules'), array_replace($rules, ['booking_durations' => [$invalid]]))
+                ->assertSessionHasErrors('booking_durations.0');
+        }
     }
 
     public function test_branding_images_are_served_and_customization_is_owner_only(): void
