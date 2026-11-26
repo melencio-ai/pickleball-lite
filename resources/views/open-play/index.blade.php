@@ -69,7 +69,7 @@
             <h2 class="booking-icon-label"><x-booking-icon name="users" /> Which session would you like to join?</h2>
             @forelse($sessions as $offer)
                 <article class="open-play-card">
-                    <div class="section-heading"><h3>{{ $offer->name }}</h3><span class="status-chip {{ $offer->spotsLeft() ? 'paid' : 'unpaid' }}">{{ $offer->spotsLeft() ? $offer->spotsLeft().' spots left' : 'Full' }}</span></div>
+                    <div class="section-heading"><h3>{{ $offer->name }}</h3><span class="status-chip {{ $offer->spotsLeft() ? 'paid' : 'unpaid' }}">{{ $offer->spotsLeft() ? $offer->spotsLeft().($offer->spotsLeft() === 1 ? ' spot left' : ' spots left') : 'Full' }}</span></div>
                     <p class="muted">{{ $offer->starts_at->setTimezone($venue->timezone)->format('g:i A') }} – {{ $offer->ends_at->setTimezone($venue->timezone)->format('g:i A') }}</p>
                     <p class="muted">{{ $offer->courts_count }} {{ $offer->courts_count === 1 ? 'court' : 'courts' }} · {{ $offer->levelLabel() }}</p>
                     <progress class="open-play-capacity" value="{{ $offer->capacity - $offer->spotsLeft() }}" max="{{ $offer->capacity }}" aria-label="Spots taken"></progress>
