@@ -10,6 +10,7 @@
         $ends = $booking->ends_at->setTimezone($venue->timezone);
     @endphp
     <section class="panel confirmation compact-payment">
+        <p class="muted survey-step">Step 6 of 6 · Pay and confirm</p>
         @if($status === 'cancelled')
             <h1><x-booking-icon name="circle-alert" /> Booking cancelled</h1>
         @elseif($status === 'confirmed')
