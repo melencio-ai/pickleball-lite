@@ -85,7 +85,7 @@ class QrPaymentTest extends TestCase
         $this->getJson($statusUrl)->assertOk()->assertExactJson(['status' => 'pending'])
             ->assertHeader('Cache-Control', 'no-store, private');
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
-            ->assertSee('Court held for')->assertSee('20:00')->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
+            ->assertSee('Ready to book your court?')->assertSee('Court held for')->assertSee('20:00')->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
             ->assertDontSee($booking->customer_phone);
         $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Verify Messenger payment');
 
@@ -95,7 +95,7 @@ class QrPaymentTest extends TestCase
             ->assertSessionHasErrors('received_amount');
         $this->patch(route('staff.paid', $booking->id), $proof)->assertSessionHasNoErrors();
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
-            ->assertSee('Payment verified')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
+            ->assertSee('Your court is booked!')->assertSee('Payment verified')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
         $this->assertSame('AB-123', $booking->fresh()->payment_reference);
         $this->getJson($statusUrl)->assertOk()->assertExactJson(['status' => 'confirmed']);
 
