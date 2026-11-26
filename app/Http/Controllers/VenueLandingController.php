@@ -43,7 +43,7 @@ class VenueLandingController extends Controller
         $facilities = collect(VenueWebsite::FACILITIES)
             ->only($content['facilities'] ?? [])->values()
             ->concat($content['custom_facilities'] ?? [])->unique()->values();
-        $gallery = $media->only(VenueWebsite::GALLERY);
+        $gallery = $media->toBase()->only(VenueWebsite::GALLERY);
         $headline = $content['headline'] ?? 'Your next game starts here.';
         $description = $content['description'] ?? 'Play with friends, meet new players and enjoy your next pickleball game at '.$venue->name.'.';
         $seoTitle = $content['seo_title'] ?? $venue->name.' | Pickleball courts & Open Play';
