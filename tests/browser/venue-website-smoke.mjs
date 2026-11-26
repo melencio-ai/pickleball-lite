@@ -3,10 +3,23 @@ import assert from 'node:assert/strict';
 const browser = await chromium.launch({headless:true});
 const page = await browser.newPage({viewport:{width:1440,height:900}});
 const base = 'http://127.0.0.1:8000';
+async function checkSection(label, id) {
+    await page.locator('.site-navigation nav').getByRole('link',{name:label,exact:true}).click();
+    await page.waitForFunction((id) => {
+        const header = document.querySelector('.venue-site-header').getBoundingClientRect();
+        const section = document.getElementById(id).getBoundingClientRect();
+        return location.hash === '#' + id && Math.abs(header.top) <= 1
+            && section.top >= header.bottom && section.top <= header.bottom + 20;
+    }, id);
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior), 'smooth');
+}
 try {
     await page.goto(base + '/');
     await page.getByRole('heading',{name:'Your next game starts here.'}).waitFor();
     await page.getByRole('heading',{name:'Opening hours'}).waitFor();
+    await checkSection('Schedule','schedule');
+    await checkSection('Rates','rates');
+    await checkSection('Facilities','facilities');
     await page.locator('.site-navigation').getByRole('link',{name:'Book now'}).click();
     await page.waitForURL('**/book');
     await page.getByRole('heading',{name:'What would you like to book?'}).waitFor();
@@ -20,6 +33,11 @@ try {
     const cta = page.locator('.site-mobile-cta');
     await cta.waitFor({state:'visible'});
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth + 1),'Landing must fit mobile viewport');
+    await checkSection('Open Play','open-play');
+    await checkSection('Facilities','facilities');
+    await page.emulateMedia({reducedMotion:'reduce'});
+    assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior), 'auto');
+    await page.emulateMedia({reducedMotion:'no-preference'});
     await cta.getByRole('link',{name:'Book now'}).click();
     await page.waitForURL('**/book');
     await page.getByRole('link',{name:/Join Open Play/}).click();
