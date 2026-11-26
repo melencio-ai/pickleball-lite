@@ -125,6 +125,8 @@ class PublicBookingController extends Controller
             return redirect()->route('book');
         }
 
-        return response()->view('book.confirmation', compact('confirmation'))->header('Cache-Control', 'private, no-store');
+        $venue = Venue::query()->orderBy('id')->first();
+
+        return response()->view('book.confirmation', compact('confirmation', 'venue'))->header('Cache-Control', 'private, no-store');
     }
 }
