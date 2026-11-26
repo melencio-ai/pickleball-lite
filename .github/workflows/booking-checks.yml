@@ -24,6 +24,7 @@ jobs:
       - run: node --check public/booking-survey.js
 
       - run: node --check public/open-play-admin.js
+      - run: node --check public/calendar.js
   mysql-concurrency:
     runs-on: ubuntu-latest
     services:
