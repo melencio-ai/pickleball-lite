@@ -72,8 +72,12 @@ class EmvPaymentQr
             || ! isset($fields[59], $fields[60])) {
             throw new InvalidArgumentException('Use a Philippine peso merchant QR.');
         }
-        if (($fields['01'] ?? '11') !== '11') {
-            throw new InvalidArgumentException('Use a reusable merchant QR. This code is marked for a specific transaction.');
+        $initiationMethod = $fields['01'] ?? '11';
+        if ($initiationMethod === '12') {
+            throw new InvalidArgumentException('This code is marked for a specific transaction. Use the reusable QR from your merchant account or ask your provider for a new QR for each booking.');
+        }
+        if ($initiationMethod !== '11') {
+            throw new InvalidArgumentException('The EMV payload has an invalid point-of-initiation marker.');
         }
         if (isset($fields[55]) || isset($fields[56]) || isset($fields[57])) {
             throw new InvalidArgumentException('Use a merchant QR without a tip prompt or convenience fee.');

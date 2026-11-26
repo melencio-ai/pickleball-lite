@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Venue;
 use App\Services\EmvPaymentQr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class QrPaymentTest extends TestCase
@@ -57,6 +58,13 @@ class QrPaymentTest extends TestCase
         ];
         $this->patch(route('settings.payments'), $settings)->assertSessionHasErrors('provider_confirmed');
         $settings['provider_confirmed'] = '1';
+        Log::spy();
+        $this->patch(route('settings.payments'), array_replace($settings, ['payment_qr_base' => self::EXPECTED]))
+            ->assertSessionHasErrors('payment_qr_base');
+        Log::shouldHaveReceived('notice')->once()->with('Rejected venue payment QR', [
+            'venue_id' => $this->venue->id,
+            'reason' => 'This code is marked for a specific transaction. Use the reusable QR from your merchant account or ask your provider for a new QR for each booking.',
+        ]);
         $this->patch(route('settings.payments'), $settings)->assertSessionHasNoErrors();
         $this->patch(route('settings.payments'), array_replace($settings, [
             'payment_messenger_url' => 'https://www.facebook.com.example.test/messages/t/pickleliteapp',

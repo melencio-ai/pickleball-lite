@@ -10,6 +10,7 @@ use App\Services\Schedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -82,6 +83,11 @@ class VenueCustomizationController extends Controller
             try {
                 $generator->generate($data['payment_qr_base'], 100);
             } catch (InvalidArgumentException $exception) {
+                Log::notice('Rejected venue payment QR', [
+                    'venue_id' => $request->user()->venue_id,
+                    'reason' => $exception->getMessage(),
+                ]);
+
                 throw ValidationException::withMessages(['payment_qr_base' => $exception->getMessage()]);
             }
         }
