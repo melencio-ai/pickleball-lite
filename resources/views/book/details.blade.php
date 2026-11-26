@@ -23,7 +23,7 @@
             </details>
         @endif
         <button class="booking-button" data-booking-submit>
-            @if($venue->qr_payments_enabled)<x-booking-icon name="qr-code" /> Continue to QR payment
+            @if($venue->qr_payments_enabled)<x-booking-icon name="qr-code" /> Continue to payment
             @else Confirm booking
             @endif
         </button>
