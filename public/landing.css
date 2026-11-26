@@ -133,3 +133,31 @@
 @media(prefers-reduced-motion:reduce) {
     .venue-site-root { scroll-behavior:auto; }
 }
+
+/* Photo gallery and lightbox */
+.site-gallery-note { font-size:.85rem; color:#52645b; padding:.7rem .8rem; border-left:3px solid #9baa9f; background:#fff; }
+.site-gallery { margin-top:0; }
+.site-gallery-tile { display:block; position:relative; min-width:0; overflow:hidden; border-radius:.65rem; aspect-ratio:4/3; background:#e5eae4; }
+.site-gallery-tile img { display:block; width:100%; height:100%; aspect-ratio:auto; object-fit:cover; }
+.site-gallery-five { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.site-gallery-five .site-gallery-tile:first-child { grid-column:span 2; grid-row:span 2; aspect-ratio:auto; }
+.site-gallery-zoom { position:absolute; bottom:.5rem; right:.5rem; display:grid; place-items:center; border-radius:50%; width:2rem; height:2rem; background:#182b24d9; color:#fff; font-size:1.35rem; }
+.site-gallery-tile:hover img { filter:brightness(.96); }
+.site-gallery-tile:focus-visible { outline:3px solid #2a8067; outline-offset:3px; }
+.site-gallery-book { margin-top:1.3rem; }
+.site-gallery-dialog { width:min(980px,calc(100% - 2rem)); max-height:calc(100dvh - 2rem); padding:1rem; margin:auto; border:1px solid #dce5dc; border-radius:.8rem; color:#182b24; background:white; overflow:auto; }
+.site-gallery-dialog::backdrop { background:rgba(12,23,18,.86); }
+.site-gallery-dialog-top,.site-gallery-controls { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.site-gallery-dialog-top h2 { font-size:1.05rem; }
+.site-gallery-dialog button { display:grid; place-items:center; min-width:42px; min-height:42px; padding:.5rem; border:1px solid #c7d4cb; border-radius:.45rem; background:#fff; color:#182b24; }
+.site-gallery-dialog button:focus-visible { outline:3px solid #2a8067; outline-offset:2px; }
+.site-gallery-dialog button:disabled { opacity:.4; }
+.site-gallery-dialog figure { margin:.8rem 0; display:grid; justify-items:center; gap:.7rem; }
+.site-gallery-dialog figure img { width:auto; max-width:100%; height:auto; max-height:calc(100dvh - 190px); object-fit:contain; border-radius:.45rem; }
+.site-gallery-dialog figcaption,.site-gallery-controls span { color:#52645b; font-size:.9rem; text-align:center; }
+.venue-site-root:has(.site-gallery-dialog[open]) { overflow:hidden; }
+@media(max-width:600px) {
+    .site-gallery-five { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .site-gallery-five .site-gallery-tile:first-child { grid-column:span 2; grid-row:span 1; aspect-ratio:4/3; }
+    .site-gallery-dialog { width:calc(100% - 1rem); max-height:calc(100dvh - 1rem); padding:.75rem; }
+}

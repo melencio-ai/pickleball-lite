@@ -64,3 +64,7 @@ For hosting, point the web root at `public/`, set `APP_ENV=production`, `APP_DEB
 The public root URL displays the branded venue website. The direct booking URL is `/book`, where players choose a private court reservation or Open Play. Recognized legacy booking query parameters on the old root URL redirect to `/book`; existing payment and Open Play URLs are unchanged.
 
 Owners can edit website copy, confirmed facilities, up to five FAQs, SEO metadata and six gallery photos in Staff > Website settings. The website reads existing logo and cover images, venue details, active courts, weekly hours, closures, effective court-specific and time-based rates, booking rules and upcoming Open Play sessions. Rates and session availability are checked again at booking.
+
+### Gallery and FAQs
+
+A new venue with no uploaded gallery photos displays five clearly labeled AI-generated demo images (1200×900 WebP). Once an owner uploads a real gallery photo, the entire illustrative gallery is replaced by the actual photos. Owners can also disable the fallback in Website settings. The image viewer supports previous/next buttons, arrow keys and Escape. Default FAQs adapt to QR payment setup, booking durations, advance notice and cancellation policy; owners can add five custom FAQs. The demo assets are stored as base64 WebP resources and served as binary WebP responses through an allowlisted route.

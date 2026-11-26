@@ -40,6 +40,50 @@ class VenueWebsiteTest extends TestCase
         $this->get('/bookings/confirmed')->assertRedirect(route('book'));
     }
 
+    public function test_demo_gallery_is_optimized_labeled_and_owner_can_disable_it(): void
+    {
+        $page = $this->get('/')->assertOk()
+            ->assertSee('AI-generated demo images for illustration only.')
+            ->assertSee('Good games. Great memories.')
+            ->assertSee('How do I book a court?')
+            ->assertSee('Can I join Open Play alone?')
+            ->assertSee('Can beginners join Open Play?')
+            ->assertSee('How do I know my booking is confirmed?')
+            ->assertSee('Pay at the venue.')
+            ->assertSee('What if my preferred time or session is full?')
+            ->assertSee('How much does it cost to play?')
+            ->assertSee('How long can I book a court?')
+            ->assertSee('How far ahead can I book?')
+            ->assertSee('Can I change or cancel my booking?');
+        $this->assertSame(5, substr_count($page->getContent(), ' data-gallery-image '));
+        foreach (array_keys(VenueWebsite::DEMO_GALLERY) as $image) {
+            $url = route('landing.demo-image', ['image' => $image]);
+            $page->assertSee($url);
+            $asset = $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/webp');
+            $bytes = $asset->getContent();
+            $this->assertSame('RIFF', substr($bytes, 0, 4));
+            $this->assertSame('WEBP', substr($bytes, 8, 4));
+            $this->assertLessThan(500000, strlen($bytes));
+            $this->assertSame([1200, 900], array_slice(getimagesizefromstring($bytes), 0, 2));
+        }
+        $this->get('/demo-gallery/unknown.webp')->assertNotFound();
+        $this->venue->update([
+            'qr_payments_enabled' => true,
+            'payment_qr_base' => '00020101021126320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085802PH5910LITE COURT6006MANILA63041052',
+            'payment_messenger_url' => 'https://m.me/litecourts',
+        ]);
+        $this->get('/')->assertOk()->assertSee('Pay using the QR code and send your receipt in Messenger.')
+            ->assertSee('Wait for the venue to check your payment.');
+        $this->signIn('owner');
+        $this->patch(route('settings.website.save'), ['show_demo_gallery' => '0'])
+            ->assertSessionHasNoErrors();
+        $this->get('/')->assertOk()->assertDontSee('AI-generated demo images')->assertDontSee('data-gallery-image');
+        $this->patch(route('settings.website.save'), ['headline' => 'Updated website'])->assertSessionHasNoErrors();
+        $this->get('/')->assertOk()->assertDontSee('data-gallery-image');
+        $this->patch(route('settings.website.save'), ['show_demo_gallery' => '1'])->assertSessionHasNoErrors();
+        $this->get('/')->assertOk()->assertSee('AI-generated demo images');
+    }
+
     public function test_owner_content_facilities_and_gallery_are_public_and_safe(): void
     {
         $this->get(route('settings.website'))->assertRedirect(route('login'));
@@ -66,6 +110,7 @@ class VenueWebsiteTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Play together at Lite Courts')->assertSee('Free parking')
             ->assertSee('Night lighting')->assertSee('Water station')->assertSee('Pro shop')
             ->assertSee('Do you rent paddles?')->assertSee('Reserve your court today.')->assertSee($image)
+            ->assertDontSee('AI-generated demo images')->assertDontSee('/demo-gallery/courts.webp')
             ->assertSee('<script>bad()</script>')->assertDontSee('<script>bad()</script>', false)
             ->assertDontSee('Showers');
         $this->patch(route('settings.website.save'), ['facilities' => ['invented']])->assertSessionHasErrors('facilities.0');
