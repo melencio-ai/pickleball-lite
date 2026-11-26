@@ -85,15 +85,9 @@ class VenueLandingController extends Controller
         $description = $content['description'] ?? 'Play with friends, meet new players and enjoy your next pickleball game at '.$venue->name.'.';
         $seoTitle = $content['seo_title'] ?? $venue->name.' | Pickleball courts & Open Play';
         $seoDescription = $content['seo_description'] ?? 'Find court rates, opening hours and upcoming Open Play at '.$venue->name.'. Book your next game online.';
-        $brand = preg_match('/^#[0-9a-fA-F]{6}$/D', $venue->brand_color ?? '') ? $venue->brand_color : '#155542';
-        // Keep white text legible even when the owner selects a light brand color.
-        $rgb = array_map(fn ($part) => hexdec($part) / 255, str_split(substr($brand, 1), 2));
-        $luminance = array_sum(array_map(fn ($value, $weight) =>
-            ($value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4) * $weight, $rgb, [0.2126, 0.7152, 0.0722]));
-        $brandText = $luminance > 0.179 ? '#111111' : '#ffffff';
 
         return view('landing.index', compact('venue', 'content', 'media', 'courts', 'openingHours', 'rates',
             'today', 'closures', 'sessions', 'canJoin', 'facilities', 'galleryPhotos', 'isDemoGallery', 'headline', 'description',
-            'seoTitle', 'seoDescription', 'brand', 'brandText'));
+            'seoTitle', 'seoDescription'));
     }
 }
