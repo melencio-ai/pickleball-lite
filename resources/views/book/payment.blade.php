@@ -14,14 +14,14 @@
         @if($status === 'cancelled')
             <h1><x-booking-icon name="circle-alert" /> Booking cancelled</h1>
         @elseif($status === 'confirmed')
-            <h1><x-booking-icon name="circle-check" /> Booking confirmed</h1>
-            <p>Payment verified. Your court is booked.</p>
+            <h1><x-booking-icon name="circle-check" /> Your court is booked!</h1>
+            <p>Payment verified. See you on the court!</p>
         @elseif($status === 'expired')
             <h1><x-booking-icon name="circle-alert" /> Payment hold expired</h1>
             <p>The court was released. If you already paid, send your receipt and booking reference in Messenger.</p>
         @else
             <div class="section-heading payment-title">
-                <h1>Pay by QR</h1>
+                <h1>Ready to book your court?</h1>
                 <strong class="price">₱{{ number_format($booking->total / 100, 2) }}</strong>
             </div>
             @php($secondsLeft = max(0, $booking->payment_expires_at->getTimestamp() - now()->getTimestamp()))
@@ -40,7 +40,7 @@
                 </div>
                 <noscript><p>Enable JavaScript to display the QR and live countdown.</p></noscript>
                 <ol class="payment-steps">
-                    <li><strong>Pay using the QR</strong><span>Check the recipient and amount in your bank or wallet.</span></li>
+                    <li><strong>Pay using the QR</strong><span>Check the name and amount in your bank or wallet.</span></li>
                     <li><strong>Send your receipt in Messenger</strong><span>Include the booking reference so the venue can verify payment.</span></li>
                 </ol>
             </div>
