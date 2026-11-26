@@ -54,9 +54,9 @@
         $dateLabel = \Carbon\CarbonImmutable::parse($date)->format('D, M j');
         $durationLabel = fn ($minutes) => $minutes % 60 === 0
             ? intdiv($minutes, 60).' '.($minutes === 60 ? 'hour' : 'hours')
-            : $minutes.' minutes';
-        $titles = [1 => 'When?', 2 => 'How long?', 3 => 'Start time?', 4 => 'Available court?', 5 => "Who's booking?"];
-        $icons = [1 => 'calendar-days', 2 => 'clock', 3 => 'timer', 4 => 'calendar-days', 5 => 'circle-check'];
+            : ($minutes === 90 ? '1 hour and 30 minutes' : $minutes.' minutes');
+        $titles = [1 => 'When do you want to play?', 2 => 'How long do you want to play?', 3 => 'What time do you want to start?', 4 => 'Which court do you prefer?', 5 => 'Who is this booking for?'];
+        $icons = [1 => 'calendar-days', 2 => 'clock', 3 => 'timer', 4 => 'layout-grid', 5 => 'user-round'];
         $back = match ($step) {
             2 => ['step' => 1, 'date' => $date, 'duration' => $duration],
             3 => ['step' => 2, 'date' => $date, 'duration' => $duration],
@@ -95,17 +95,17 @@
         @endif
 
         @if($step === 1)
-            <p class="muted">Choose the day you want to play.</p>
+            <p class="muted">Pick a date below.</p>
             <form method="get" action="{{ route('book') }}" class="form-stack survey-form">
                 <input type="hidden" name="step" value="2">
                 <input type="hidden" name="duration" value="{{ $duration }}">
                 <label>Booking date
                     <input name="date" type="date" min="{{ $today->toDateString() }}" max="{{ $lastDay->toDateString() }}" value="{{ $date }}" required>
                 </label>
-                <button class="booking-button">Continue</button>
+                <button class="booking-button">Choose duration</button>
             </form>
         @elseif($step === 2)
-            <p class="muted">How much court time do you need?</p>
+            <p class="muted">Choose how much time you need.</p>
             <div class="survey-choices">
                 @foreach($venue->durations() as $minutes)
                     <a class="survey-choice" href="{{ route('book', ['step' => 3, 'date' => $date, 'duration' => $minutes]) }}">
@@ -114,7 +114,7 @@
                 @endforeach
             </div>
         @elseif($step === 3)
-            <p class="muted">Choose a start time. Only available times are shown.</p>
+            <p class="muted">Pick a time from the available slots.</p>
             @if($startTimes)
                 <div class="slots booking-slots survey-times">
                     @foreach($startTimes as $time => $slot)
@@ -128,7 +128,7 @@
                 <a class="button secondary" href="{{ route('book', ['step' => 1, 'date' => $date, 'duration' => $duration]) }}">Pick another date</a>
             @endif
         @elseif($step === 4)
-            <p class="muted">Choose a court for your selected time.</p>
+            <p class="muted">Pick an available court. Prices are for your full booking.</p>
             <div class="survey-choices">
                 @foreach($courts as $offer)
                     @if(isset($offer['slots'][$selectedStart]))
