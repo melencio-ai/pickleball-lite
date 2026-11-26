@@ -23,8 +23,12 @@
                     @endforeach
                 </div>
                 <label>Other facilities (one per line)<textarea name="custom_facilities" rows="4" maxlength="700" placeholder="Up to 10 additional facilities">{{ old('custom_facilities',implode("\n",$content['custom_facilities'] ?? [])) }}</textarea></label>
+                <h2>Demo gallery</h2>
+                <input type="hidden" name="show_demo_gallery" value="0">
+                <label class="checkbox"><input type="checkbox" name="show_demo_gallery" value="1" @checked(old('show_demo_gallery', $content['show_demo_gallery'] ?? true))> Show illustrative demo images when no venue photos are uploaded</label>
+                <p class="muted">Demo photos are clearly labeled. Uploading any real venue photo replaces the demo gallery.</p>
                 <h2>Frequently asked questions</h2>
-                <p class="muted">Optional additional questions. Booking durations, lead time and cancellation policy are displayed automatically.</p>
+                <p class="muted">Optional additional questions. The default FAQ covers booking, Open Play, prices, payment confirmation, booking durations, lead time and cancellation.</p>
                 @for($i=0;$i<5;$i++)
                     <details class="settings-row" @if(!empty(old('faq_questions.'.$i,$content['faqs'][$i]['question'] ?? ''))) open @endif>
                         <summary>FAQ {{ $i+1 }}</summary>
@@ -53,7 +57,7 @@
             </section>
             <section class="panel" id="gallery">
                 <h2>Venue photo gallery</h2>
-                <p class="muted">Upload up to six actual venue photos. JPG, PNG or WebP, up to 2 MB each.</p>
+                <p class="muted">Upload up to six actual venue photos. JPG, PNG or WebP, up to 2 MB each. Real photos take priority over the illustrative demo gallery.</p>
                 @foreach(\App\Services\VenueWebsite::GALLERY as $kind)
                     <form method="post" action="{{ route('settings.website.gallery',$kind) }}" enctype="multipart/form-data" class="form-stack settings-row">
                         @csrf @method('PATCH')
