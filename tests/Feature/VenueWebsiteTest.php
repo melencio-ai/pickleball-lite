@@ -35,7 +35,7 @@ class VenueWebsiteTest extends TestCase
             ->assertSee('Book a court')->assertSee('Join Open Play')->assertDontSee('When do you want to play?');
         $this->get('/book?step=1')->assertOk()->assertSee('When do you want to play?');
         $this->get('/?date=2030-01-11&duration=90&step=2')->assertRedirect(route('book', [
-            'step' => '2', 'date' => '2030-01-11', 'duration' => '90',
+            'date' => '2030-01-11', 'duration' => '90', 'step' => '2',
         ]));
         $this->get('/bookings/confirmed')->assertRedirect(route('book'));
     }
