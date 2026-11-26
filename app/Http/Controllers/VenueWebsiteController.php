@@ -40,8 +40,9 @@ class VenueWebsiteController extends Controller
         $content['custom_facilities'] = collect(preg_split('/\R/u', $data['custom_facilities'] ?? ''))
             ->map(fn ($line) => trim($line))->filter()->unique()->take(10)->values()->all();
         $content['faqs'] = [];
-        foreach ($data['faq_questions'] ?? [] as $i => $question) {
-            $question = trim($question ?? '');
+        $faqKeys = array_unique(array_merge(array_keys($data['faq_questions'] ?? []), array_keys($data['faq_answers'] ?? [])));
+        foreach ($faqKeys as $i) {
+            $question = trim($data['faq_questions'][$i] ?? '');
             $answer = trim($data['faq_answers'][$i] ?? '');
             if (($question === '') !== ($answer === '')) {
                 return back()->withErrors(['faqs' => 'Enter both a question and an answer for each FAQ.'])->withInput();
