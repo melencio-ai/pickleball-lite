@@ -1,4 +1,4 @@
 @props(['name'])
 <svg class="booking-icon" width="18" height="18" aria-hidden="true" focusable="false">
-    <use href="{{ asset('booking-icons.svg') }}#{{ $name }}"></use>
+    <use href="{{ asset('booking-icons.svg') }}?v=2#{{ $name }}"></use>
 </svg>
