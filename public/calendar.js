@@ -4,7 +4,7 @@
     const content = dialog.querySelector('[data-calendar-modal-content]');
     const close = dialog.querySelector('[data-calendar-close]');
     const toast = document.querySelector('[data-calendar-toast]');
-    let modalRequest, refreshRequest, opener, saving = false, lastUrl, refreshPending = false;
+    let modalRequest, refreshRequest, opener, saving = false, lastUrl, refreshPending = false, lastExpiryRefresh = 0;
     const grid = () => document.querySelector('[data-calendar-grid]');
 
     function announce(message, error = false) {
@@ -81,6 +81,7 @@
             const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
             const next = doc.querySelector('[data-calendar-grid]');
             if (!next) throw new Error('Calendar refresh failed. Sign in again if needed.');
+            if (request.signal.aborted) return;
             previous.replaceWith(next);
             const nextScroll = next.querySelector('[data-calendar-scroll]');
             if (nextScroll) { nextScroll.scrollLeft = left; nextScroll.scrollTop = top; }
@@ -90,13 +91,13 @@
                 (target || document.querySelector('[data-calendar-key="new"]'))?.focus({preventScroll: true});
             }
         } finally {
-            refreshRequest = null;
+            if (refreshRequest === request) refreshRequest = null;
             previous.removeAttribute('aria-busy');
         }
     }
 
     function safeRefresh() {
-        refreshGrid().catch(error => announce(error.message, true));
+        refreshGrid().catch(error => { if (error.name !== 'AbortError') announce(error.message, true); });
     }
 
     document.addEventListener('click', event => {
@@ -177,7 +178,8 @@
             }
         });
         const expired = Array.from(grid()?.querySelectorAll('[data-hold-expires]') || []).some(node => Number(node.dataset.holdExpires) <= now);
-        if (expired && !refreshRequest && !saving) {
+        if (expired && !refreshRequest && !saving && now - lastExpiryRefresh >= 5) {
+            lastExpiryRefresh = now;
             if (dialog.open) refreshPending = true;
             else safeRefresh();
         }
