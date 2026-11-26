@@ -52,9 +52,7 @@
             $step = 3;
         }
         $dateLabel = \Carbon\CarbonImmutable::parse($date)->format('D, M j');
-        $durationLabel = fn ($minutes) => $minutes % 60 === 0
-            ? intdiv($minutes, 60).' '.($minutes === 60 ? 'hour' : 'hours')
-            : ($minutes === 90 ? '1 hour and 30 minutes' : $minutes.' minutes');
+        $durationLabel = fn ($minutes) => \App\Models\Venue::durationLabel($minutes);
         $titles = [1 => 'When do you want to play?', 2 => 'How long do you want to play?', 3 => 'What time do you want to start?', 4 => 'Which court do you prefer?', 5 => 'Who is this booking for?'];
         $icons = [1 => 'calendar-days', 2 => 'clock', 3 => 'timer', 4 => 'layout-grid', 5 => 'user-round'];
         $back = match ($step) {

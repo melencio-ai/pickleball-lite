@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Venue extends Model
 {
-    public const BOOKING_DURATIONS = [30, 60, 90, 120];
+    public const BOOKING_DURATIONS = [60, 90, 120, 150, 180, 210, 240, 270, 300];
 
     protected $fillable = [
         'name', 'address', 'phone', 'timezone', 'brand_color', 'map_url', 'messenger_url',
@@ -21,7 +21,18 @@ class Venue extends Model
 
     public function durations(): array
     {
-        return $this->booking_durations ?? [60, 120];
+        $configured = array_map('intval', $this->booking_durations ?? self::BOOKING_DURATIONS);
+        $allowed = array_values(array_intersect(self::BOOKING_DURATIONS, $configured));
+
+        return $allowed ?: self::BOOKING_DURATIONS;
+    }
+
+    public static function durationLabel(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $label = $hours.' '.($hours === 1 ? 'hour' : 'hours');
+
+        return $minutes % 60 === 0 ? $label : $label.' and 30 minutes';
     }
 
     public function defaultDuration(): int

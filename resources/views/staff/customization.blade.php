@@ -53,7 +53,7 @@
                     @foreach(\App\Models\Venue::BOOKING_DURATIONS as $minutes)
                         <label class="checkbox">
                             <input type="checkbox" name="booking_durations[]" value="{{ $minutes }}" @checked(in_array($minutes, $venue->durations(), true))>
-                            {{ $minutes }} min
+                            {{ \App\Models\Venue::durationLabel($minutes) }}
                         </label>
                     @endforeach
                 </fieldset>

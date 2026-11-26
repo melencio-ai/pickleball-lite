@@ -64,6 +64,36 @@ class BookingTest extends TestCase
         $this->get(route('book.confirmed'))->assertOk()->assertSee('Step 6 of 6')->assertSee('Your court is booked!');
     }
 
+    public function test_booking_durations_from_one_to_five_hours(): void
+    {
+        $this->assertSame([60, 90, 120, 150, 180, 210, 240, 270, 300], $this->venue->durations());
+        $this->get(route('book', ['step' => 2, 'date' => '2030-01-11']))
+            ->assertOk()->assertSee('1 hour')->assertSee('1 hour and 30 minutes')
+            ->assertSee('2 hours and 30 minutes')->assertSee('4 hours and 30 minutes')->assertSee('5 hours');
+
+        foreach ([30, 75, 330] as $invalid) {
+            $this->post(route('book.store'), array_replace($this->bookingData(), ['duration' => $invalid]))
+                ->assertSessionHasErrors('duration');
+        }
+
+        $booking = array_replace($this->bookingData(), [
+            'start' => '17:00', 'duration' => 300, 'quoted_total' => 200000,
+        ]);
+        $this->post(route('book.store'), array_replace($booking, ['start' => '17:30']))
+            ->assertSessionHasErrors('start');
+        $this->post(route('book.store'), $booking)->assertRedirect(route('book.confirmed'));
+        $this->assertSame(200000, Booking::firstOrFail()->total);
+        $this->assertSame(300, (int) Booking::firstOrFail()->starts_at->diffInMinutes(Booking::firstOrFail()->ends_at));
+    }
+
+    public function test_existing_venue_duration_settings_are_reset_to_the_new_defaults(): void
+    {
+        $this->venue->update(['booking_durations' => [30, 60, 120]]);
+        $migration = require database_path('migrations/2026_11_26_061500_expand_booking_durations.php');
+        $migration->up();
+        $this->assertSame([60, 90, 120, 150, 180, 210, 240, 270, 300], $this->venue->fresh()->durations());
+    }
+
     public function test_conflicting_bookings_fail_and_back_to_back_bookings_fit(): void
     {
         $this->post(route('book.store'), $this->bookingData())->assertRedirect(route('book.confirmed'));

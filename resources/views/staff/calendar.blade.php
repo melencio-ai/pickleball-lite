@@ -55,7 +55,7 @@
                         <label>Duration
                             <select name="duration">
                                 @foreach($venue->durations() as $minutes)
-                                    <option value="{{ $minutes }}" @selected(old('duration', (string) $venue->defaultDuration()) === (string) $minutes)>{{ $minutes }} minutes</option>
+                                    <option value="{{ $minutes }}" @selected(old('duration', (string) $venue->defaultDuration()) === (string) $minutes)>{{ \App\Models\Venue::durationLabel($minutes) }}</option>
                                 @endforeach
                             </select>
                         </label>
