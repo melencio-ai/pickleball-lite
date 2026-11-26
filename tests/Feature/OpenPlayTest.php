@@ -39,7 +39,9 @@ class OpenPlayTest extends TestCase
         $this->assertDatabaseCount('court_blocks', 2);
         $this->assertSame(2, $session->courts()->count());
         $this->get(route('staff.open-play.show', $session->id))->assertOk()->assertSee('Player roster');
-        $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Manage session')->assertSee('Evening Open Play');
+        $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Evening Open Play')->assertSee('grid-column:2 / span 2')->assertDontSee('Player roster');
+        $this->get(route('staff.calendar.modal', ['kind' => 'session', 'record' => $session->id, 'date' => '2030-01-11']), ['X-Calendar-Fragment' => '1'])
+            ->assertOk()->assertSee('Manage session')->assertSee('Player roster');
         $this->post(route('book.store'), $this->booking())->assertSessionHasErrors('start');
         $this->post(route('staff.open-play.store'), $this->sessionData())->assertSessionHasErrors('court_ids');
         $block = CourtBlock::firstOrFail();
