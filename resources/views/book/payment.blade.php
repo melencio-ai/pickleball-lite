@@ -15,7 +15,13 @@
             <p>The court slot has been released. If you already paid, contact the venue in Messenger with your booking reference and receipt.</p>
         @else
             <h1>Pay by QR</h1>
-            <p>Your court is held until {{ $booking->payment_expires_at->setTimezone($venue->timezone)->format('g:i A') }} ({{ $venue->timezone }}). The venue must verify payment before the hold ends.</p>
+            @php($secondsLeft = max(0, $booking->payment_expires_at->getTimestamp() - now()->getTimestamp()))
+            <div class="payment-hold" data-payment-hold data-seconds-left="{{ $secondsLeft }}">
+                <span id="payment-hold-label">Court held for</span>
+                <strong class="hold-countdown" data-hold-countdown role="timer" aria-labelledby="payment-hold-label">{{ sprintf('%02d:%02d', intdiv($secondsLeft, 60), $secondsLeft % 60) }}</strong>
+                <span data-hold-expired role="status" hidden>Hold ended. Checking booking status…</span>
+            </div>
+            <p>The venue must verify payment by {{ $booking->payment_expires_at->setTimezone($venue->timezone)->format('g:i A') }} ({{ $venue->timezone }}).</p>
         @endif
 
         <dl class="receipt">
@@ -26,14 +32,16 @@
         </dl>
 
         @if($open)
-            <canvas class="payment-qr" data-payment-qr="{{ $booking->payment_qr_payload }}" data-seconds-left="{{ max(0, $booking->payment_expires_at->getTimestamp() - now()->getTimestamp()) }}" aria-label="Booking payment QR code"></canvas>
-            <div class="actions">
-                <a class="button secondary" data-payment-download download="booking-payment-qr.png" hidden>Save QR image</a>
+            <div data-payment-instructions>
+                <canvas class="payment-qr" data-payment-qr="{{ $booking->payment_qr_payload }}" aria-label="Booking payment QR code"></canvas>
+                <div class="actions">
+                    <a class="button secondary" data-payment-download download="booking-payment-qr.png" hidden>Save QR image</a>
+                </div>
+                <noscript><p>Enable JavaScript to display the payment QR code and live countdown.</p></noscript>
+                <p class="payment-instructions">Scan the QR with your participating bank or wallet. Check the recipient and total before paying, then send your receipt and booking reference in Messenger.</p>
             </div>
-            <noscript><p>Enable JavaScript to display the payment QR code.</p></noscript>
-            <p class="payment-instructions">Scan the QR with your participating bank or wallet. Check the recipient and total before paying, then send your receipt and booking reference in Messenger.</p>
             <script src="{{ asset('vendor/qrcode-generator-1.4.4.js') }}" defer></script>
-            <script src="{{ asset('payment-qr.js') }}" defer></script>
+            <script src="{{ asset('payment-qr.js') }}?v=2" defer></script>
         @endif
 
         <div class="actions">

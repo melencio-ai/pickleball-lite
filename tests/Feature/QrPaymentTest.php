@@ -82,7 +82,7 @@ class QrPaymentTest extends TestCase
         $this->assertSame(self::EXPECTED_DYNAMIC, $booking->payment_qr_payload);
         $this->assertNull($booking->paid_at);
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
-            ->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
+            ->assertSee('Court held for')->assertSee('20:00')->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
             ->assertDontSee($booking->customer_phone);
         $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Verify Messenger payment');
 
@@ -92,7 +92,7 @@ class QrPaymentTest extends TestCase
             ->assertSessionHasErrors('received_amount');
         $this->patch(route('staff.paid', $booking->id), $proof)->assertSessionHasNoErrors();
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
-            ->assertSee('Payment verified')->assertDontSee('data-payment-qr');
+            ->assertSee('Payment verified')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
         $this->assertSame('AB-123', $booking->fresh()->payment_reference);
 
         $otherCourt = $this->venue->courts()->orderBy('id')->skip(1)->first();
@@ -115,7 +115,7 @@ class QrPaymentTest extends TestCase
         $this->post(route('book.store'), $this->booking())->assertSessionHasErrors('start');
         $this->travel(21)->minutes();
         $this->get(route('book.payment', $original->payment_token))->assertOk()
-            ->assertSee('Payment hold expired')->assertDontSee('data-payment-qr');
+            ->assertSee('Payment hold expired')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
         $this->post(route('book.store'), $this->booking())->assertRedirect();
         $this->assertDatabaseCount('bookings', 2);
 

@@ -1,3 +1,34 @@
+const hold = document.querySelector('[data-payment-hold]');
+
+if (hold) {
+    const countdown = hold.querySelector('[data-hold-countdown]');
+    const expiredMessage = hold.querySelector('[data-hold-expired]');
+    const label = hold.querySelector('#payment-hold-label');
+    const paymentInstructions = document.querySelector('[data-payment-instructions]');
+    const deadline = Date.now() + Number(hold.dataset.secondsLeft) * 1000;
+
+    function updateCountdown() {
+        const remaining = Math.max(0, deadline - Date.now());
+        const seconds = Math.ceil(remaining / 1000);
+        const minutesText = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secondsText = String(seconds % 60).padStart(2, '0');
+
+        countdown.textContent = `${minutesText}:${secondsText}`;
+        if (remaining === 0) {
+            label.hidden = true;
+            countdown.hidden = true;
+            expiredMessage.hidden = false;
+            paymentInstructions.hidden = true;
+            window.location.reload();
+            return;
+        }
+
+        window.setTimeout(updateCountdown, remaining % 1000 || 1000);
+    }
+
+    updateCountdown();
+}
+
 const canvas = document.querySelector('[data-payment-qr]');
 const download = document.querySelector('[data-payment-download]');
 
@@ -29,6 +60,4 @@ if (canvas && download && typeof qrcode === 'function') {
 
     download.href = canvas.toDataURL('image/png');
     download.hidden = false;
-
-    window.setTimeout(() => window.location.reload(), (Number(canvas.dataset.secondsLeft) + 1) * 1000);
 }

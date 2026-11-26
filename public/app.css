@@ -133,3 +133,6 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border
 
 .payment-qr { display: block; width: min(100%, 20rem); height: auto; margin: .75rem auto; }
 .payment-instructions { margin: .8rem 0; }
+
+.payment-hold { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 1rem; margin: .7rem 0 .45rem; padding: .65rem .85rem; background: #edf5e8; color: var(--green-dark); border-radius: .55rem; }
+.hold-countdown { font-size: 1.55rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
