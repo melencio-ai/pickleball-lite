@@ -148,7 +148,7 @@ class OpenPlayTest extends TestCase
         $session = $this->publish();
         $this->venue->update(['qr_payments_enabled' => false]);
         $this->post(route('open-play.join', $session->id), $this->player())->assertSessionHasErrors('session');
-        $other = Venue::create(['name' => 'Other venue', 'timezone' => 'Asia/Manila']);
+        $other = Venue::create(['name' => 'Other venue', 'address' => '', 'phone' => '', 'timezone' => 'Asia/Manila']);
         $user = $other->users()->create(['name' => 'Other', 'email' => 'other@example.test', 'password' => 'sample-password', 'role' => 'staff']);
         $this->actingAs($user);
         $this->get(route('staff.open-play.show', $session->id))->assertNotFound();
