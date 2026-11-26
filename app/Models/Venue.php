@@ -40,6 +40,11 @@ class Venue extends Model
         return in_array(60, $this->durations(), true) ? 60 : $this->durations()[0];
     }
 
+    public function openPlaySessions(): HasMany
+    {
+        return $this->hasMany(OpenPlaySession::class);
+    }
+
     public function media(): HasMany
     {
         return $this->hasMany(VenueMedia::class);
