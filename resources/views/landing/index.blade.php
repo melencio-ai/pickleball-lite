@@ -15,7 +15,7 @@
     @endif
     <link rel="icon" href="{{ $media->has('logo') ? route('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=website1">
-    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=2">
+    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=3">
 </head>
 <body class="venue-site" style="--site-brand:{{ $brand }};--site-on-brand:{{ $brandText }}">
     <a class="site-skip" href="#main-content">Skip to content</a>
@@ -30,7 +30,7 @@
                 <strong>{{ $venue->name }}</strong>
             </a>
             <nav aria-label="Venue navigation">
-                <a href="#schedule">Schedule</a><a href="#rates">Rates</a><a href="#open-play">Open Play</a><a href="#facilities">Facilities</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+                <a href="#schedule">Schedule</a><a href="#rates">Rates</a><a href="#open-play">Open Play</a><a href="#facilities">Facilities</a>@if(count($galleryPhotos))<a href="#gallery">Gallery</a>@endif<a href="#faq">FAQ</a><a href="#contact">Contact</a>
             </nav>
             <a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
         </div>
@@ -158,14 +158,46 @@
                     <div class="site-feature"><x-booking-icon name="circle-check" /><strong>{{ $feature }}</strong></div>
                 @endforeach
             </div>
-            @if($gallery->isNotEmpty())
-                <div class="site-gallery">
-                    @foreach($gallery as $kind => $photo)
-                        <img src="{{ route('book.image',['kind'=>$kind,'version'=>$photo->version]) }}" alt="{{ $venue->name }} gallery photo {{ $loop->iteration }}" loading="lazy" decoding="async">
-                    @endforeach
-                </div>
-            @endif
         </section>
+
+        @if(count($galleryPhotos))
+            <section class="site-band" id="gallery">
+                <div class="site-container site-section">
+                    <div class="site-section-heading">
+                        <p class="site-eyebrow">Photo gallery</p>
+                        <h2>Good games. Great memories.</h2>
+                        <p>Enjoy the game, meet new friends and make every match count.</p>
+                        @if($isDemoGallery)
+                            <p class="site-gallery-note">AI-generated demo images for illustration only. These are not photos of this venue.</p>
+                        @endif
+                    </div>
+                    <div class="site-gallery {{ count($galleryPhotos) === 5 ? 'site-gallery-five' : '' }}">
+                        @foreach($galleryPhotos as $photo)
+                            <a class="site-gallery-tile" href="{{ $photo['url'] }}" data-gallery-image aria-label="Enlarge: {{ $photo['alt'] }}">
+                                <img src="{{ $photo['url'] }}" alt="{{ $photo['alt'] }}" loading="lazy" decoding="async" width="1200" height="900">
+                                <span class="site-gallery-zoom" aria-hidden="true">+</span>
+                            </a>
+                        @endforeach
+                    </div>
+                    <a class="site-button site-primary site-gallery-book" href="{{ route('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
+                </div>
+                <dialog class="site-gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-dialog-title">
+                    <div class="site-gallery-dialog-top">
+                        <h2 id="gallery-dialog-title">{{ $isDemoGallery ? 'Illustrative demo gallery' : 'Venue gallery' }}</h2>
+                        <button type="button" data-gallery-close aria-label="Close gallery"><x-booking-icon name="x" /></button>
+                    </div>
+                    <figure>
+                        <img data-gallery-large alt="">
+                        <figcaption data-gallery-caption aria-live="polite"></figcaption>
+                    </figure>
+                    <div class="site-gallery-controls">
+                        <button type="button" data-gallery-prev aria-label="Previous photo"><x-booking-icon name="chevron-left" /></button>
+                        <span data-gallery-count></span>
+                        <button type="button" data-gallery-next aria-label="Next photo"><x-booking-icon name="chevron-right" /></button>
+                    </div>
+                </dialog>
+            </section>
+        @endif
 
         <section class="site-band" id="how-to-book">
             <div class="site-container site-section">
@@ -181,11 +213,27 @@
         </section>
 
         <section class="site-container site-section" id="faq">
-            <div class="site-section-heading"><p class="site-eyebrow">Good to know</p><h2>Before you play</h2></div>
+            <div class="site-section-heading"><p class="site-eyebrow">Good to know</p><h2>Frequently asked questions</h2><p>Here is what you need to know before your next game.</p></div>
             <div class="site-faq">
+                <details><summary>How do I book a court?</summary><p>Click <a href="{{ route('book') }}">Book Now</a> and choose Book a court. Pick your date, how long you want to play, your start time and your court. Enter your details and follow the payment steps.</p></details>
+                <details><summary>Can I join Open Play alone?</summary><p>Yes. Each registration is for one player. Choose an <a href="{{ route('open-play') }}">Open Play session</a> and meet other players. @if(!$canJoin) Contact the venue to ask about joining while online registration is unavailable.@endif</p></details>
+                <details><summary>Can beginners join Open Play?</summary><p>Look for sessions marked Beginner or All skill levels. Check the session details to find the right game for you.</p></details>
+                <details><summary>How do I know my booking is confirmed?</summary>
+                    @if($canJoin)
+                        <p>Pay using the QR code and send your receipt in Messenger. Wait for the venue to check your payment. Your confirmation page will show when you are booked.</p>
+                    @elseif($venue->qr_payments_enabled)
+                        <p>Contact the venue before booking. Online QR payment setup is not ready yet.</p>
+                    @else
+                        <p>For a court booking, check your confirmation page after you submit your details. Pay at the venue. Contact the venue to ask about Open Play.</p>
+                    @endif
+                </details>
+                <details><summary>What if my preferred time or session is full?</summary><p>Choose another available court, time or Open Play session. You can check live availability on the <a href="{{ route('book') }}">booking page</a>.</p></details>
+                <details><summary>How much does it cost to play?</summary><p>Check our <a href="#rates">court rates</a> and <a href="#open-play">Open Play schedule</a> for prices. You will see your total before you confirm your booking.</p></details>
                 <details><summary>How long can I book a court?</summary><p>Available durations: {{ collect($venue->durations())->map(fn ($minutes) => \App\Models\Venue::durationLabel($minutes))->join(', ') }}. Choose your duration when booking.</p></details>
                 <details><summary>How far ahead can I book?</summary><p>{{ $venue->advance_days === 0 ? 'You can book for today.' : 'You can book up to '.$venue->advance_days.' days ahead.' }} @if($venue->minimum_notice) Please book at least {{ $venue->minimum_notice }} minutes before play.@endif</p></details>
-                @if($venue->cancellation_policy)<details><summary>Can I change or cancel my booking?</summary><p class="site-preline">{{ $venue->cancellation_policy }}</p></details>@endif
+                <details><summary>Can I change or cancel my booking?</summary>
+                    @if($venue->cancellation_policy)<p class="site-preline">{{ $venue->cancellation_policy }}</p>@else<p>Contact the venue to ask about changing or cancelling your booking.</p>@endif
+                </details>
                 @foreach($content['faqs'] ?? [] as $faq)
                     <details><summary>{{ $faq['question'] }}</summary><p class="site-preline">{{ $faq['answer'] }}</p></details>
                 @endforeach
@@ -210,6 +258,6 @@
     </main>
     <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ auth()->check() ? route('staff.calendar') : route('login') }}">Staff sign in</a></span></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
-    <script src="{{ asset('landing-navigation.js') }}?v=1" defer></script>
+    <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
 </body>
 </html>
