@@ -36,9 +36,9 @@ Requires PHP 8.4 with PDO MySQL, Composer 2, and MySQL 8 with InnoDB. See [Larav
 
 ## QR payments and Messenger verification
 
-Under **Settings → Booking setup → Payments**, save your venue’s reusable PHP EMV merchant payload and its Facebook Messenger link. Confirm with your payment provider that the base code supports locally generated, amount-prefilled payments. Test the resulting QR in the actual wallet or banking apps the venue will accept before sharing it with players. A valid EMV checksum alone does not establish payment-provider compatibility.
+Under **Settings → Booking setup → Payments**, save your venue’s PHP EMV merchant payload and its Facebook Messenger link. Confirm with your payment provider that the base code supports locally generated, amount-prefilled payments. Test the resulting QR in the actual wallet or banking apps the venue will accept before sharing it with players. A valid EMV checksum alone does not establish payment-provider compatibility.
 
-When enabled, new online and staff reservations require QR payment. The app uses the booking’s exact total and preserves the base merchant routing and optional fields. Players submit their receipt and booking reference in Messenger. Staff match it against the payment received in the venue’s merchant account, then record the exact amount and the provider’s unique transaction reference under **Verify Messenger payment**.
+When enabled, new online and staff reservations require QR payment. The app uses the booking’s exact total and preserves the base transaction marker, merchant routing, and optional fields. Players submit their receipt and booking reference in Messenger. Staff match it against the payment received in the venue’s merchant account, then record the exact amount and the provider’s unique transaction reference under **Verify Messenger payment**.
 
 An unpaid hold expires after 20 minutes or when the booking starts, whichever comes first. Expired holds release the slot and cannot be marked paid. If funds arrive late, reconcile the payment with the player in Messenger before arranging a refund or a different slot. The hold expiry controls the court reservation and does not revoke a QR image already saved by the player. Existing reservations and their payment workflow are preserved.
 

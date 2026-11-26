@@ -14,20 +14,18 @@ class EmvPaymentQr
             throw new InvalidArgumentException('The payment amount must be a positive PHP amount.');
         }
 
-        $output = '000201010212';
-        $amountWritten = false;
+        $output = '';
         foreach ($fields as $id => $value) {
-            if (in_array((string) $id, ['00', '01', '54', '63'], true)) {
+            if ($id === 63) {
                 continue;
             }
-            if ((string) $id === '58') {
+            $output .= $this->field((string) $id, $id === 54 ? $amount : $value);
+            if ($id === 53 && ! isset($fields[54])) {
                 $output .= $this->field('54', $amount);
-                $amountWritten = true;
             }
-            $output .= $this->field((string) $id, $value);
         }
 
-        if (! $amountWritten || strlen($output) + 8 > 512) {
+        if (strlen($output) + 8 > 512) {
             throw new InvalidArgumentException('This payload is too long for a booking payment QR.');
         }
 
@@ -72,11 +70,7 @@ class EmvPaymentQr
             || ! isset($fields[59], $fields[60])) {
             throw new InvalidArgumentException('Use a Philippine peso merchant QR.');
         }
-        $initiationMethod = $fields['01'] ?? '11';
-        if ($initiationMethod === '12') {
-            throw new InvalidArgumentException('This code is marked for a specific transaction. Use the reusable QR from your merchant account or ask your provider for a new QR for each booking.');
-        }
-        if ($initiationMethod !== '11') {
+        if (! in_array($fields['01'] ?? '11', ['11', '12'], true)) {
             throw new InvalidArgumentException('The EMV payload has an invalid point-of-initiation marker.');
         }
         if (isset($fields[55]) || isset($fields[56]) || isset($fields[57])) {

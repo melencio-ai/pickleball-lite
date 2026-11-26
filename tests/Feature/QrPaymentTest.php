@@ -17,7 +17,13 @@ class QrPaymentTest extends TestCase
 
     private const BASE_WITH_AMOUNT = '00020101021126320014PH.PPMI.TESTQR0110TESTVENUE152044799530360854045.005802PH5910LITE COURT6006MANILA63045B8A';
 
-    private const EXPECTED = '00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406400.005802PH5910LITE COURT6006MANILA63041D5C';
+    private const BASE_DYNAMIC = '00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406200.005802PH5910LITE COURT6006MANILA63045AC6';
+
+    private const INVALID_MARKER = '00020101021326320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406400.005802PH5910LITE COURT6006MANILA6304606D';
+
+    private const EXPECTED = '00020101021126320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406400.005802PH5910LITE COURT6006MANILA63049A0F';
+
+    private const EXPECTED_DYNAMIC = '00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406400.005802PH5910LITE COURT6006MANILA63041D5C';
 
     private Venue $venue;
 
@@ -38,11 +44,9 @@ class QrPaymentTest extends TestCase
         $generator->generate(substr(self::BASE, 0, -1).'3', 40000);
     }
 
-    public function test_qr_for_a_specific_transaction_cannot_be_used_as_a_base(): void
+    public function test_qr_generation_preserves_the_base_transaction_marker(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('This code is marked for a specific transaction.');
-        app(EmvPaymentQr::class)->generate(self::EXPECTED, 20000);
+        $this->assertSame(self::EXPECTED_DYNAMIC, app(EmvPaymentQr::class)->generate(self::BASE_DYNAMIC, 40000));
     }
 
     public function test_booking_needs_staff_to_verify_exact_payment_from_messenger(): void
@@ -53,17 +57,17 @@ class QrPaymentTest extends TestCase
         $this->actingAs($owner);
         $settings = [
             'qr_payments_enabled' => '1',
-            'payment_qr_base' => self::BASE_WITH_AMOUNT,
+            'payment_qr_base' => self::BASE_DYNAMIC,
             'payment_messenger_url' => 'https://m.me/litecourts',
         ];
         $this->patch(route('settings.payments'), $settings)->assertSessionHasErrors('provider_confirmed');
         $settings['provider_confirmed'] = '1';
         Log::spy();
-        $this->patch(route('settings.payments'), array_replace($settings, ['payment_qr_base' => self::EXPECTED]))
+        $this->patch(route('settings.payments'), array_replace($settings, ['payment_qr_base' => self::INVALID_MARKER]))
             ->assertSessionHasErrors('payment_qr_base');
         Log::shouldHaveReceived('notice')->once()->with('Rejected venue payment QR', [
             'venue_id' => $this->venue->id,
-            'reason' => 'This code is marked for a specific transaction. Use the reusable QR from your merchant account or ask your provider for a new QR for each booking.',
+            'reason' => 'The EMV payload has an invalid point-of-initiation marker.',
         ]);
         $this->patch(route('settings.payments'), $settings)->assertSessionHasNoErrors();
         $this->patch(route('settings.payments'), array_replace($settings, [
@@ -75,7 +79,7 @@ class QrPaymentTest extends TestCase
 
         $this->post(route('book.store'), $this->booking())->assertRedirect();
         $booking = Booking::firstOrFail();
-        $this->assertSame(self::EXPECTED, $booking->payment_qr_payload);
+        $this->assertSame(self::EXPECTED_DYNAMIC, $booking->payment_qr_payload);
         $this->assertNull($booking->paid_at);
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
             ->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
