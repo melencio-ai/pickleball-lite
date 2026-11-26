@@ -11,6 +11,8 @@ Route::get('/', [PublicBookingController::class, 'index'])->name('book');
 Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
 Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
     ->whereIn('kind', ['logo', 'cover'])->where('version', '[a-f0-9]{64}')->name('book.image');
+Route::get('/payments/{token}/status', [PublicBookingController::class, 'paymentStatus'])
+    ->where('token', '[a-zA-Z0-9]{48}')->middleware('throttle:booking-payment-status')->name('book.payment.status');
 Route::get('/payments/{token}', [PublicBookingController::class, 'payment'])
     ->where('token', '[a-zA-Z0-9]{48}')->name('book.payment');
 Route::get('/bookings/confirmed', [PublicBookingController::class, 'confirmation'])->name('book.confirmed');

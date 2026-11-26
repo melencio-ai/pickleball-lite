@@ -26,7 +26,24 @@ if (hold) {
         window.setTimeout(updateCountdown, remaining % 1000 || 1000);
     }
 
+    let checking = false;
+    async function checkStatus() {
+        if (checking || document.visibilityState !== 'visible' || Date.now() >= deadline) return;
+        checking = true;
+        try {
+            const response = await fetch(hold.dataset.statusUrl, { cache: 'no-store' });
+            if (response.ok && (await response.json()).status !== 'pending') window.location.reload();
+        } catch {
+            // Keep the timer running if the network is temporarily unavailable.
+        } finally {
+            checking = false;
+        }
+    }
+
     updateCountdown();
+    window.setInterval(checkStatus, 12000);
+    document.addEventListener('visibilitychange', checkStatus);
+    window.addEventListener('pageshow', checkStatus);
 }
 
 const canvas = document.querySelector('[data-payment-qr]');
@@ -60,4 +77,27 @@ if (canvas && download && typeof qrcode === 'function') {
 
     download.href = canvas.toDataURL('image/png');
     download.hidden = false;
+}
+
+const copyReference = document.querySelector('[data-copy-reference]');
+const reference = document.querySelector('[data-booking-reference]');
+const copyFeedback = document.querySelector('[data-copy-feedback]');
+
+if (copyReference && reference && copyFeedback) {
+    copyReference.hidden = false;
+    copyReference.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(reference.textContent.trim());
+            copyFeedback.textContent = 'Booking reference copied.';
+            copyReference.setAttribute('aria-label', 'Booking reference copied');
+            copyReference.classList.add('reference-copied');
+        } catch {
+            const range = document.createRange();
+            range.selectNodeContents(reference);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            copyFeedback.textContent = 'Booking reference selected. Copy it from the selection.';
+        }
+    });
 }

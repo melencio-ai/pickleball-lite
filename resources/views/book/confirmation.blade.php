@@ -5,7 +5,7 @@
 @section('content')
     <section class="panel confirmation">
         <p class="status-chip paid">Confirmed</p>
-        <h1>Your court is booked</h1>
+        <h1><x-booking-icon name="circle-check" /> Your court is booked</h1>
         <dl class="receipt">
             <div><dt>Booking reference</dt><dd class="ref">{{ $confirmation['reference'] }}</dd></div>
             <div><dt>Court</dt><dd>{{ $confirmation['court'] }}</dd></div>

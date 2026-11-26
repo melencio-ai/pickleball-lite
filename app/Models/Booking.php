@@ -30,6 +30,16 @@ class Booking extends Model
         });
     }
 
+    public function paymentStatus(): string
+    {
+        return match (true) {
+            (bool) $this->cancelled_at => 'cancelled',
+            (bool) $this->paid_at => 'confirmed',
+            $this->paymentExpired() => 'expired',
+            default => 'pending',
+        };
+    }
+
     public function paymentExpired(): bool
     {
         return $this->payment_expires_at && ! $this->paid_at && $this->payment_expires_at->lte(now());

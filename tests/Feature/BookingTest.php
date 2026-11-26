@@ -29,7 +29,7 @@ class BookingTest extends TestCase
             'date' => '2030-01-11',
             'court' => $this->venue->courts()->first()->id,
             'start' => '19:00',
-        ]))->assertOk()->assertSee('Confirm your booking');
+        ]))->assertOk()->assertSee('Add your details');
         $this->get(route('book.confirmed'))->assertRedirect(route('book'));
         $this->post(route('book.store'), $this->bookingData())->assertRedirect(route('book.confirmed'));
 

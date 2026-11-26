@@ -76,15 +76,28 @@ class PublicBookingController extends Controller
     public function payment(string $token)
     {
         $venue = Venue::query()->orderBy('id')->firstOrFail();
-        $booking = Booking::query()->with('court')
-            ->whereIn('court_id', $venue->courts()->select('id'))
-            ->where('payment_token', $token)->firstOrFail();
+        $booking = $this->paymentBooking($venue, $token)->load('court');
+        $status = $booking->paymentStatus();
 
-        return response()->view('book.payment', compact('venue', 'booking'))->withHeaders([
+        return response()->view('book.payment', compact('venue', 'booking', 'status'))->withHeaders([
             'Cache-Control' => 'private, no-store',
             'Referrer-Policy' => 'no-referrer',
             'X-Robots-Tag' => 'noindex, nofollow',
         ]);
+    }
+
+    public function paymentStatus(string $token)
+    {
+        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $booking = $this->paymentBooking($venue, $token);
+
+        return response()->json(['status' => $booking->paymentStatus()])->header('Cache-Control', 'private, no-store');
+    }
+
+    private function paymentBooking(Venue $venue, string $token): Booking
+    {
+        return Booking::query()->whereIn('court_id', $venue->courts()->select('id'))
+            ->where('payment_token', $token)->firstOrFail();
     }
 
     public function image(string $kind, string $version)

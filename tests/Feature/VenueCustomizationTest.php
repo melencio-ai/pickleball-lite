@@ -37,7 +37,7 @@ class VenueCustomizationTest extends TestCase
         ]))->assertSessionHasNoErrors();
 
         $query = ['date' => '2030-01-11', 'court' => $court->id, 'start' => '19:00'];
-        $this->get(route('book', $query))->assertOk()->assertSee('Confirm your booking')->assertSee('₱700.00');
+        $this->get(route('book', $query))->assertOk()->assertSee('Add your details')->assertSee('₱700.00');
         $booking = $this->bookingData();
         $this->post(route('book.store'), $booking)->assertSessionHasErrors('start');
         $this->post(route('book.store'), array_replace($booking, ['quoted_total' => 70000]))

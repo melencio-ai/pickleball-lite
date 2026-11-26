@@ -81,6 +81,9 @@ class QrPaymentTest extends TestCase
         $booking = Booking::firstOrFail();
         $this->assertSame(self::EXPECTED_DYNAMIC, $booking->payment_qr_payload);
         $this->assertNull($booking->paid_at);
+        $statusUrl = route('book.payment.status', $booking->payment_token);
+        $this->getJson($statusUrl)->assertOk()->assertExactJson(['status' => 'pending'])
+            ->assertHeader('Cache-Control', 'no-store, private');
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
             ->assertSee('Court held for')->assertSee('20:00')->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
             ->assertDontSee($booking->customer_phone);
@@ -94,6 +97,7 @@ class QrPaymentTest extends TestCase
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
             ->assertSee('Payment verified')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
         $this->assertSame('AB-123', $booking->fresh()->payment_reference);
+        $this->getJson($statusUrl)->assertOk()->assertExactJson(['status' => 'confirmed']);
 
         $otherCourt = $this->venue->courts()->orderBy('id')->skip(1)->first();
         $this->post(route('staff.book'), array_replace($this->booking(), ['court_id' => $otherCourt->id]))->assertRedirect();
@@ -114,8 +118,10 @@ class QrPaymentTest extends TestCase
         $original = Booking::firstOrFail();
         $this->post(route('book.store'), $this->booking())->assertSessionHasErrors('start');
         $this->travel(21)->minutes();
+        $this->getJson(route('book.payment.status', $original->payment_token))
+            ->assertOk()->assertExactJson(['status' => 'expired']);
         $this->get(route('book.payment', $original->payment_token))->assertOk()
-            ->assertSee('Payment hold expired')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
+            ->assertSee('Payment hold expired')->assertSee('Pick another time')->assertDontSee('data-payment-hold')->assertDontSee('data-payment-qr');
         $this->post(route('book.store'), $this->booking())->assertRedirect();
         $this->assertDatabaseCount('bookings', 2);
 
