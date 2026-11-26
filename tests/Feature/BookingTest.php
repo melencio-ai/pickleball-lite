@@ -40,6 +40,30 @@ class BookingTest extends TestCase
             ->assertSee(strtoupper($booking->reference))->assertSee('Due at venue')->assertDontSee('09171234567');
     }
 
+    public function test_survey_shows_one_question_at_a_time_and_filters_courts_by_start(): void
+    {
+        $date = '2030-01-11';
+        $court = $this->venue->courts()->firstOrFail();
+        $base = ['date' => $date, 'duration' => 60];
+        $this->get(route('book'))->assertOk()
+            ->assertSee('Step 1 of 6')->assertSee('When?')->assertDontSee('Add your details');
+        $this->get(route('book', ['step' => 2] + $base))->assertOk()
+            ->assertSee('Step 2 of 6')->assertSee('How long?');
+        $this->get(route('book', ['step' => 3] + $base))->assertOk()
+            ->assertSee('Step 3 of 6')->assertSee('Start time?');
+        $this->get(route('book', ['step' => 4, 'start' => '19:00'] + $base))->assertOk()
+            ->assertSee('Step 4 of 6')->assertSee($court->name)->assertSee('₱400.00');
+        $this->get(route('book', ['step' => 5, 'start' => '19:00', 'court' => $court->id] + $base))->assertOk()
+            ->assertSee('Step 5 of 6')->assertSee('Add your details')->assertSee('quoted_total');
+        $this->get(route('book', ['step' => 4, 'start' => '00:00'] + $base))->assertOk()
+            ->assertSee('Step 3 of 6')->assertDontSee('Add your details');
+        $this->assertDatabaseCount('bookings', 0);
+        $this->post(route('book.store'), $this->bookingData())->assertRedirect(route('book.confirmed'));
+        $this->get(route('book', ['step' => 4, 'start' => '19:00'] + $base))->assertOk()
+            ->assertDontSee($court->name);
+        $this->get(route('book.confirmed'))->assertOk()->assertSee('Step 6 of 6');
+    }
+
     public function test_conflicting_bookings_fail_and_back_to_back_bookings_fit(): void
     {
         $this->post(route('book.store'), $this->bookingData())->assertRedirect(route('book.confirmed'));
