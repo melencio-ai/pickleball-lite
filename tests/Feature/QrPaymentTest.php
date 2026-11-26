@@ -46,14 +46,21 @@ class QrPaymentTest extends TestCase
             'payment_messenger_url' => 'https://m.me/litecourts',
         ];
         $this->patch(route('settings.payments'), $settings)->assertSessionHasErrors('provider_confirmed');
-        $this->patch(route('settings.payments'), $settings + ['provider_confirmed' => '1'])->assertSessionHasNoErrors();
+        $settings['provider_confirmed'] = '1';
+        $this->patch(route('settings.payments'), $settings)->assertSessionHasNoErrors();
+        $this->patch(route('settings.payments'), array_replace($settings, [
+            'payment_messenger_url' => 'https://www.facebook.com.example.test/messages/t/pickleliteapp',
+        ]))->assertSessionHasErrors('payment_messenger_url');
+        $facebookUrl = 'https://www.facebook.com/messages/t/pickleliteapp';
+        $this->patch(route('settings.payments'), array_replace($settings, ['payment_messenger_url' => $facebookUrl]))
+            ->assertSessionHasNoErrors();
 
         $this->post(route('book.store'), $this->booking())->assertRedirect();
         $booking = Booking::firstOrFail();
         $this->assertSame(self::EXPECTED, $booking->payment_qr_payload);
         $this->assertNull($booking->paid_at);
         $this->get(route('book.payment', $booking->payment_token))->assertOk()
-            ->assertSee('Send receipt in Messenger')->assertSee('https://m.me/litecourts')
+            ->assertSee('Send receipt in Messenger')->assertSee($facebookUrl)
             ->assertDontSee($booking->customer_phone);
         $this->get(route('staff.calendar', ['date' => '2030-01-11']))->assertOk()->assertSee('Verify Messenger payment');
 

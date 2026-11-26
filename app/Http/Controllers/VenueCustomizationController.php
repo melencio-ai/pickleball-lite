@@ -72,8 +72,10 @@ class VenueCustomizationController extends Controller
         $data = $request->validate([
             'qr_payments_enabled' => ['sometimes', 'boolean'],
             'payment_qr_base' => [$isRequired, 'nullable', 'string', 'max:512'],
-            'payment_messenger_url' => [$isRequired, 'nullable', 'regex:~^https://m\.me/[a-zA-Z0-9._-]+/?$~D', 'max:255'],
+            'payment_messenger_url' => [$isRequired, 'nullable', 'regex:~^https://(?:m\.me/|(?:www\.)?facebook\.com/messages/t/)[a-zA-Z0-9._-]+/?$~D', 'max:255'],
             'provider_confirmed' => $enabled ? ['required', 'accepted'] : ['sometimes', 'accepted'],
+        ], [
+            'payment_messenger_url.regex' => 'Enter an HTTPS m.me or Facebook /messages/t/ link.',
         ]);
 
         if ($data['payment_qr_base'] ?? null) {

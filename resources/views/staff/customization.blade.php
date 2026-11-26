@@ -155,6 +155,7 @@
                     </label>
                     <label>Payment verification Messenger link
                         <input type="url" name="payment_messenger_url" value="{{ $venue->payment_messenger_url }}" placeholder="https://m.me/yourvenue">
+                        <span class="muted">Accepts m.me and Facebook /messages/t/ links.</span>
                     </label>
                     <label class="checkbox"><input type="checkbox" name="qr_payments_enabled" value="1" @checked($venue->qr_payments_enabled)> Require QR payment for new bookings</label>
                     <label class="checkbox"><input type="checkbox" name="provider_confirmed" value="1"> My payment provider supports generating amount-prefilled QR codes from this base code.</label>
