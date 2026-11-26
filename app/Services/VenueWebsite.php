@@ -21,6 +21,14 @@ class VenueWebsite
     ];
 
     public const GALLERY = ['gallery1', 'gallery2', 'gallery3', 'gallery4', 'gallery5', 'gallery6'];
+    public const DEMO_GALLERY = [
+        'courts' => 'Pickleball courts ready for play',
+        'doubles' => 'Friends playing a doubles match',
+        'open-play' => 'Players meeting during Open Play',
+        'equipment' => 'Pickleball paddles and balls',
+        'friends' => 'Players enjoying time together after a game',
+    ];
+
     public const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     public static function timeLabel(string $time): string
