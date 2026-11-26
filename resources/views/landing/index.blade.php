@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="venue-site-root">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,7 @@
     @endif
     <link rel="icon" href="{{ $media->has('logo') ? route('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=website1">
-    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=2">
 </head>
 <body class="venue-site" style="--site-brand:{{ $brand }};--site-on-brand:{{ $brandText }}">
     <a class="site-skip" href="#main-content">Skip to content</a>
@@ -30,7 +30,7 @@
                 <strong>{{ $venue->name }}</strong>
             </a>
             <nav aria-label="Venue navigation">
-                <a href="#rates">Rates</a><a href="#schedule">Schedule</a><a href="#open-play">Open Play</a><a href="#contact">Contact</a>
+                <a href="#schedule">Schedule</a><a href="#rates">Rates</a><a href="#open-play">Open Play</a><a href="#facilities">Facilities</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
             </nav>
             <a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
         </div>
@@ -210,5 +210,6 @@
     </main>
     <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ auth()->check() ? route('staff.calendar') : route('login') }}">Staff sign in</a></span></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
+    <script src="{{ asset('landing-navigation.js') }}?v=1" defer></script>
 </body>
 </html>
