@@ -60,3 +60,33 @@ jobs:
       - run: cp .env.example .env
       - run: php artisan key:generate
       - run: php artisan test --filter=MySqlBookingConcurrencyTest
+
+  calendar-browser:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /tmp/pickle-lite-calendar.sqlite
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      APP_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+      - run: touch /tmp/pickle-lite-calendar.sqlite
+      - run: php artisan migrate --force --seed
+      - run: php artisan tinker --execute="App\Models\Venue::firstOrFail()->users()->create(['name'=>'Browser Test','email'=>'browser-calendar@example.test','password'=>'browser-test-password-123','role'=>'owner']);"
+      - run: npm install --no-save --no-package-lock playwright
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > /tmp/pickle-calendar-server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8000/up && break; sleep 1; done
+          node tests/browser/calendar-smoke.mjs
+      - if: failure()
+        run: cat /tmp/pickle-calendar-server.log || true
