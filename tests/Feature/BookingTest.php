@@ -46,22 +46,22 @@ class BookingTest extends TestCase
         $court = $this->venue->courts()->firstOrFail();
         $base = ['date' => $date, 'duration' => 60];
         $this->get(route('book'))->assertOk()
-            ->assertSee('Step 1 of 6')->assertSee('When?')->assertDontSee('Add your details');
+            ->assertSee('Step 1 of 6')->assertSee('When do you want to play?')->assertDontSee('Add your details');
         $this->get(route('book', ['step' => 2] + $base))->assertOk()
-            ->assertSee('Step 2 of 6')->assertSee('How long?');
+            ->assertSee('Step 2 of 6')->assertSee('How long do you want to play?');
         $this->get(route('book', ['step' => 3] + $base))->assertOk()
-            ->assertSee('Step 3 of 6')->assertSee('Start time?');
+            ->assertSee('Step 3 of 6')->assertSee('What time do you want to start?');
         $this->get(route('book', ['step' => 4, 'start' => '19:00'] + $base))->assertOk()
-            ->assertSee('Step 4 of 6')->assertSee($court->name)->assertSee('₱400.00');
+            ->assertSee('Step 4 of 6')->assertSee('Which court do you prefer?')->assertSee($court->name)->assertSee('₱400.00');
         $this->get(route('book', ['step' => 5, 'start' => '19:00', 'court' => $court->id] + $base))->assertOk()
-            ->assertSee('Step 5 of 6')->assertSee('Add your details')->assertSee('quoted_total');
+            ->assertSee('Step 5 of 6')->assertSee('Who is this booking for?')->assertSee('Add your details')->assertSee('quoted_total');
         $this->get(route('book', ['step' => 4, 'start' => '00:00'] + $base))->assertOk()
             ->assertSee('Step 3 of 6')->assertDontSee('Add your details');
         $this->assertDatabaseCount('bookings', 0);
         $this->post(route('book.store'), $this->bookingData())->assertRedirect(route('book.confirmed'));
         $this->get(route('book', ['step' => 4, 'start' => '19:00'] + $base))->assertOk()
             ->assertDontSee($court->name);
-        $this->get(route('book.confirmed'))->assertOk()->assertSee('Step 6 of 6');
+        $this->get(route('book.confirmed'))->assertOk()->assertSee('Step 6 of 6')->assertSee('Your court is booked!');
     }
 
     public function test_conflicting_bookings_fail_and_back_to_back_bookings_fit(): void
