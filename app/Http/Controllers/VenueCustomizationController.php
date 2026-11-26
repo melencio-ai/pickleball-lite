@@ -104,7 +104,7 @@ class VenueCustomizationController extends Controller
     public function rules(Request $request)
     {
         $data = $request->validate([
-            'booking_durations' => ['required', 'array', 'min:1', 'max:4'],
+            'booking_durations' => ['required', 'array', 'min:1', 'max:'.count(Venue::BOOKING_DURATIONS)],
             'booking_durations.*' => ['integer', 'distinct', Rule::in(Venue::BOOKING_DURATIONS)],
             'advance_days' => ['required', 'integer', 'between:0,180'],
             'minimum_notice' => ['required', 'integer', 'between:0,10080'],
