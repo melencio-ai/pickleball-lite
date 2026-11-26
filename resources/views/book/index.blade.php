@@ -1,6 +1,6 @@
 @extends('layout')
 @section('title', 'Book a court')
-@section('page-class', 'booking-page')
+@section('page-class', 'narrow booking-page')
 
 @section('content')
     <header class="booking-banner venue-banner compact-venue-banner" style="--venue-brand: {{ $venue->brand_color ?? '#155542' }}">
@@ -28,72 +28,125 @@
         </nav>
     @endif
 
-    <form class="panel filters booking-filters" method="get" action="{{ route('book') }}" data-booking-filters>
-        <label><span class="booking-icon-label"><x-booking-icon name="calendar-days" /> Date</span>
-            <input name="date" type="date" min="{{ $today->toDateString() }}" max="{{ $lastDay->toDateString() }}" value="{{ $date }}" required>
-        </label>
-        <label><span class="booking-icon-label"><x-booking-icon name="clock" /> Duration</span>
-            <select name="duration">
-                @foreach($venue->durations() as $minutes)
-                    <option value="{{ $minutes }}" @selected($duration === $minutes)>{{ $minutes === 60 ? '1 hour' : ($minutes === 120 ? '2 hours' : $minutes.' minutes') }}</option>
-                @endforeach
-            </select>
-        </label>
-        <button data-filter-submit>Show courts</button>
-    </form>
 
-    <p class="visually-hidden" role="status" data-booking-feedback></p>
-    @if(!$selection && $errors->any())
-        <template data-booking-draft>
-            <input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}">
-            <input name="customer_phone" value="{{ is_string(old('customer_phone')) ? old('customer_phone') : '' }}">
-        </template>
-    @endif
-    <section class="available-courts" aria-labelledby="available-title" data-booking-results>
+    @php
+        $startTimes = [];
+        foreach ($courts as $offer) {
+            foreach ($offer['slots'] as $time => $slot) {
+                if (!isset($startTimes[$time])) {
+                    $startTimes[$time] = ['label' => $slot['label'], 'count' => 0];
+                }
+                $startTimes[$time]['count']++;
+            }
+        }
+        ksort($startTimes);
+        $validStart = is_string($selectedStart) && isset($startTimes[$selectedStart]);
+        $requestedStep = request()->query('step');
+        $step = in_array($requestedStep, ['1', '2', '3', '4', '5'], true)
+            ? (int) $requestedStep
+            : ($selection ? 5 : ($validStart ? 4 : (request()->has('date') ? 3 : 1)));
+        if ($step === 5 && !$selection) {
+            $step = $validStart ? 4 : 3;
+        }
+        if ($step === 4 && !$validStart) {
+            $step = 3;
+        }
+        $dateLabel = \Carbon\CarbonImmutable::parse($date)->format('D, M j');
+        $durationLabel = fn ($minutes) => $minutes % 60 === 0
+            ? intdiv($minutes, 60).' '.($minutes === 60 ? 'hour' : 'hours')
+            : $minutes.' minutes';
+        $titles = [1 => 'When?', 2 => 'How long?', 3 => 'Start time?', 4 => 'Available court?', 5 => "Who's booking?"];
+        $icons = [1 => 'calendar-days', 2 => 'clock', 3 => 'timer', 4 => 'calendar-days', 5 => 'circle-check'];
+        $back = match ($step) {
+            2 => ['step' => 1, 'date' => $date, 'duration' => $duration],
+            3 => ['step' => 2, 'date' => $date, 'duration' => $duration],
+            4 => ['step' => 3, 'date' => $date, 'duration' => $duration],
+            5 => ['step' => 4, 'date' => $date, 'duration' => $duration, 'start' => $selectedStart],
+            default => [],
+        };
+    @endphp
+
+    <section class="panel survey-panel" aria-labelledby="survey-title">
         <div class="section-heading">
-            <h2 id="available-title" tabindex="-1">Court times</h2>
-            <p>{{ \Carbon\CarbonImmutable::parse($date)->format('D, M j') }} · {{ $venue->timezone }}</p>
+            <p class="survey-step">Step {{ $step }} of 6</p>
+            @if($step > 1)
+                <a class="survey-back" href="{{ route('book', $back) }}">Back</a>
+            @endif
         </div>
-        @if(!$selection)
+        <ol class="survey-progress" aria-label="Booking progress">
+            @for($i = 1; $i <= 6; $i++)
+                <li class="{{ $i <= $step ? 'complete' : '' }}" @if($i === $step) aria-current="step" @endif>
+                    <span class="visually-hidden">Step {{ $i }}</span>
+                </li>
+            @endfor
+        </ol>
+        @if($step > 1)
+            <p class="survey-summary">{{ $dateLabel }} @if($step > 2) · {{ $durationLabel($duration) }} @endif
+                @if($step > 3 && $validStart) · {{ $startTimes[$selectedStart]['label'] }} @endif
+            </p>
+        @endif
+        <h2 id="survey-title" class="booking-icon-label"><x-booking-icon :name="$icons[$step]" /> {{ $titles[$step] }}</h2>
+
+        @if($step !== 5)
             @include('book.errors')
-            @if(request()->has('start') && !$errors->any())
-                <p class="notice booking-notice" role="status"><x-booking-icon name="circle-alert" /> That slot is unavailable. Choose another time below.</p>
+            @if(request()->has('start') && !$selection && request()->has('court') && !$errors->any())
+                <p class="notice booking-notice" role="status"><x-booking-icon name="circle-alert" /> That court is no longer available. Please choose another.</p>
             @endif
         @endif
-        @forelse($courts as $offer)
-            <article class="panel court-card compact-court-card">
-                <div class="section-heading">
-                    <h3>{{ $offer['court']->name }} @if($offer['court']->surface_type)<span class="status-chip">{{ ucfirst($offer['court']->surface_type) }}</span>@endif</h3>
-                    @if($offer['slots'])
-                        @php($prices = collect($offer['slots'])->pluck('total')->unique())
-                        <p>@if($prices->count() > 1)From @endif<strong>₱{{ number_format($prices->min() / 100, 2) }}</strong></p>
-                    @endif
+
+        @if($step === 1)
+            <p class="muted">Choose the day you want to play.</p>
+            <form method="get" action="{{ route('book') }}" class="form-stack survey-form">
+                <input type="hidden" name="step" value="2">
+                <input type="hidden" name="duration" value="{{ $duration }}">
+                <label>Booking date
+                    <input name="date" type="date" min="{{ $today->toDateString() }}" max="{{ $lastDay->toDateString() }}" value="{{ $date }}" required>
+                </label>
+                <button class="booking-button">Continue</button>
+            </form>
+        @elseif($step === 2)
+            <p class="muted">How much court time do you need?</p>
+            <div class="survey-choices">
+                @foreach($venue->durations() as $minutes)
+                    <a class="survey-choice" href="{{ route('book', ['step' => 3, 'date' => $date, 'duration' => $minutes]) }}">
+                        <x-booking-icon name="clock" /> <strong>{{ $durationLabel($minutes) }}</strong>
+                    </a>
+                @endforeach
+            </div>
+        @elseif($step === 3)
+            <p class="muted">Choose a start time. Only available times are shown.</p>
+            @if($startTimes)
+                <div class="slots booking-slots survey-times">
+                    @foreach($startTimes as $time => $slot)
+                        <a class="slot" href="{{ route('book', ['step' => 4, 'date' => $date, 'duration' => $duration, 'start' => $time]) }}">
+                            {{ $slot['label'] }}<small>{{ $slot['count'] }} {{ $slot['count'] === 1 ? 'court' : 'courts' }}</small>
+                        </a>
+                    @endforeach
                 </div>
-                @if($offer['slots'])
-                    <div class="slots booking-slots">
-                        @foreach($offer['slots'] as $time => $slot)
-                            <a class="slot @if($selection && $selection['court']->id === $offer['court']->id && $selectedStart === $time) selected @endif"
-                                href="{{ route('book', ['date' => $date, 'duration' => $duration, 'court' => $offer['court']->id, 'start' => $time]) }}#booking-form"
-                                data-booking-slot @if($selection && $selection['court']->id === $offer['court']->id && $selectedStart === $time) aria-current="true" @endif
-                                aria-label="{{ $offer['court']->name }}, {{ $slot['label'] }}, ₱{{ number_format($slot['total'] / 100, 2) }}">
-                                {{ $slot['label'] }}
-                                @if($prices->count() > 1)<small>₱{{ number_format($slot['total'] / 100, 2) }}</small>@endif
-                            </a>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="muted">No available times for this duration.</p>
-                @endif
-                @if($selection && $selection['court']->id === $offer['court']->id)
-                    @include('book.details')
-                @endif
-            </article>
-        @empty
-            <div class="panel empty">No court times are available on this date. Try another date.</div>
-        @endforelse
+            @else
+                <div class="notice survey-empty">No court times are available on this date for this duration.</div>
+                <a class="button secondary" href="{{ route('book', ['step' => 1, 'date' => $date, 'duration' => $duration]) }}">Pick another date</a>
+            @endif
+        @elseif($step === 4)
+            <p class="muted">Choose a court for your selected time.</p>
+            <div class="survey-choices">
+                @foreach($courts as $offer)
+                    @if(isset($offer['slots'][$selectedStart]))
+                        <a class="survey-choice" href="{{ route('book', ['step' => 5, 'date' => $date, 'duration' => $duration, 'start' => $selectedStart, 'court' => $offer['court']->id]) }}">
+                            <span><strong>{{ $offer['court']->name }}</strong>
+                                @if($offer['court']->surface_type)<small>{{ ucfirst($offer['court']->surface_type) }}</small>@endif
+                            </span>
+                            <strong class="survey-price">₱{{ number_format($offer['slots'][$selectedStart]['total'] / 100, 2) }}</strong>
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+        @else
+            @include('book.details')
+        @endif
     </section>
     @if($venue->phone)
         <p class="contact">To change or cancel a booking, call <a href="tel:{{ preg_replace('/[^+0-9]/', '', $venue->phone) }}">{{ $venue->phone }}</a>.</p>
     @endif
-    <script src="{{ asset('booking.js') }}" defer></script>
+    <script src="{{ asset('booking-survey.js') }}" defer></script>
 @endsection
