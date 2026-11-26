@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\PublicBookingController;
+use App\Http\Controllers\VenueLandingController;
+use App\Http\Controllers\VenueWebsiteController;
 use App\Http\Controllers\PublicOpenPlayController;
 use App\Http\Controllers\StaffOpenPlayController;
 use App\Http\Controllers\StaffAuthController;
@@ -9,10 +11,11 @@ use App\Http\Controllers\VenueCustomizationController;
 use App\Http\Controllers\VenueSettingsController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [PublicBookingController::class, 'index'])->name('book');
+Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
+Route::get('/book', [PublicBookingController::class, 'index'])->name('book');
 Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
 Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
-    ->whereIn('kind', ['logo', 'cover'])->where('version', '[a-f0-9]{64}')->name('book.image');
+    ->whereIn('kind', array_merge(['logo', 'cover'], \App\Services\VenueWebsite::GALLERY))->where('version', '[a-f0-9]{64}')->name('book.image');
 Route::get('/payments/{token}/status', [PublicBookingController::class, 'paymentStatus'])
     ->where('token', '[a-zA-Z0-9]{48}')->middleware('throttle:booking-payment-status')->name('book.payment.status');
 Route::get('/payments/{token}', [PublicBookingController::class, 'payment'])
@@ -48,6 +51,9 @@ Route::prefix('staff')->group(function () {
         Route::patch('/open-play/{session}/cancel', [StaffOpenPlayController::class, 'cancel'])->whereNumber('session')->name('staff.open-play.cancel');
 
         Route::middleware('can:manage-venue')->group(function () {
+            Route::get('/website', [VenueWebsiteController::class, 'index'])->name('settings.website');
+            Route::patch('/website', [VenueWebsiteController::class, 'save'])->name('settings.website.save');
+            Route::patch('/website/gallery/{kind}', [VenueWebsiteController::class, 'gallery'])->whereIn('kind', \App\Services\VenueWebsite::GALLERY)->name('settings.website.gallery');
             Route::get('/booking-setup', [VenueCustomizationController::class, 'index'])->name('settings.customization');
             Route::patch('/booking-setup/branding', [VenueCustomizationController::class, 'branding'])->name('settings.branding');
             Route::patch('/booking-setup/payments', [VenueCustomizationController::class, 'payment'])->name('settings.payments');
