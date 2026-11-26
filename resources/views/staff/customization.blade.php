@@ -6,6 +6,7 @@
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Booking setup</h1></div>
         <div class="actions">
             <a class="button secondary" href="{{ route('settings') }}">Venue settings</a>
+            <a class="button secondary" href="{{ route('settings.website') }}">Website settings</a>
             <a class="button" href="{{ route('book') }}" target="_blank" rel="noopener">Preview booking page</a>
         </div>
     </header>
@@ -21,7 +22,7 @@
 
     <div class="settings-grid">
         <section class="panel" id="branding">
-            <h2>Booking page branding</h2>
+            <h2>Venue website and booking branding</h2>
             <form class="form-stack" method="post" action="{{ route('settings.branding') }}" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
@@ -165,7 +166,8 @@
             </section>
 
             <section class="panel" id="sharing">
-                <h2>Share your booking page</h2>
+                <h2>Share your venue</h2>
+                <label>Website link<input type="url" value="{{ route('landing') }}" readonly></label>
                 <label>Booking link<input type="url" value="{{ route('book') }}" readonly></label>
                 <div class="share-qr" data-qr-url="{{ route('book') }}" aria-label="Booking page QR code"></div>
                 <a class="button secondary" data-qr-download download="booking-qr.svg" hidden>Download QR code</a>
