@@ -41,7 +41,7 @@
             @csrf
             <label>Session name<input name="name" value="{{ old('name', 'Open Play') }}" maxlength="100" required></label>
             <div class="open-play-form-grid">
-                <label>Date<input type="date" name="date" min="{{ now($venue->timezone)->toDateString() }}" value="{{ old('date', now($venue->timezone)->toDateString()) }}" required></label>
+                <label>Date<input type="date" name="date" min="{{ now($venue->timezone)->toDateString() }}" value="{{ old('date', is_string(request()->query('date')) ? request()->query('date') : now($venue->timezone)->toDateString()) }}" required></label>
                 <label>Start time<input type="time" name="start" step="1800" value="{{ old('start', '18:00') }}" required></label>
                 <label>End time<input name="end" value="{{ old('end', '22:00') }}" pattern="([01][0-9]|2[0-3]):(00|30)|24:00" placeholder="22:00" required></label>
                 <label>Maximum players<input type="number" name="capacity" min="1" max="500" value="{{ old('capacity', 24) }}" required></label>
