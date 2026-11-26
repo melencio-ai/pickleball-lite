@@ -27,14 +27,20 @@ class Pricing
             ->sortBy(fn ($rate) => $rate->court_id === null);
     }
 
+    public function hourlyRate(Court $court, string $time, Collection $rates): int
+    {
+        $rate = $rates->first(fn ($rate) => ($rate->court_id === null || $rate->court_id === $court->id)
+            && $rate->starts_at <= $time && $rate->ends_at > $time);
+
+        return $rate?->hourly_rate ?? $court->hourly_rate;
+    }
+
     public function quote(Court $court, CarbonImmutable $start, CarbonImmutable $end, string $timezone, Collection $rates): int
     {
         $halfHourRates = 0;
         for ($segment = $start; $segment->lt($end); $segment = $segment->addMinutes(30)) {
             $time = $segment->setTimezone($timezone)->format('H:i');
-            $rate = $rates->first(fn ($rate) => ($rate->court_id === null || $rate->court_id === $court->id)
-                && $rate->starts_at <= $time && $rate->ends_at > $time);
-            $halfHourRates += $rate?->hourly_rate ?? $court->hourly_rate;
+            $halfHourRates += $this->hourlyRate($court, $time, $rates);
         }
 
         return intdiv($halfHourRates + 1, 2);
