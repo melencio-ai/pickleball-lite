@@ -48,7 +48,6 @@ class CalendarGrid
         if (!$first || !$last || $last->lte($first)) {
             return ['slots' => [], 'events' => [], 'free' => [], 'history' => $history, 'currentLine' => null];
         }
-        $first = $first->setTime($first->hour, intdiv($first->minute, 30) * 30);
         $slots = [];
         $free = [];
         for ($cursor = $first; $cursor->lt($last); $cursor = $cursor->addMinutes(30)) {
@@ -82,7 +81,7 @@ class CalendarGrid
                     'kind' => $kind, 'id' => $id, 'status' => $status,
                     'title' => $entry instanceof Booking ? $entry->customer_name : ($session ? $session->name : $entry->reason),
                     'time' => $entry->starts_at->setTimezone($venue->timezone)->format('g:i A').' – '.$entry->ends_at->setTimezone($venue->timezone)->format('g:i A'),
-                    'summary' => $session ? $session->paid_count.'/'.$session->capacity.' paid · '.$session->spotsLeft().' left' : ucfirst($status),
+                    'summary' => $session ? $session->paid_count.'/'.$session->capacity.' paid · '.$session->spotsLeft().' left' : ($status === 'pending' ? 'Pending QR' : ucfirst($status)),
                     'expires' => $status === 'pending' ? $entry->payment_expires_at?->getTimestamp() : null];
             }
         }
