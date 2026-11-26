@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CourtBlock extends Model
 {
-    protected $fillable = ['starts_at', 'ends_at', 'reason'];
+    protected $fillable = ['starts_at', 'ends_at', 'reason', 'open_play_session_id'];
 
     protected $casts = ['starts_at' => 'immutable_datetime', 'ends_at' => 'immutable_datetime'];
 }

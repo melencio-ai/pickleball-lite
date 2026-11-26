@@ -137,6 +137,11 @@ class VenueCustomizationController extends Controller
             $hasBookings = Booking::query()->whereIn('court_id', $venue->courts()->select('id'))
                 ->where('starts_at', '<', $end)->where('ends_at', '>', $start)
                 ->occupying()->where('ends_at', '>', now())->exists();
+            $hasOpenPlay = $venue->openPlaySessions()->whereNull('cancelled_at')
+                ->where('starts_at', '<', $end)->where('ends_at', '>', $start)->where('ends_at', '>', now())->exists();
+            if ($hasOpenPlay) {
+                throw ValidationException::withMessages(['date' => 'Cancel upcoming Open Play sessions before closing this date.']);
+            }
             if ($hasBookings) {
                 throw ValidationException::withMessages(['date' => 'Cancel or move the remaining reservations before closing this date.']);
             }

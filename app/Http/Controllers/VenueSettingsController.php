@@ -30,7 +30,14 @@ class VenueSettingsController extends Controller
             'phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
             'timezone' => ['required', 'timezone:all'],
         ]);
-        $request->user()->venue()->update($data);
+        DB::transaction(function () use ($request, $data) {
+            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            if ($venue->timezone !== $data['timezone'] && $venue->openPlaySessions()
+                ->whereNull('cancelled_at')->where('ends_at', '>', now())->exists()) {
+                throw ValidationException::withMessages(['timezone' => 'Cancel future Open Play sessions before changing the time zone.']);
+            }
+            $venue->update($data);
+        }, 3);
 
         return $this->saved('Venue details saved.');
     }
@@ -52,6 +59,15 @@ class VenueSettingsController extends Controller
         }
         DB::transaction(function () use ($request, $data) {
             $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            foreach ($venue->openPlaySessions()->whereNull('cancelled_at')->where('ends_at', '>', now())->get() as $session) {
+                $start = $session->starts_at->setTimezone($venue->timezone);
+                $end = $session->ends_at->setTimezone($venue->timezone);
+                $hours = $data['hours'][$start->dayOfWeek];
+                $endTime = $end->toDateString() !== $start->toDateString() ? '24:00' : $end->format('H:i');
+                if (!empty($hours['closed']) || $start->format('H:i') < $hours['opens_at'] || $endTime > $hours['closes_at']) {
+                    throw ValidationException::withMessages(['hours' => 'Cancel or reschedule conflicting Open Play sessions before changing opening hours.']);
+                }
+            }
             foreach ($data['hours'] as $weekday => $hours) {
                 $venue->hours()->updateOrCreate(['weekday' => $weekday], $hours + ['closed' => false]);
             }
@@ -71,9 +87,15 @@ class VenueSettingsController extends Controller
 
     public function updateCourt(Request $request, int $court)
     {
-        $venue = $request->user()->venue;
-        $record = $venue->courts()->findOrFail($court);
-        $record->update($this->courtData($request, $venue, $court));
+        DB::transaction(function () use ($request, $court) {
+            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $record = $venue->courts()->lockForUpdate()->findOrFail($court);
+            $data = $this->courtData($request, $venue, $court);
+            if (!$data['active'] && $record->blocks()->whereNotNull('open_play_session_id')->where('ends_at', '>', now())->exists()) {
+                throw ValidationException::withMessages(['active' => 'Cancel upcoming Open Play sessions before deactivating this court.']);
+            }
+            $record->update($data);
+        }, 3);
 
         return $this->saved('Court details saved.');
     }

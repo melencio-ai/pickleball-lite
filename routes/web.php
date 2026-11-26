@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\PublicBookingController;
+use App\Http\Controllers\PublicOpenPlayController;
+use App\Http\Controllers\StaffOpenPlayController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffCalendarController;
 use App\Http\Controllers\VenueCustomizationController;
@@ -17,6 +19,11 @@ Route::get('/payments/{token}', [PublicBookingController::class, 'payment'])
     ->where('token', '[a-zA-Z0-9]{48}')->name('book.payment');
 Route::get('/bookings/confirmed', [PublicBookingController::class, 'confirmation'])->name('book.confirmed');
 
+Route::get('/open-play', [PublicOpenPlayController::class, 'index'])->name('open-play');
+Route::post('/open-play/{session}/join', [PublicOpenPlayController::class, 'store'])->whereNumber('session')->middleware('throttle:20,1')->name('open-play.join');
+Route::get('/open-play/payments/{token}/status', [PublicOpenPlayController::class, 'paymentStatus'])->where('token', '[a-zA-Z0-9]{48}')->middleware('throttle:booking-payment-status')->name('open-play.payment.status');
+Route::get('/open-play/payments/{token}', [PublicOpenPlayController::class, 'payment'])->where('token', '[a-zA-Z0-9]{48}')->name('open-play.payment');
+
 Route::prefix('staff')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
@@ -31,6 +38,13 @@ Route::prefix('staff')->group(function () {
         Route::patch('/bookings/{booking}/cancel', [StaffCalendarController::class, 'cancel'])->name('staff.cancel');
         Route::post('/blocks', [StaffCalendarController::class, 'block'])->name('staff.block');
         Route::delete('/blocks/{block}', [StaffCalendarController::class, 'unblock'])->name('staff.unblock');
+
+        Route::get('/open-play', [StaffOpenPlayController::class, 'index'])->name('staff.open-play');
+        Route::post('/open-play', [StaffOpenPlayController::class, 'store'])->name('staff.open-play.store');
+        Route::get('/open-play/{session}', [StaffOpenPlayController::class, 'show'])->whereNumber('session')->name('staff.open-play.show');
+        Route::post('/open-play/{session}/registrations', [StaffOpenPlayController::class, 'register'])->whereNumber('session')->name('staff.open-play.register');
+        Route::patch('/open-play/{session}/registrations/{registration}/{action}', [StaffOpenPlayController::class, 'action'])->whereNumber('session')->whereNumber('registration')->name('staff.open-play.action');
+        Route::patch('/open-play/{session}/cancel', [StaffOpenPlayController::class, 'cancel'])->whereNumber('session')->name('staff.open-play.cancel');
 
         Route::middleware('can:manage-venue')->group(function () {
             Route::get('/booking-setup', [VenueCustomizationController::class, 'index'])->name('settings.customization');

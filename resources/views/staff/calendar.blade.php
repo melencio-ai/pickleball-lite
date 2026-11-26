@@ -8,6 +8,7 @@
             <h1>Court calendar</h1>
         </div>
         <div class="actions">
+            <a class="button secondary" href="{{ route('staff.open-play', ['date' => $date]) }}#create-session">Create Open Play</a>
             <a class="button secondary" href="{{ route('staff.calendar', ['date' => $date, 'action' => 'block']) }}#calendar-action">Block time</a>
             <a class="button" href="{{ route('staff.calendar', ['date' => $date, 'action' => 'book']) }}#calendar-action">New booking</a>
         </div>
@@ -87,7 +88,7 @@
                 </div>
                 @php($entries = $court->bookings->concat($court->blocks)->sortBy('starts_at'))
                 @forelse($entries as $entry)
-                    <article class="calendar-entry {{ $entry instanceof \App\Models\CourtBlock ? 'blocked-entry' : '' }}">
+                    <article class="calendar-entry {{ $entry instanceof \App\Models\CourtBlock ? ($entry->open_play_session_id ? 'open-play-entry' : 'blocked-entry') : '' }}">
                         <time>{{ $entry->starts_at->setTimezone($venue->timezone)->format('g:i A') }} – {{ $entry->ends_at->setTimezone($venue->timezone)->format('g:i A') }}</time>
                         @if($entry instanceof \App\Models\Booking)
                             <strong>{{ $entry->customer_name }}</strong>
@@ -132,6 +133,10 @@
                             @elseif($entry->payment_reference)
                                 <span class="muted">Transaction {{ $entry->payment_reference }}</span>
                             @endif
+                        @elseif($entry->open_play_session_id)
+                            <strong>{{ $entry->reason }}</strong>
+                            <span class="status-chip">Open Play</span>
+                            <a href="{{ route('staff.open-play.show', $entry->open_play_session_id) }}">Manage session</a>
                         @else
                             <strong>Blocked · {{ $entry->reason }}</strong>
                             <form method="post" action="{{ route('staff.unblock', $entry->id) }}">@csrf @method('DELETE')<button class="small quiet">Remove block</button></form>
