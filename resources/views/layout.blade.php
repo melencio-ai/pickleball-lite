@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="{{ \App\Services\VenueTheme::style(($venue ?? auth()->user()?->venue)?->brand_color) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') · Pickleball Lite</title>
-    <link rel="stylesheet" href="{{ asset('app.css') }}?v=website1">
+    <link rel="stylesheet" href="{{ asset('app.css') }}?v=theme1">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 </head>
 <body>

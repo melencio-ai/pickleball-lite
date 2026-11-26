@@ -90,5 +90,6 @@ jobs:
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8000/up && break; sleep 1; done
           node tests/browser/calendar-smoke.mjs
           node tests/browser/venue-website-smoke.mjs
+          node tests/browser/venue-theme-smoke.mjs
       - if: failure()
         run: cat /tmp/pickle-calendar-server.log || true

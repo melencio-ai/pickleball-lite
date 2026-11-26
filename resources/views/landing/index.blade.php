@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="venue-site-root">
+<html lang="en" class="venue-site-root" style="{{ \App\Services\VenueTheme::style($venue->brand_color) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,10 +14,10 @@
         <meta property="og:image" content="{{ route('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}">
     @endif
     <link rel="icon" href="{{ $media->has('logo') ? route('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
-    <link rel="stylesheet" href="{{ asset('app.css') }}?v=website1">
-    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=3">
+    <link rel="stylesheet" href="{{ asset('app.css') }}?v=theme1">
+    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
 </head>
-<body class="venue-site" style="--site-brand:{{ $brand }};--site-on-brand:{{ $brandText }}">
+<body class="venue-site">
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header">
         <div class="site-container site-navigation">

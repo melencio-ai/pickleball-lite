@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Venue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -10,7 +11,7 @@ class StaffAuthController extends Controller
 {
     public function create()
     {
-        return view('staff.login');
+        return view('staff.login', ['venue' => Venue::query()->orderBy('id')->first()]);
     }
 
     public function store(Request $request)
