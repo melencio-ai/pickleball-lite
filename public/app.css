@@ -340,3 +340,14 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border
     .calendar-history-row { grid-template-columns:1fr auto; }
     .calendar-history-row span:first-of-type { grid-row:2; }
 }
+
+/* Venue website configuration and booking type chooser */
+.website-settings-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); align-items:start; gap:1rem; }
+.website-settings-grid textarea { width:100%; resize:vertical; font:inherit; border:1px solid #b9c8bd; border-radius:.5rem; padding:.6rem; color:var(--ink); }
+.website-facility-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+.website-gallery-preview { width:100%; max-height:180px; object-fit:cover; border-radius:.5rem; }
+.booking-back { font-size:.84rem; color:var(--muted); margin:.75rem 0; }
+.booking-type-menu .survey-choice { gap:.75rem; padding:1rem; }
+.booking-type-menu .survey-choice span { flex:1; }
+.booking-type-menu h2 { margin-bottom:.25rem; }
+@media(max-width:720px){.website-settings-grid{grid-template-columns:minmax(0,1fr)}}
