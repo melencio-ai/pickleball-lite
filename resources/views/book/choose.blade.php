@@ -2,7 +2,7 @@
 @section('title', 'Start booking')
 @section('page-class', 'narrow booking-page')
 @section('content')
-    <header class="booking-banner venue-banner compact-venue-banner" style="--venue-brand: {{ $venue->brand_color ?? '#155542' }}">
+    <header class="booking-banner venue-banner compact-venue-banner">
         @if($media->has('cover'))
             <img class="venue-cover" src="{{ route('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}" alt="">
         @endif
