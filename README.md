@@ -29,7 +29,7 @@ Requires PHP 8.4 with PDO MySQL, Composer 2, and MySQL 8 with InnoDB. See [Larav
 
 ## Booking rules
 
-- By default, public reservations can be made up to 30 days ahead, in one- or two-hour durations. Owners can configure the booking window, minimum notice, and allowed durations. Start times are spaced by 30 minutes.
+- By default, public reservations can be made up to 30 days ahead, in durations from one to five hours in 30-minute increments. Owners can configure the booking window, minimum notice, and allowed durations. Start times are spaced by 30 minutes.
 - The app stores times in UTC and displays them in the venue's chosen timezone. Prices are in Philippine pesos and stored in centavos. Changes to court rates apply to new reservations. A court-specific time-based rate overrides an all-court time-based rate, followed by the court's base rate. Bookings crossing a rate boundary are priced in 30-minute segments.
 - Confirmed bookings and court blocks reserve time on that court. A cancellation releases time and the booking remains in the staff calendar. A staff member changing a booking cancels the original and creates a replacement. The app records payments made at the venue.
 - The confirmation page belongs to the browser session that created the booking. Booking references and customer contact details are available to staff in the calendar.
