@@ -185,3 +185,25 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border
     .booking-details .booking-button, .payment-actions > .button { flex: 1 1 auto; }
 }
 .copy-feedback:empty { display: none; }
+
+.survey-panel { margin-top: .75rem; padding: 1rem; display: grid; gap: .7rem; }
+.survey-panel h2 { font-size: 1.5rem; }
+.survey-step { font-weight: 700; }
+.survey-back { font-size: .9rem; font-weight: 700; padding: .35rem .5rem; }
+.survey-progress { display: grid; grid-template-columns: repeat(6, 1fr); gap: .3rem; list-style: none; margin: 0; padding: 0; }
+.survey-progress li { height: .32rem; background: var(--line); border-radius: 99px; }
+.survey-progress li.complete { background: var(--green); }
+.survey-summary { padding: .45rem .65rem; background: #f0f5f0; border-radius: .5rem; color: var(--muted); font-size: .85rem; font-weight: 650; }
+.survey-form > button { justify-self: stretch; }
+.survey-choices { display: grid; gap: .45rem; }
+.survey-choice { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .75rem; min-height: 48px; border: 1px solid #cbddcd; border-radius: .55rem; color: var(--ink); background: #f5faf5; text-decoration: none; }
+.survey-choice:hover { border-color: var(--green); text-decoration: none; background: #e8f2ea; }
+.survey-choice:has(> .booking-icon) { justify-content: flex-start; }
+.survey-choice small { display: block; color: var(--muted); font-size: .75rem; }
+.survey-price { color: var(--green); white-space: nowrap; }
+.survey-times { grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr)); margin-top: 0; }
+.survey-times .slot { min-height: 3rem; }
+.survey-empty { margin: 0; }
+.survey-panel .booking-details { margin: 0; }
+.survey-panel .booking-details .form-row > label { flex-basis: 100%; }
+.survey-panel .booking-details .booking-button { width: 100%; white-space: normal; }
