@@ -20,9 +20,15 @@ class Schedule
 
     public const PHONE = '/^\+?[0-9][0-9() .-]{5,29}[0-9]$/D';
 
+    public function __construct(private Pricing $pricing) {}
+
     public function hours(Venue $venue, string $date): ?VenueHour
     {
         $weekday = CarbonImmutable::parse($date, $venue->timezone)->dayOfWeek;
+
+        if ($venue->closures()->where('date', $date)->exists()) {
+            return null;
+        }
 
         return $venue->hours()->where('weekday', $weekday)->first();
     }
@@ -42,7 +48,7 @@ class Schedule
         return $relation->where('starts_at', '<', $end)->where('ends_at', '>', $start);
     }
 
-    public function availability(Venue $venue, string $date, int $duration): array
+    public function availability(Venue $venue, string $date, int $duration, bool $public = true): array
     {
         $hours = $this->hours($venue, $date);
         if (! $hours || $hours->closed) {
@@ -51,10 +57,11 @@ class Schedule
 
         $open = $this->time($venue, $date, $hours->opens_at);
         $close = $this->time($venue, $date, $hours->closes_at);
-        $now = CarbonImmutable::now('UTC');
+        $earliest = CarbonImmutable::now('UTC')->addMinutes($public ? $venue->minimum_notice : 0);
+        $rates = $this->pricing->dailyRates($venue, $date);
 
         return $venue->courts()->where('active', true)->orderBy('id')->get()
-            ->map(function ($court) use ($open, $close, $now, $duration, $venue, $date) {
+            ->map(function ($court) use ($open, $close, $earliest, $duration, $venue, $date, $rates) {
                 $busy = $this->overlaps($court->bookings(), $open, $close)
                     ->whereNull('cancelled_at')->get()
                     ->concat($this->overlaps($court->blocks(), $open, $close)->get());
@@ -62,7 +69,7 @@ class Schedule
                 $slots = [];
                 for ($start = $open; ($end = $start->addMinutes($duration))->lte($close); $start = $start->addMinutes(30)) {
                     $local = $start->setTimezone($venue->timezone);
-                    if ($start->lte($now) || $local->format('Y-m-d') !== $date
+                    if ($start->lte($earliest) || $local->format('Y-m-d') !== $date
                         || ! $start->equalTo($this->time($venue, $date, $local->format('H:i')))
                         || $busy->contains(
                             fn ($entry) => $entry->starts_at->lt($end) && $entry->ends_at->gt($start)
@@ -70,10 +77,13 @@ class Schedule
                         continue;
                     }
 
-                    $slots[$local->format('H:i')] = $local->format('g:i A');
+                    $slots[$local->format('H:i')] = [
+                        'label' => $local->format('g:i A'),
+                        'total' => $this->pricing->quote($court, $start, $end, $venue->timezone, $rates),
+                    ];
                 }
 
-                return ['court' => $court, 'slots' => $slots, 'total' => $court->hourly_rate * intdiv($duration, 60)];
+                return ['court' => $court, 'slots' => $slots];
             })->all();
     }
 
@@ -106,6 +116,16 @@ class Schedule
             }
 
             if ($source) {
+                if (! in_array((int) $data['duration'], $venue->durations(), true)) {
+                    throw ValidationException::withMessages(['duration' => 'That booking duration is no longer available.']);
+                }
+                if ($source === 'online' && (
+                    $start->lte(CarbonImmutable::now('UTC')->addMinutes($venue->minimum_notice))
+                    || $data['date'] > CarbonImmutable::today($venue->timezone)->addDays($venue->advance_days)->toDateString()
+                )) {
+                    throw ValidationException::withMessages(['start' => 'That time falls outside the venue’s booking window.']);
+                }
+
                 $hours = $this->hours($venue, $data['date']);
                 if (! $hours || $hours->closed || $start->lt($this->time($venue, $data['date'], $hours->opens_at))
                     || $end->gt($this->time($venue, $data['date'], $hours->closes_at))) {
@@ -123,7 +143,7 @@ class Schedule
                 return $court->blocks()->create(['starts_at' => $start, 'ends_at' => $end, 'reason' => $data['reason']]);
             }
 
-            $total = $court->hourly_rate * intdiv((int) $data['duration'], 60);
+            $total = $this->pricing->quote($court, $start, $end, $venue->timezone, $this->pricing->dailyRates($venue, $data['date']));
             if ($source === 'online' && (int) $data['quoted_total'] !== $total) {
                 throw ValidationException::withMessages(['start' => 'The rate has changed. Review the new price before booking.']);
             }
@@ -136,6 +156,7 @@ class Schedule
                 'customer_phone' => $data['customer_phone'],
                 'total' => $total,
                 'source' => $source,
+                'cancellation_policy' => $venue->cancellation_policy,
             ]);
         }, 3);
     }

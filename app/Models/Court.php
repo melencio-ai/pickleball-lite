@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Court extends Model
 {
-    protected $fillable = ['name', 'hourly_rate', 'active'];
+    protected $fillable = ['name', 'hourly_rate', 'active', 'surface_type'];
 
     protected $casts = ['active' => 'boolean', 'hourly_rate' => 'integer'];
 

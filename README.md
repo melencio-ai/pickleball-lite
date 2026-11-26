@@ -25,12 +25,12 @@ Requires PHP 8.4 with PDO MySQL, Composer 2, and MySQL 8 with InnoDB. See [Larav
 
    The owner command prompts for a password. The seed adds one venue in Asia/Manila with three courts and sample rates and hours.
 
-4. Open [public booking](http://localhost:8000/) or [staff sign in](http://localhost:8000/staff/login). Sign in as the owner and open **Settings** to set the venue's details, hours, court rates, and staff accounts.
+4. Open [public booking](http://localhost:8000/) or [staff sign in](http://localhost:8000/staff/login). Sign in as the owner and open **Settings** to set the venue's details, hours, base court rates, and staff accounts. Open **Booking setup** for branding, time-based rates, holiday closures, booking rules, and a downloadable booking QR code.
 
 ## Booking rules
 
-- Public reservations can be made up to 30 days ahead. Start times are spaced by 30 minutes and reservations last one or two hours.
-- The app stores times in UTC and displays them in the venue's chosen timezone. Prices are in Philippine pesos and stored in centavos. Changes to court rates apply to new reservations.
+- By default, public reservations can be made up to 30 days ahead, in one- or two-hour durations. Owners can configure the booking window, minimum notice, and allowed durations. Start times are spaced by 30 minutes.
+- The app stores times in UTC and displays them in the venue's chosen timezone. Prices are in Philippine pesos and stored in centavos. Changes to court rates apply to new reservations. A court-specific time-based rate overrides an all-court time-based rate, followed by the court's base rate. Bookings crossing a rate boundary are priced in 30-minute segments.
 - Confirmed bookings and court blocks reserve time on that court. A cancellation releases time and the booking remains in the staff calendar. A staff member changing a booking cancels the original and creates a replacement. The app records payments made at the venue.
 - The confirmation page belongs to the browser session that created the booking. Booking references and customer contact details are available to staff in the calendar.
 

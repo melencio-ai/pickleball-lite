@@ -2,9 +2,17 @@
 @section('title', 'Book a court')
 
 @section('content')
-    <header class="booking-banner">
+    <header class="booking-banner venue-banner" style="--venue-brand: {{ $venue->brand_color ?? '#155542' }}">
+        @if($media->has('cover'))
+            <img class="venue-cover" src="{{ route('book.image', ['kind' => 'cover', 'version' => $media['cover']->version]) }}" alt="">
+        @endif
         <div>
-            <p class="venue-name">{{ $venue->name }}</p>
+            <p class="venue-name">
+                @if($media->has('logo'))
+                    <img class="venue-logo" src="{{ route('book.image', ['kind' => 'logo', 'version' => $media['logo']->version]) }}" alt="">
+                @endif
+                {{ $venue->name }}
+            </p>
             <h1>Book a court</h1>
             @if($venue->address)
                 <p>{{ $venue->address }}</p>
@@ -12,6 +20,12 @@
         </div>
         <span class="pay-label">Pay at venue</span>
     </header>
+    @if($venue->map_url || $venue->messenger_url)
+        <nav class="venue-links" aria-label="Venue information">
+            @if($venue->map_url)<a href="{{ $venue->map_url }}" rel="noopener noreferrer">Get directions</a>@endif
+            @if($venue->messenger_url)<a href="{{ $venue->messenger_url }}" rel="noopener noreferrer">Message the venue</a>@endif
+        </nav>
+    @endif
 
     <form class="panel filters" method="get" action="{{ route('book') }}">
         <label>Date
@@ -19,8 +33,9 @@
         </label>
         <label>Duration
             <select name="duration">
-                <option value="60" @selected($duration === 60)>1 hour</option>
-                <option value="120" @selected($duration === 120)>2 hours</option>
+                @foreach($venue->durations() as $minutes)
+                    <option value="{{ $minutes }}" @selected($duration === $minutes)>{{ $minutes === 60 ? '1 hour' : ($minutes === 120 ? '2 hours' : $minutes.' minutes') }}</option>
+                @endforeach
             </select>
         </label>
         <button>Show courts</button>
@@ -31,17 +46,20 @@
             <div class="section-heading">
                 <div>
                     <h2>Confirm your booking</h2>
-                    <p>{{ $selection['court']->name }} · {{ $selection['slots'][$selectedStart] }} · {{ intdiv($duration, 60) }} {{ $duration === 60 ? 'hour' : 'hours' }}</p>
+                    <p>{{ $selection['court']->name }} · {{ $selection['slots'][$selectedStart]['label'] }} · {{ $duration }} minutes</p>
                 </div>
-                <strong class="price">₱{{ number_format($selection['total'] / 100, 2) }}</strong>
+                <strong class="price">₱{{ number_format($selection['slots'][$selectedStart]['total'] / 100, 2) }}</strong>
             </div>
+            @if($venue->cancellation_policy)
+                <div class="booking-policy"><strong>Cancellation policy</strong><p>{{ $venue->cancellation_policy }}</p></div>
+            @endif
             <form class="form-row" method="post" action="{{ route('book.store') }}">
                 @csrf
                 <input type="hidden" name="date" value="{{ $date }}">
                 <input type="hidden" name="duration" value="{{ $duration }}">
                 <input type="hidden" name="court_id" value="{{ $selection['court']->id }}">
                 <input type="hidden" name="start" value="{{ $selectedStart }}">
-                <input type="hidden" name="quoted_total" value="{{ $selection['total'] }}">
+                <input type="hidden" name="quoted_total" value="{{ $selection['slots'][$selectedStart]['total'] }}">
                 <label>Full name<input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}" maxlength="100" autocomplete="name" required></label>
                 <label>Mobile number<input name="customer_phone" type="tel" value="{{ is_string(old('customer_phone')) ? old('customer_phone') : '' }}" maxlength="32" autocomplete="tel" required></label>
                 <button>Confirm booking</button>
@@ -60,15 +78,21 @@
         @forelse($courts as $offer)
             <article class="panel court-card">
                 <div class="section-heading">
-                    <h3>{{ $offer['court']->name }}</h3>
-                    <p><strong>₱{{ number_format($offer['total'] / 100, 2) }}</strong> / {{ $duration === 60 ? 'hour' : '2 hours' }}</p>
+                    <h3>{{ $offer['court']->name }} @if($offer['court']->surface_type)<span class="status-chip">{{ ucfirst($offer['court']->surface_type) }}</span>@endif</h3>
+                    @if($offer['slots'])
+                        @php($prices = collect($offer['slots'])->pluck('total')->unique())
+                        <p>@if($prices->count() > 1)From @endif<strong>₱{{ number_format($prices->min() / 100, 2) }}</strong></p>
+                    @endif
                 </div>
                 @if($offer['slots'])
                     <div class="slots">
-                        @foreach($offer['slots'] as $time => $label)
+                        @foreach($offer['slots'] as $time => $slot)
                             <a class="slot @if($selection && $selection['court']->id === $offer['court']->id && $selectedStart === $time) selected @endif"
                                 href="{{ route('book', ['date' => $date, 'duration' => $duration, 'court' => $offer['court']->id, 'start' => $time]) }}#booking-form"
-                                aria-label="{{ $offer['court']->name }}, {{ $label }}">{{ $label }}</a>
+                                aria-label="{{ $offer['court']->name }}, {{ $slot['label'] }}, ₱{{ number_format($slot['total'] / 100, 2) }}">
+                                {{ $slot['label'] }}
+                                @if($prices->count() > 1)<small>₱{{ number_format($slot['total'] / 100, 2) }}</small>@endif
+                            </a>
                         @endforeach
                     </div>
                 @else

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Venue;
 use App\Services\Schedule;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -70,6 +71,7 @@ class MySqlBookingConcurrencyTest extends TestCase
             $this->assertSame(1, Booking::count());
         } finally {
             $this->artisan('migrate:rollback')->assertSuccessful();
+            RefreshDatabaseState::$migrated = false;
         }
     }
 }

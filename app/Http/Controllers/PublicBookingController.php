@@ -19,14 +19,16 @@ class PublicBookingController extends Controller
         }
 
         $today = CarbonImmutable::today($venue->timezone);
-        $lastDay = $today->addDays(30);
+        $lastDay = $today->addDays($venue->advance_days);
         $date = $request->query('date');
         if (Validator::make(['date' => $date], ['date' => [
             'required', 'date_format:Y-m-d', 'after_or_equal:'.$today->toDateString(), 'before_or_equal:'.$lastDay->toDateString(),
         ]])->fails()) {
             $date = $today->toDateString();
         }
-        $duration = $request->query('duration') === '120' ? 120 : 60;
+        $requested = $request->query('duration');
+        $duration = is_string($requested) && in_array($requested, array_map('strval', $venue->durations()), true)
+            ? (int) $requested : $venue->defaultDuration();
         $courts = $schedule->availability($venue, $date, $duration);
 
         $selectedCourt = $request->query('court');
@@ -34,7 +36,9 @@ class PublicBookingController extends Controller
         $selection = collect($courts)->first(fn ($offer) => (string) $offer['court']->id === $selectedCourt
             && is_string($selectedStart) && isset($offer['slots'][$selectedStart]));
 
-        return view('book.index', compact('venue', 'date', 'duration', 'courts', 'today', 'lastDay', 'selection', 'selectedStart'));
+        $media = $venue->media()->get(['kind', 'version'])->keyBy('kind');
+
+        return view('book.index', compact('venue', 'date', 'duration', 'courts', 'today', 'lastDay', 'selection', 'selectedStart', 'media'));
     }
 
     public function store(Request $request, Schedule $schedule)
@@ -43,9 +47,9 @@ class PublicBookingController extends Controller
         $today = CarbonImmutable::today($venue->timezone);
         $data = $request->validate([
             'court_id' => ['required', 'integer', Rule::exists('courts', 'id')->where('venue_id', $venue->id)],
-            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$today->toDateString(), 'before_or_equal:'.$today->addDays(30)->toDateString()],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$today->toDateString(), 'before_or_equal:'.$today->addDays($venue->advance_days)->toDateString()],
             'start' => ['required', 'regex:'.Schedule::START_TIME],
-            'duration' => ['required', 'in:60,120'],
+            'duration' => ['required', 'integer', Rule::in($venue->durations())],
             'quoted_total' => ['required', 'integer', 'min:0'],
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
@@ -58,9 +62,22 @@ class PublicBookingController extends Controller
             'date' => $booking->starts_at->setTimezone($venue->timezone)->format('l, F j, Y'),
             'time' => $booking->starts_at->setTimezone($venue->timezone)->format('g:i A').' – '.$booking->ends_at->setTimezone($venue->timezone)->format('g:i A'),
             'total' => $booking->total,
+            'cancellation_policy' => $booking->cancellation_policy,
         ]);
 
         return redirect()->route('book.confirmed');
+    }
+
+    public function image(string $kind, string $version)
+    {
+        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $image = $venue->media()->where('kind', $kind)->where('version', $version)->firstOrFail();
+
+        return response(base64_decode($image->content, true), 200, [
+            'Content-Type' => $image->mime,
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'public, max-age=300',
+        ]);
     }
 
     public function confirmation(Request $request)

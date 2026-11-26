@@ -23,7 +23,7 @@ class StaffCalendarController extends Controller
         $start = $day->utc();
         $end = $day->addDay()->utc();
         $hours = $schedule->hours($venue, $date);
-        $openSlots = collect($schedule->availability($venue, $date, 60))->keyBy('court.id');
+        $openSlots = collect($schedule->availability($venue, $date, $venue->defaultDuration(), public: false))->keyBy('court.id');
         $courts = $venue->courts()->orderBy('id')->get()->map(function ($court) use ($start, $end, $schedule, $openSlots) {
             $court->setRelation('bookings', $schedule->overlaps($court->bookings(), $start, $end)->orderBy('starts_at')->get());
             $court->setRelation('blocks', $schedule->overlaps($court->blocks(), $start, $end)->orderBy('starts_at')->get());
@@ -39,7 +39,7 @@ class StaffCalendarController extends Controller
     {
         $venue = $this->venue($request);
         $data = $request->validate($this->slotRules($venue) + [
-            'duration' => ['required', 'in:60,120'],
+            'duration' => ['required', 'integer', Rule::in($venue->durations())],
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
         ]);

@@ -13,6 +13,9 @@
             <div><dt>Time</dt><dd>{{ $confirmation['time'] }}</dd></div>
             <div><dt>Due at venue</dt><dd>₱{{ number_format($confirmation['total'] / 100, 2) }}</dd></div>
         </dl>
+        @if($confirmation['cancellation_policy'] ?? null)
+            <div class="booking-policy"><strong>Cancellation policy</strong><p>{{ $confirmation['cancellation_policy'] }}</p></div>
+        @endif
         <a class="button" href="{{ route('book') }}">Book another court</a>
     </section>
 @endsection

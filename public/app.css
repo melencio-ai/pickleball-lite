@@ -108,3 +108,25 @@ summary { cursor: pointer; color: var(--green); font-weight: 700; }
     .filters > label { min-width: 0; flex: 1 1 8rem; }
     .calendar-date { margin-left: 0; flex-basis: 100%; }
 }
+
+.venue-banner {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: color-mix(in srgb, var(--venue-brand), #000 65%);
+    border-top: 4px solid var(--venue-brand);
+}
+.venue-cover { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+.venue-banner:has(.venue-cover)::after { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(0 0 0 / .66); }
+.venue-banner .venue-name { display: flex; align-items: center; gap: .6rem; }
+.venue-logo { width: 2.65rem; height: 2.65rem; padding: .18rem; background: #fff; border-radius: .45rem; object-fit: contain; }
+.venue-links { margin-top: .45rem; }
+.booking-policy { margin: .65rem 0; padding: .65rem; background: #f1f6ef; border-radius: .45rem; font-size: .875rem; }
+.booking-policy p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.slot:has(small) { flex-direction: column; }
+.slot small { font-size: .72rem; }
+.setup-nav { margin-bottom: .85rem; }
+textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #b9c8bd; border-radius: .5rem; font: inherit; resize: vertical; }
+.media-preview { max-width: 7rem; max-height: 4rem; object-fit: contain; }
+.share-qr svg { display: block; max-width: 100%; height: auto; margin: .5rem 0; }
+[hidden] { display: none !important; }

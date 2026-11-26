@@ -2,9 +2,9 @@
 @section('title', 'Venue settings')
 
 @section('content')
-    <header class="page-heading">
-        <p class="venue-name">{{ $venue->name }}</p>
-        <h1>Venue settings</h1>
+    <header class="section-heading page-heading">
+        <div><p class="venue-name">{{ $venue->name }}</p><h1>Venue settings</h1></div>
+        <a class="button" href="{{ route('settings.customization') }}">Booking setup</a>
     </header>
     <div class="settings-grid">
         <section class="panel">
@@ -50,6 +50,13 @@
                     @method('PATCH')
                     <label>Name<input name="name" value="{{ $court->name }}" maxlength="80" required></label>
                     <label>Rate (₱/hour)<input name="rate" type="number" min="0" max="999999.99" step="0.01" value="{{ number_format($court->hourly_rate / 100, 2, '.', '') }}" required></label>
+                    <label>Court type
+                        <select name="surface_type">
+                            <option value="">Unspecified</option>
+                            <option value="indoor" @selected($court->surface_type === 'indoor')>Indoor</option>
+                            <option value="outdoor" @selected($court->surface_type === 'outdoor')>Outdoor</option>
+                        </select>
+                    </label>
                     <label>Status<select name="active"><option value="1" @selected($court->active)>Active</option><option value="0" @selected(!$court->active)>Inactive</option></select></label>
                     <button class="secondary">Save</button>
                 </form>
@@ -61,6 +68,7 @@
                     <input type="hidden" name="active" value="1">
                     <label>Name<input name="name" maxlength="80" required></label>
                     <label>Rate (₱/hour)<input name="rate" type="number" min="0" max="999999.99" step="0.01" required></label>
+                    <label>Court type<select name="surface_type"><option value="">Unspecified</option><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select></label>
                     <button>Add court</button>
                 </form>
             </details>

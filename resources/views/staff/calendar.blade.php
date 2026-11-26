@@ -54,8 +54,9 @@
                     @if($action === 'book')
                         <label>Duration
                             <select name="duration">
-                                <option value="60" @selected(old('duration') === '60')>1 hour</option>
-                                <option value="120" @selected(old('duration') === '120')>2 hours</option>
+                                @foreach($venue->durations() as $minutes)
+                                    <option value="{{ $minutes }}" @selected(old('duration', (string) $venue->defaultDuration()) === (string) $minutes)>{{ $minutes }} minutes</option>
+                                @endforeach
                             </select>
                         </label>
                     @else
@@ -126,8 +127,8 @@
                     <details class="calendar-slots">
                         <summary>Available times</summary>
                         <div class="slots">
-                            @foreach($court->slots as $time => $label)
-                                <a class="slot" href="{{ route('staff.calendar', ['date' => $date, 'action' => 'book', 'court' => $court->id, 'start' => $time]) }}#calendar-action">{{ $label }}</a>
+                            @foreach($court->slots as $time => $slot)
+                                <a class="slot" href="{{ route('staff.calendar', ['date' => $date, 'action' => 'book', 'court' => $court->id, 'start' => $time]) }}#calendar-action">{{ $slot['label'] }}</a>
                             @endforeach
                         </div>
                     </details>

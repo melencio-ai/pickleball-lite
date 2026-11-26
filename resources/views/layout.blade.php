@@ -16,7 +16,7 @@
                     <a href="{{ route('book') }}" @if(request()->routeIs('book*')) aria-current="page" @endif>Public booking</a>
                     <a href="{{ route('staff.calendar') }}" @if(request()->routeIs('staff.calendar')) aria-current="page" @endif>Calendar</a>
                     @can('manage-venue')
-                        <a href="{{ route('settings') }}" @if(request()->routeIs('settings')) aria-current="page" @endif>Settings</a>
+                        <a href="{{ route('settings') }}" @if(request()->routeIs('settings*')) aria-current="page" @endif>Settings</a>
                     @endcan
                     <form method="post" action="{{ route('logout') }}">@csrf<button class="quiet">Sign out</button></form>
                 @else

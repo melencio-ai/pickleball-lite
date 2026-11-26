@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venue;
+use App\Services\Pricing;
 use App\Services\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -104,14 +105,15 @@ class VenueSettingsController extends Controller
         }
         $data = $request->validate([
             'name' => ['required', 'string', 'max:80', $unique],
-            'rate' => ['required', 'regex:/^[0-9]{1,6}(?:\.[0-9]{1,2})?$/D'],
+            'rate' => ['required', 'regex:'.Pricing::PESOS],
+            'surface_type' => ['nullable', 'in:indoor,outdoor'],
             'active' => ['required', 'boolean'],
         ]);
-        [$pesos, $centavos] = array_pad(explode('.', $data['rate'], 2), 2, '');
 
         return [
             'name' => $data['name'],
-            'hourly_rate' => (int) $pesos * 100 + (int) str_pad($centavos, 2, '0'),
+            'hourly_rate' => Pricing::centavos($data['rate']),
+            'surface_type' => $data['surface_type'] ?? null,
             'active' => $data['active'],
         ];
     }
