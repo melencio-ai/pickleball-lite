@@ -33,6 +33,7 @@ Route::prefix('staff')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
         Route::get('/calendar', [StaffCalendarController::class, 'index'])->name('staff.calendar');
+        Route::get('/calendar/modal/{kind}/{record?}', [StaffCalendarController::class, 'modal'])->whereIn('kind', ['new', 'book', 'block', 'open-play', 'booking', 'blocked', 'session'])->whereNumber('record')->name('staff.calendar.modal');
         Route::post('/bookings', [StaffCalendarController::class, 'book'])->name('staff.book');
         Route::patch('/bookings/{booking}/paid', [StaffCalendarController::class, 'paid'])->name('staff.paid');
         Route::patch('/bookings/{booking}/cancel', [StaffCalendarController::class, 'cancel'])->name('staff.cancel');
