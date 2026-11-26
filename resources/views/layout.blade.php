@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') · Pickleball Lite</title>
-    <link rel="stylesheet" href="{{ asset('app.css') }}?v=openplay1">
+    <link rel="stylesheet" href="{{ asset('app.css') }}?v=calendar1">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 </head>
 <body>
