@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Venue;
 use App\Services\Pricing;
+use App\Services\CalendarGrid;
+use App\Models\Booking;
+use App\Models\CourtBlock;
 use App\Services\PaymentReferences;
 use App\Services\Schedule;
 use Carbon\CarbonImmutable;
@@ -16,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 
 class StaffCalendarController extends Controller
 {
-    public function index(Request $request, Schedule $schedule)
+    public function index(Request $request, Schedule $schedule, CalendarGrid $calendar)
     {
         $venue = $this->venue($request);
         $requested = $request->query('date');
@@ -26,16 +29,62 @@ class StaffCalendarController extends Controller
         $start = $day->utc();
         $end = $day->addDay()->utc();
         $hours = $schedule->hours($venue, $date);
-        $openSlots = collect($schedule->availability($venue, $date, $venue->defaultDuration(), public: false))->keyBy('court.id');
-        $courts = $venue->courts()->orderBy('id')->get()->map(function ($court) use ($start, $end, $schedule, $openSlots) {
+        $courts = $venue->courts()->orderBy('id')->get()->map(function ($court) use ($start, $end, $schedule) {
             $court->setRelation('bookings', $schedule->overlaps($court->bookings(), $start, $end)->orderBy('starts_at')->get());
             $court->setRelation('blocks', $schedule->overlaps($court->blocks(), $start, $end)->orderBy('starts_at')->get());
-            $court->setAttribute('slots', $openSlots->get($court->id)['slots'] ?? []);
 
             return $court;
         })->filter(fn ($court) => $court->active || $court->bookings->isNotEmpty() || $court->blocks->isNotEmpty());
 
-        return view('staff.calendar', compact('venue', 'day', 'date', 'courts', 'hours'));
+        $grid = $calendar->build($venue, $day, $hours, $courts, $schedule);
+        $data = compact('venue', 'day', 'date', 'courts', 'hours', 'grid');
+        if ($request->query('fragment') === 'grid') {
+            return response()->view('staff.calendar.grid', $data)->header('Cache-Control', 'private, no-store');
+        }
+        $action = $request->query('action');
+        $data['initialModal'] = in_array($action, ['new', 'book', 'block', 'open-play'], true)
+            ? route('staff.calendar.modal', ['kind' => $action, 'date' => $date,
+                'court' => is_scalar($request->query('court')) ? $request->query('court') : null,
+                'start' => is_scalar($request->query('start')) ? $request->query('start') : null])
+            : null;
+        $data['initialTitle'] = $action === 'book' ? 'Add a booking' : null;
+
+        return response()->view('staff.calendar', $data)->header('Cache-Control', 'private, no-store');
+    }
+
+    public function modal(Request $request, string $kind, ?int $record = null)
+    {
+        $venue = $this->venue($request);
+        $date = $request->query('date');
+        $date = Validator::make(['date' => $date], ['date' => 'required|date_format:Y-m-d'])->passes()
+            ? $date : now($venue->timezone)->toDateString();
+        $data = compact('venue', 'kind', 'date');
+        if (in_array($kind, ['new', 'book', 'block', 'open-play'], true)) {
+            $courts = $venue->courts()->where('active', true)->orderBy('id')->get();
+            $selectedCourt = $request->query('court');
+            $selectedCourt = is_scalar($selectedCourt) ? $courts->first(fn ($court) => (string) $court->id === (string) $selectedCourt) : null;
+            $selectedStart = $request->query('start');
+            $selectedStart = is_string($selectedStart) && preg_match(Schedule::START_TIME, $selectedStart) ? $selectedStart : '';
+            $data += compact('courts', 'selectedCourt', 'selectedStart');
+        } elseif ($kind === 'booking') {
+            $entry = Booking::whereIn('court_id', $venue->courts()->select('id'))->with('court')->findOrFail($record);
+            $data += compact('entry');
+        } elseif ($kind === 'blocked') {
+            $entry = CourtBlock::whereIn('court_id', $venue->courts()->select('id'))->whereNull('open_play_session_id')->findOrFail($record);
+            $court = $venue->courts()->findOrFail($entry->court_id);
+            $data += compact('entry', 'court');
+        } elseif ($kind === 'session') {
+            $session = $venue->openPlaySessions()->with('courts')->findOrFail($record);
+            $players = $session->registrations()->orderBy('id')->get();
+            $active = $players->filter(fn ($player) => !$player->cancelled_at && !$player->paymentExpired());
+            $paid = $active->filter(fn ($player) => $player->paid_at !== null);
+            $data += compact('session', 'players', 'active', 'paid');
+        } else {
+            abort(404);
+        }
+
+        return response()->view($request->header('X-Calendar-Fragment') === '1'
+            ? 'staff.calendar.modal' : 'staff.calendar.modal-page', $data)->header('Cache-Control', 'private, no-store');
     }
 
     public function book(Request $request, Schedule $schedule)
@@ -155,6 +204,10 @@ class StaffCalendarController extends Controller
 
     private function calendar(string $date, string $status)
     {
+        if (request()->expectsJson()) {
+            return response()->json(['message' => $status, 'date' => $date]);
+        }
+
         return redirect()->route('staff.calendar', ['date' => $date])->with('status', $status);
     }
 }
