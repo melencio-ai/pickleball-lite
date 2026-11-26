@@ -64,13 +64,7 @@
         };
     @endphp
 
-    @if($step === 1)
-        <section class="panel booking-types">
-            <h2>What would you like to book?</h2>
-            <a class="survey-choice" href="{{ route('book', ['step' => 1]) }}" aria-current="page"><x-booking-icon name="calendar-days" /><span><strong>Book a court</strong><small>Reserve a court for your own group.</small></span></a>
-            <a class="survey-choice" href="{{ route('open-play') }}"><x-booking-icon name="users" /><span><strong>Join Open Play</strong><small>Meet and play with other players.</small></span></a>
-        </section>
-    @endif
+    <p class="booking-back"><a href="{{ route('book') }}">← Booking options</a> · <a href="{{ route('landing') }}">Venue website</a></p>
     <section class="panel survey-panel" aria-labelledby="survey-title">
         <div class="section-heading">
             <p class="survey-step">Step {{ $step }} of 6</p>
