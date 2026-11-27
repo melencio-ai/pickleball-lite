@@ -17,7 +17,7 @@ class ResolvePublicVenue
         $request->route()->forgetParameter('venueSlug');
         $request->attributes->set('venue_context',$venue);
         // Existing private payment/confirmation URLs remain accessible for reconciliation.
-        $existing = $request->routeIs('*.payment','*.payment.status','*.confirmed','*.image');
+        $existing = $request->routeIs('*.payment','*.payment.status','*.confirmed','*.image','*.policies','policies');
         abort_unless($existing || $venue->acceptsPublicBookings(), 404);
 
         return $next($request);
