@@ -1,4 +1,124 @@
+{{--
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+--}}
 @props(['name'])
-<svg class="booking-icon" width="18" height="18" aria-hidden="true" focusable="false">
-    <use href="{{ asset('booking-icons.svg') }}?v=5#{{ $name }}"></use>
+<svg class="booking-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+@switch($name)
+@case('calendar-days')
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <rect width="18" height="18" x="3" y="4" rx="2" />
+    <path d="M3 10h18" />
+    <path d="M8 14h.01" />
+    <path d="M12 14h.01" />
+    <path d="M16 14h.01" />
+    <path d="M8 18h.01" />
+    <path d="M12 18h.01" />
+    <path d="M16 18h.01" />
+    @break
+@case('chevron-down')
+    <path d="m6 9 6 6 6-6" />
+    @break
+@case('circle-alert')
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" x2="12" y1="8" y2="12" />
+    <line x1="12" x2="12.01" y1="16" y2="16" />
+    @break
+@case('circle-check')
+    <circle cx="12" cy="12" r="10" />
+    <path d="m9 12 2 2 4-4" />
+    @break
+@case('clock')
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+    @break
+@case('copy')
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    @break
+@case('download')
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" x2="12" y1="15" y2="3" />
+    @break
+@case('map-pin')
+    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+    <circle cx="12" cy="10" r="3" />
+    @break
+@case('message-circle')
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    @break
+@case('qr-code')
+    <rect width="5" height="5" x="3" y="3" rx="1" />
+    <rect width="5" height="5" x="16" y="3" rx="1" />
+    <rect width="5" height="5" x="3" y="16" rx="1" />
+    <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+    <path d="M21 21v.01" />
+    <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+    <path d="M3 12h.01" />
+    <path d="M12 3h.01" />
+    <path d="M12 16v.01" />
+    <path d="M16 12h1" />
+    <path d="M21 12v.01" />
+    <path d="M12 21v-1" />
+    @break
+@case('timer')
+    <line x1="10" x2="14" y1="2" y2="2" />
+    <line x1="12" x2="15" y1="14" y2="11" />
+    <circle cx="12" cy="14" r="8" />
+    @break
+@case('layout-grid')
+    <rect x="3" y="3" width="7" height="7" rx="1"/>
+    <rect x="14" y="3" width="7" height="7" rx="1"/>
+    <rect x="14" y="14" width="7" height="7" rx="1"/>
+    <rect x="3" y="14" width="7" height="7" rx="1"/>
+    @break
+@case('user-round')
+    <circle cx="12" cy="8" r="5"/>
+    <path d="M20 21a8 8 0 0 0-16 0"/>
+    @break
+@case('users')
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>
+    @break
+@case('plus')
+    <path d="M12 5v14M5 12h14"/>
+    @break
+@case('chevron-left')
+    <path d="m15 18-6-6 6-6"/>
+    @break
+@case('chevron-right')
+    <path d="m9 18 6-6-6-6"/>
+    @break
+@case('x')
+    <path d="m18 6-12 12M6 6l12 12"/>
+    @break
+@case('refresh-cw')
+    <path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 8a7 7 0 0 1 11.8-2L20 12M4 12l2.1 6A7 7 0 0 0 18 16"/>
+    @break
+@case('lock')
+    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    @break
+@case('link')
+    <path d="M10 13a5 5 0 0 0 7 .5l4-4a5 5 0 0 0-7-7l-2 2"/><path d="M14 11a5 5 0 0 0-7-.5l-4 4a5 5 0 0 0 7 7l2-2"/>
+    @break
+@case('phone')
+    <path d="M22 16.9v3a2 2 0 0 1-2.2 2A18 18 0 0 1 4.1 6.2 2 2 0 0 1 6.1 4h3a2 2 0 0 1 2 1.7l.5 2.9a2 2 0 0 1-.6 2.1l-1.3 1.1a14 14 0 0 0 5.5 5.5l1.1-1.3a2 2 0 0 1 2.1-.6l2.9.5a2 2 0 0 1 1.7 1z"/>
+    @break
+@endswitch
 </svg>

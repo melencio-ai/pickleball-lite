@@ -107,3 +107,13 @@
 .walkthrough-note{margin:10px 0 0;font-size:12px;color:#56635b;overflow-wrap:anywhere}
 .walkthrough-actions{display:flex;justify-content:flex-end;margin-top:16px}
 @media(max-width:480px){.walkthrough-dialog{padding:16px}.walkthrough-actions button{width:100%}}
+
+
+/* Venue branding follows the authorized workspace, not the platform account. */
+.workspace-venue-brand{min-width:0;max-width:100%;overflow:hidden}
+.workspace-venue-logo,.workspace-venue-mark{width:32px;height:32px;flex:0 0 32px;object-fit:contain;border-radius:7px}
+.workspace-venue-mark{display:grid;place-items:center;background:var(--brand-primary);color:var(--brand-on-primary)}
+.workspace-brand-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.workspace-switch-logo{width:24px;height:24px;flex:0 0 24px;object-fit:contain;border-radius:5px}
+.app-workspace .workspace-venue-brand{flex:0 1 auto}
+.app-workspace .workspace-top-actions{flex-shrink:0}

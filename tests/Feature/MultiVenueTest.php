@@ -86,6 +86,35 @@ class MultiVenueTest extends TestCase
         $this->actingAs($this->owner)->get($this->workspace($this->a,'/calendar'))->assertOk()->assertDontSee('public-booking-header');
     }
 
+    public function test_signed_in_branding_follows_authorized_venue_without_affecting_platform_pages(): void
+    {
+        $png=base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII=');
+        $version=hash('sha256',$png);
+        $this->b->media()->create(['kind'=>'logo','mime'=>'image/png','version'=>$version,'content'=>base64_encode($png)]);
+        $logo=$this->publicUrl($this->b,'/branding/logo/'.$version);
+        $this->actingAs($this->owner);
+        $this->get($this->workspace($this->b,'/calendar'))->assertForbidden();
+        $this->owner->venues()->attach($this->b->id,['role'=>'owner']);
+        foreach(['/calendar','/open-play','/settings','/website'] as $path) {
+            $this->get($this->workspace($this->b,$path))->assertOk()
+                ->assertSee('class="brand workspace-venue-brand"',false)
+                ->assertSee('class="workspace-venue-logo"',false)
+                ->assertSee('class="workspace-switch-logo"',false)
+                ->assertSee('class="workspace-brand-name">Independent Courts',false)
+                ->assertSee('rel="icon" href="'.$logo.'"',false)
+                ->assertSee('href="'.$this->workspace($this->b,'/calendar').'"',false)
+                ->assertDontSee('class="brand-mark"',false);
+        }
+        $this->get($this->workspace($this->a,'/calendar'))->assertOk()
+            ->assertSee('workspace-venue-mark')->assertDontSee($logo)
+            ->assertSee('class="workspace-brand-name">'.$this->a->name,false);
+        $this->get($this->appUrl('/venues'))->assertOk()->assertSee('class="brand-mark"',false)
+            ->assertDontSee('class="brand workspace-venue-brand"',false);
+        $this->owner->forceFill(['platform_admin'=>true])->save();
+        $this->get($this->appUrl('/admin'))->assertOk()->assertSee('class="brand-mark"',false)
+            ->assertDontSee('class="brand workspace-venue-brand"',false);
+    }
+
     public function test_booking_and_confirmation_are_scoped_to_the_public_slug(): void
     {
         $this->travelTo(now()->setDate(2030,1,10)->setTime(0,0));
