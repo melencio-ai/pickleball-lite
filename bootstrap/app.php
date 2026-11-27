@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(\App\Http\Middleware\EnforceServiceRole::class);
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO);
         $middleware->redirectGuestsTo(fn () => \App\Services\VenueContext::url('login'));
-        $middleware->redirectUsersTo(fn () => \App\Services\VenueContext::onApp() ? route('app.venues') : route('staff.calendar'));
+        $middleware->redirectUsersTo(fn (Request $request) => \App\Services\AuthDestination::home($request->user()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
