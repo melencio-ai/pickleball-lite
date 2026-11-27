@@ -14,6 +14,7 @@
             <div><dt>Time</dt><dd>{{ $confirmation['time'] }}</dd></div>
             <div><dt>Due at venue</dt><dd>₱{{ number_format($confirmation['total'] / 100, 2) }}</dd></div>
         </dl>
+        @if($booking)<x-legal-receipt type="booking" :record="$booking" />@endif
         @if($confirmation['cancellation_policy'] ?? null)
             <div class="booking-policy"><strong>Cancellation policy</strong><p>{{ $confirmation['cancellation_policy'] }}</p></div>
         @endif
