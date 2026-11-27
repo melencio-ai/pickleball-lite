@@ -10,7 +10,7 @@ const base = 'http://127.0.0.1:8000';
 try {
     await page.goto(base + '/staff/login');
     await page.getByLabel('Email').fill('browser-calendar@example.test');
-    await page.getByLabel('Password').fill('browser-test-password-123');
+    await page.getByLabel('Password',{exact:true}).fill('browser-test-password-123');
     await page.getByRole('button', {name:'Sign in'}).click();
     await page.waitForURL('**/staff/calendar');
     await page.goto(base + '/staff/calendar?date=' + tomorrow);
