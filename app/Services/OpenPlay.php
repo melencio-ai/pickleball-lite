@@ -73,6 +73,8 @@ class OpenPlay
             if ($source === 'online' && !$venue->acceptsPublicBookings()) {
                 $this->reject('session', 'This venue is not accepting online registrations.');
             }
+            $legal = $source === 'online' ? LegalPolicies::context($venue,lock:true) : null;
+            if ($legal) LegalPolicies::validate($data,$legal);
             $session = $venue->openPlaySessions()->lockForUpdate()->findOrFail($sessionId);
             $cutoff = $source === 'staff' ? $session->ends_at : $session->starts_at;
             if ($session->cancelled_at || $cutoff->lte(now())) {
@@ -97,13 +99,16 @@ class OpenPlay
                 $this->reject('session', $exception->getMessage());
             }
 
-            return $session->registrations()->create([
+            $registration = $session->registrations()->create([
                 'reference' => (string) Str::ulid(), 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'], 'total' => $session->price, 'source' => $source,
                 'payment_token' => Str::random(48), 'payment_qr_payload' => $payload,
                 'payment_messenger_url' => $venue->payment_messenger_url,
                 'payment_expires_at' => min(now()->toImmutable()->addMinutes(20), $cutoff),
+                'cancellation_policy' => LegalPolicies::venuePolicy($venue),
             ]);
+            if ($legal) LegalPolicies::record($legal,'open_play',$registration->id,$venue->id);
+            return $registration;
         }, 3);
     }
 
