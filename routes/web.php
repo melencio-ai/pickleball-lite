@@ -31,7 +31,7 @@ $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
     Route::get('/policies', [LegalController::class,'venue'])->name('policies');
     Route::get('/book', [PublicBookingController::class, 'index'])->name('book');
-    Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
+    Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1,book-store:')->name('book.store');
     Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
         ->whereIn('kind', array_merge(['logo', 'cover'], \App\Services\VenueWebsite::GALLERY))->where('version', '[a-f0-9]{64}')->name('book.image');
     Route::get('/payments/{token}/status', [PublicBookingController::class, 'paymentStatus'])
@@ -41,7 +41,7 @@ $publicRoutes = function () {
     Route::get('/bookings/confirmed', [PublicBookingController::class, 'confirmation'])->name('book.confirmed');
 
     Route::get('/open-play', [PublicOpenPlayController::class, 'index'])->name('open-play');
-    Route::post('/open-play/{session}/join', [PublicOpenPlayController::class, 'store'])->whereNumber('session')->middleware('throttle:20,1')->name('open-play.join');
+    Route::post('/open-play/{session}/join', [PublicOpenPlayController::class, 'store'])->whereNumber('session')->middleware('throttle:20,1,open-play-join:')->name('open-play.join');
     Route::get('/open-play/payments/{token}/status', [PublicOpenPlayController::class, 'paymentStatus'])->where('token', '[a-zA-Z0-9]{48}')->middleware('throttle:booking-payment-status')->name('open-play.payment.status');
     Route::get('/open-play/payments/{token}', [PublicOpenPlayController::class, 'payment'])->where('token', '[a-zA-Z0-9]{48}')->name('open-play.payment');
 
@@ -71,10 +71,10 @@ $staffRoutes = function () {
     });
     Route::middleware('can:manage-venue')->group(function () {
         Route::get('/onboarding/{step?}', [OnboardingController::class,'show'])->whereNumber('step')->name('settings.onboarding');
-        Route::post('/onboarding/{step}', [OnboardingController::class,'save'])->whereNumber('step')->middleware('throttle:30,1')->name('settings.onboarding.save');
+        Route::post('/onboarding/{step}', [OnboardingController::class,'save'])->whereNumber('step')->middleware('throttle:30,1,settings-onboarding-save:')->name('settings.onboarding.save');
         Route::get('/subscription', [SubscriptionController::class,'index'])->name('settings.subscription');
-        Route::post('/subscription/extend', [SubscriptionController::class,'extend'])->middleware('throttle:5,1')->name('settings.subscription.extend');
-        Route::post('/subscription/upgrade', [SubscriptionController::class,'upgrade'])->middleware('throttle:5,1')->name('settings.subscription.upgrade');
+        Route::post('/subscription/extend', [SubscriptionController::class,'extend'])->middleware('throttle:5,1,settings-subscription-extend:')->name('settings.subscription.extend');
+        Route::post('/subscription/upgrade', [SubscriptionController::class,'upgrade'])->middleware('throttle:5,1,settings-subscription-upgrade:')->name('settings.subscription.upgrade');
         Route::get('/privacy-requests', [PrivacyRequestController::class,'index'])->name('settings.privacy');
         Route::post('/privacy-requests', [PrivacyRequestController::class,'store'])->name('settings.privacy.store');
         Route::patch('/privacy-requests/{record}', [PrivacyRequestController::class,'update'])->whereNumber('record')->name('settings.privacy.update');
@@ -105,7 +105,7 @@ Route::domain(config('pickle.product_host'))->group(function () {
     Route::redirect('/pricing', '/#pricing');
     Route::get('/demo', [PlatformController::class, 'demo'])->name('product.demo');
     Route::redirect('/get-started', '/#get-started');
-    Route::post('/get-started', [PlatformController::class, 'enquiry'])->middleware('throttle:5,1')->name('product.enquiry');
+    Route::post('/get-started', [PlatformController::class, 'enquiry'])->middleware('throttle:5,1,product-enquiry:')->name('product.enquiry');
 });
 
 Route::domain(config('pickle.book_host'))->name('public.')->group(function () use ($publicRoutes) {
@@ -118,30 +118,30 @@ Route::domain(config('pickle.book_host'))->name('public.')->group(function () us
 
 Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($staffRoutes) {
     Route::get('/', [PlatformController::class, 'home'])->name('home');
-    Route::get('/invite/{token}', [InvitationController::class, 'show'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:30,1')->name('invite.show');
-    Route::post('/invite/{token}', [InvitationController::class, 'accept'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:10,1')->name('invite.accept');
+    Route::get('/invite/{token}', [InvitationController::class, 'show'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:30,1,invite-show:')->name('invite.show');
+    Route::post('/invite/{token}', [InvitationController::class, 'accept'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:10,1,invite-accept:')->name('invite.accept');
     Route::middleware('guest')->group(function () {
         Route::get('/register',[RegistrationController::class,'create'])->name('register');
-        Route::post('/register',[RegistrationController::class,'store'])->middleware('throttle:5,60')->name('register.store');
+        Route::post('/register',[RegistrationController::class,'store'])->middleware('throttle:5,60,register-store:')->name('register.store');
         Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
-        Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+        Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1,login-store:')->name('login.store');
         Route::get('/forgot-password', [PasswordRecoveryController::class,'request'])->name('password.request');
-        Route::post('/forgot-password', [PasswordRecoveryController::class,'send'])->middleware('throttle:5,1')->name('password.email');
+        Route::post('/forgot-password', [PasswordRecoveryController::class,'send'])->middleware('throttle:5,1,password-email:')->name('password.email');
         Route::get('/reset-password/{token}', [PasswordRecoveryController::class,'reset'])->where('token','[a-f0-9]{64}')->name('password.reset');
-        Route::post('/reset-password', [PasswordRecoveryController::class,'update'])->middleware('throttle:10,1')->name('password.update');
+        Route::post('/reset-password', [PasswordRecoveryController::class,'update'])->middleware('throttle:10,1,password-update:')->name('password.update');
     });
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
         Route::get('/verify-email',[RegistrationController::class,'notice'])->name('verify.notice');
-        Route::post('/verify-email/resend',[RegistrationController::class,'resend'])->middleware('throttle:5,10')->name('verify.resend');
-        Route::get('/verify-email/{id}/{hash}',[RegistrationController::class,'verify'])->whereNumber('id')->where('hash','[a-f0-9]{40}')->middleware(['signed','throttle:10,1'])->name('verify.complete');
+        Route::post('/verify-email/resend',[RegistrationController::class,'resend'])->middleware('throttle:5,10,verify-resend:')->name('verify.resend');
+        Route::get('/verify-email/{id}/{hash}',[RegistrationController::class,'verify'])->whereNumber('id')->where('hash','[a-f0-9]{40}')->middleware(['signed','throttle:10,1,verify-complete:'])->name('verify.complete');
         Route::get('/accept-terms', [LegalController::class,'acceptPage'])->name('legal.accept');
-        Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1')->name('legal.accept.store');
+        Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1,legal-accept-store:')->name('legal.accept.store');
     });
     Route::middleware(['auth',RequireVerifiedOwner::class,RequireLegalTerms::class])->group(function () use ($staffRoutes) {
         Route::get('/venues', [PlatformController::class, 'venues'])->name('venues');
         Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
-        Route::get('/notifications/count',[NotificationController::class,'count'])->middleware('throttle:30,1')->name('notifications.count');
+        Route::get('/notifications/count',[NotificationController::class,'count'])->middleware('throttle:60,1,notifications-count:')->name('notifications.count');
         Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{record}/read',[NotificationController::class,'read'])->whereNumber('record')->name('notifications.read');
         Route::patch('/notifications/preferences',[NotificationController::class,'preferences'])->name('notifications.preferences');
@@ -150,9 +150,9 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
         Route::middleware('can:platform-admin')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [PlatformController::class, 'admin'])->name('index');
             Route::get('/email', [\App\Http\Controllers\EmailAdminController::class,'index'])->name('email.index');
-            Route::patch('/email', [\App\Http\Controllers\EmailAdminController::class,'save'])->middleware('throttle:5,10')->name('email.save');
-            Route::post('/email/test', [\App\Http\Controllers\EmailAdminController::class,'test'])->middleware('throttle:3,10')->name('email.test');
-            Route::patch('/email/activation', [\App\Http\Controllers\EmailAdminController::class,'activation'])->middleware('throttle:10,10')->name('email.activation');
+            Route::patch('/email', [\App\Http\Controllers\EmailAdminController::class,'save'])->middleware('throttle:platform-email-save')->name('email.save');
+            Route::post('/email/test', [\App\Http\Controllers\EmailAdminController::class,'test'])->middleware('throttle:platform-email-test')->name('email.test');
+            Route::patch('/email/activation', [\App\Http\Controllers\EmailAdminController::class,'activation'])->middleware('throttle:platform-email-activation')->name('email.activation');
             Route::get('/legal', [LegalAdminController::class,'index'])->name('legal.index');
             Route::patch('/legal/{document}', [LegalAdminController::class,'save'])->whereIn('document',\App\Services\LegalPolicies::SLUGS)->name('legal.save');
             Route::post('/legal/publish', [LegalAdminController::class,'publish'])->name('legal.publish');
@@ -177,12 +177,12 @@ Route::middleware(LegacyHost::class)->group(function () use ($publicRoutes,$staf
     Route::prefix('staff')->group(function () use ($staffRoutes) {
         Route::middleware('guest')->group(function () {
             Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
-        Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+        Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1,login-store:')->name('login.store');
         });
         Route::middleware('auth')->group(function () use ($staffRoutes) {
             Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
             Route::get('/accept-terms', [LegalController::class,'acceptPage'])->name('legal.accept');
-            Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1')->name('legal.accept.store');
+            Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1,legal-accept-store:')->name('legal.accept.store');
             Route::middleware([RequireLegalTerms::class,ResolveStaffVenue::class.':legacy'])->group($staffRoutes);
         });
     });
