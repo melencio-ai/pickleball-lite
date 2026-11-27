@@ -65,6 +65,7 @@
                 <label>Minimum notice (minutes)
                     <input type="number" min="0" max="10080" name="minimum_notice" value="{{ $venue->minimum_notice }}" required>
                 </label>
+                <p class="muted">This policy is shown to customers before booking and saved with new reservations. <a href="{{ \App\Services\VenueContext::url('settings.privacy') }}">Manage venue privacy requests</a>.</p>
                 <label>Cancellation policy
                     <textarea name="cancellation_policy" rows="4" maxlength="1500">{{ $venue->cancellation_policy }}</textarea>
                 </label>
