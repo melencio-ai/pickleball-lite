@@ -36,10 +36,10 @@ class VenueLandingController extends Controller
         $legacy = collect($request->query())->only(['step', 'date', 'duration', 'court', 'start'])
             ->filter(fn ($value) => is_string($value) && $value !== '');
         if ($legacy->isNotEmpty()) {
-            return redirect()->route('book', $legacy->all());
+            return \App\Services\VenueContext::redirect('book', $legacy->all());
         }
 
-        $venue = Venue::query()->orderBy('id')->first();
+        $venue = \App\Services\VenueContext::venue();
         if (!$venue) {
             return response()->view('book.setup', [], 503);
         }
@@ -68,7 +68,7 @@ class VenueLandingController extends Controller
         foreach (VenueWebsite::GALLERY as $kind) {
             if ($gallery->has($kind)) {
                 $galleryPhotos[] = [
-                    'url' => route('book.image', ['kind' => $kind, 'version' => $gallery[$kind]->version]),
+                    'url' => \App\Services\VenueContext::url('book.image', ['kind' => $kind, 'version' => $gallery[$kind]->version]),
                     'alt' => $venue->name.' gallery photo '.(count($galleryPhotos) + 1),
                 ];
             }
@@ -76,7 +76,7 @@ class VenueLandingController extends Controller
         if ($isDemoGallery) {
             foreach (VenueWebsite::DEMO_GALLERY as $image => $label) {
                 $galleryPhotos[] = [
-                    'url' => route('landing.demo-image', ['image' => $image]),
+                    'url' => \App\Services\VenueContext::url('landing.demo-image', ['image' => $image]),
                     'alt' => 'Illustrative demo: '.$label,
                 ];
             }
