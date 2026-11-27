@@ -96,6 +96,7 @@
             @empty
                 <p class="muted">No staff accounts yet.</p>
             @endforelse
+            @unless(\App\Services\VenueContext::onApp())
             <details class="settings-row">
                 <summary>Add a staff account</summary>
                 <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.staff.add') }}">
@@ -106,6 +107,7 @@
                     <button>Add staff</button>
                 </form>
             </details>
+            @endunless
         </section>
     </div>
 @endsection
