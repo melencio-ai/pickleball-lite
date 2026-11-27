@@ -1,39 +1,52 @@
 <!doctype html>
 @php
-    $publicVenue = \App\Services\VenueContext::onBooking() ? request()->attributes->get('venue_context') : null;
-    $publicLogoVersion = $publicVenue
-        ? (isset($media) ? $media->get('logo')?->version : $publicVenue->media()->where('kind','logo')->value('version'))
+    $workspace = request()->attributes->get('venue_context');
+    $appShell = \App\Services\VenueContext::onApp() && auth()->check();
+    $publicVenue = \App\Services\VenueContext::onBooking() ? $workspace : null;
+    $staffVenue = auth()->check() && \App\Services\VenueContext::role() ? $workspace : null;
+    $brandVenue = $publicVenue ?? $staffVenue;
+    $logoVersion = $brandVenue
+        ? (isset($media) ? $media->get('logo')?->version : $brandVenue->media()->where('kind','logo')->value('version'))
         : null;
+    $logoUrl = $logoVersion ? \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$logoVersion],venue:$brandVenue) : null;
 @endphp
 <html lang="en" style="{{ \App\Services\VenueTheme::style(($venue ?? request()->attributes->get('venue_context'))?->brand_color) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') · {{ $publicVenue?->name ?? 'Pickleball Lite' }}</title>
+    <title>@yield('title') · {{ $brandVenue?->name ?? 'Pickleball Lite' }}</title>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
-    @if($publicVenue)
-        <link rel="icon" href="{{ $publicLogoVersion ? \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$publicLogoVersion],venue:$publicVenue) : asset('favicon.svg') }}">
-        <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
+    @if($logoUrl)
+        <link rel="icon" href="{{ $logoUrl }}">
     @else
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     @endif
+    @if($publicVenue)
+        <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
+    @endif
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=3">
+<link rel="stylesheet" href="/workspace.css?v=4">
 <script src="/workspace.js?v=4" defer></script>
 </head>
 @php
-    $workspace = request()->attributes->get('venue_context');
-    $appShell = \App\Services\VenueContext::onApp() && auth()->check();
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
 @endphp
 <body @if($appShell) class="app-workspace" data-workspace-user="{{ auth()->id() }}" @endif>
     @if($publicVenue)
         <a class="site-skip" href="#main-content">Skip to content</a>
-        <x-public-booking-header :venue="$publicVenue" :logo-version="$publicLogoVersion"/>
+        <x-public-booking-header :venue="$publicVenue" :logo-version="$logoVersion"/>
     @else
     <header class="site-header">
         <div class="header-inner">
-            <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}"><span class="brand-mark" aria-hidden="true"></span> Pickle Lite</a>
+            @if($staffVenue)
+                <a class="brand workspace-venue-brand" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="{{ $staffVenue->name }}">
+                    @if($logoUrl)<img class="workspace-venue-logo" src="{{ $logoUrl }}" alt="" width="32" height="32">
+                    @else<span class="workspace-venue-mark"><x-workspace-icon name="building"/></span>@endif
+                    <span class="workspace-brand-name">{{ $staffVenue->name }}</span>
+                </a>
+            @else
+                <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}"><span class="brand-mark" aria-hidden="true"></span> Pickle Lite</a>
+            @endif
             @if($appShell)
             <div class="workspace-top-actions">
                 <button type="button" class="workspace-toggle" aria-label="Toggle navigation" aria-controls="workspace-navigation" aria-expanded="true" data-workspace-toggle><x-workspace-icon name="menu"/></button>
@@ -53,7 +66,7 @@
                         @endcan
                         @if($workspace)
                             <span class="workspace-nav-caption">Venue</span>
-                            <a class="workspace-switch" href="{{ route('app.venues') }}" title="Switch venue"><x-workspace-icon name="building"/><span>{{ $workspace->name }}</span></a>
+                            <a class="workspace-switch" href="{{ route('app.venues') }}" title="Switch venue" aria-label="Switch venue: {{ $workspace->name }}">@if($staffVenue && $logoUrl)<img class="workspace-switch-logo" src="{{ $logoUrl }}" alt="" width="24" height="24">@else<x-workspace-icon name="building"/>@endif<span>{{ $workspace->name }}</span></a>
                             <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener" title="Venue website"><x-workspace-icon name="globe"/><span>Venue website</span></a>
                             <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="Calendar" @if(\App\Services\VenueContext::is('staff.calendar*')) aria-current="page" @endif><x-workspace-icon name="calendar"/><span>Calendar</span></a>
                             <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.open-play') }}" title="Open Play" @if(\App\Services\VenueContext::is('staff.open-play*')) aria-current="page" @endif><x-workspace-icon name="users"/><span>Open Play</span></a>

@@ -118,8 +118,27 @@ try {
     }
     await page.goto(app);
     await page.waitForURL(app+'/venues/'+slug+'/calendar');
+    const signedBrand=page.locator('.workspace-venue-brand');
+    await signedBrand.waitFor();
+    assert.equal(await signedBrand.locator('.workspace-brand-name').textContent(),venueName);
+    assert.equal(await signedBrand.locator('img').getAttribute('src'),venueLogo);
+    await signedBrand.locator('img').evaluate(img=>img.decode());
+    assert.equal(await page.locator('.workspace-switch-logo').getAttribute('src'),venueLogo);
+    assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),venueLogo);
+    assert.equal(await signedBrand.getAttribute('href'),app+'/venues/'+slug+'/calendar');
+    for(const label of ['Previous day','Next day','Refresh calendar','New']) {
+        const control=page.locator('[aria-label="'+label+'"]').or(page.getByRole('link',{name:label,exact:true})).first();
+        const icon=control.locator('svg.booking-icon');
+        assert.ok(await icon.evaluate(el=>el.querySelector('path,rect,circle,line,polyline')!==null && el.getBBox().width>0 && el.getBBox().height>0),'Missing inline icon: '+label);
+    }
+    await page.setViewportSize({width:320,height:740});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile workspace branding must not overflow');
+    await page.setViewportSize({width:1440,height:900});
     await page.goto(app+'/venues');
     await page.getByRole('link',{name:/Manage venue/}).waitFor();
+    assert.equal(await page.locator('.workspace-venue-brand').count(),0);
+    assert.equal(await page.locator('.site-header .brand').textContent().then(s=>s.trim()),'Pickle Lite');
+    console.log('Signed-in venue branding passed: logo, name, favicon, sidebar, mobile fit, platform branding isolation, and inline calendar icons.');
     const signOut=page.locator('[data-sign-out-open]');
     const confirmation=page.getByRole('dialog',{name:'Sign out?'});
     const venuesUrl=page.url();
