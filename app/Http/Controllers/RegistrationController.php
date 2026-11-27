@@ -88,6 +88,8 @@ class RegistrationController extends Controller
             VenueInvitations::audit($record,$venue,'self_service.email_verified');
         },3);
         $request->session()->regenerate();
-        return redirect()->to(AuthDestination::home($user->fresh()))->with('status','Email verified. Your 30-day free trial has started.');
+        $user->refresh();
+        Auth::guard('web')->setUser($user);
+        return redirect()->to(AuthDestination::home($user))->with('status','Email verified. Your 30-day free trial has started.');
     }
 }
