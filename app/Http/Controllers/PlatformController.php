@@ -160,7 +160,7 @@ class PlatformController extends Controller
     public function recordPayment(Request $request,int $venue)
     {
         $data = $request->validate([
-            'kind'=>['required',Rule::in(['setup','monthly'])],
+            'kind'=>['required',Rule::in(['monthly'])],
             'amount'=>['required','regex:'.\App\Services\Pricing::PESOS],
             'reference'=>'required|string|max:100','received_on'=>'required|date_format:Y-m-d|before_or_equal:today',
         ]);

@@ -25,7 +25,7 @@ if($status==='trial' && !$days) $status='trial_expired';
 </section>
 <section class="panel form-stack">
     <h2>Paid plan</h2>
-    <p><strong>₱{{ number_format(($subscription->setup_fee ?? 300000)/100) }}</strong> one-time setup<br><strong>₱{{ number_format(($subscription->monthly_fee ?? 100000)/100) }}</strong> monthly maintenance</p>
+    <p><strong>₱{{ number_format(($subscription->monthly_fee ?? 100000)/100) }}</strong> per month · Free setup</p>
     <p>Includes booking website, court reservations, Open Play and management tools. No automatic charges.</p>
     @if($status!=='active')
         @if($subscription?->upgrade_requested_at)<p class="notice success">Upgrade requested. We will contact you to arrange payment.</p>

@@ -51,7 +51,7 @@ class MultiVenueTest extends TestCase
 
     public function test_domains_resolve_independent_venues_and_legacy_links(): void
     {
-        $this->get($this->productUrl())->assertOk()->assertSee('More games. Less admin work.')->assertSee('₱3,000');
+        $this->get($this->productUrl())->assertOk()->assertSee('More games. Less admin work.')->assertSee('₱1,000')->assertSee('Free setup')->assertDontSee('₱3,000');
         $this->get($this->appUrl())->assertRedirect($this->appUrl('/login'));
         $this->get($this->publicUrl($this->a))->assertOk()->assertSee($this->a->name)->assertDontSee('Independent Courts')->assertSee($this->publicUrl($this->a,'/book'));
         $this->get($this->publicUrl($this->b))->assertOk()->assertSee('Independent Courts')->assertSee('₱750.00')->assertSee($this->publicUrl($this->b,'/book'));
@@ -137,12 +137,15 @@ class MultiVenueTest extends TestCase
         $venue = Venue::where('slug','new-venue')->firstOrFail();
         $this->assertFalse($venue->published);
         $inviteUrl = session('invite_url');
-        $this->assertDatabaseHas('venue_subscriptions',['venue_id'=>$venue->id,'setup_fee'=>300000,'monthly_fee'=>100000]);
+        $this->assertDatabaseHas('venue_subscriptions',['venue_id'=>$venue->id,'setup_fee'=>0,'monthly_fee'=>100000]);
         $this->get($this->workspace($venue,'/calendar'))->assertForbidden();
         $this->get($this->publicUrl($venue))->assertNotFound();
         $this->patch($this->appUrl('/admin/venues/'.$venue->id.'/status'),['status'=>'active','published'=>'1'])->assertSessionHasErrors('published');
-        $this->post($this->appUrl('/admin/venues/'.$venue->id.'/billing/payments'),['kind'=>'setup','amount'=>'3000.00','reference'=>'TEST-SETUP-001','received_on'=>now()->toDateString()])->assertRedirect();
-        $this->assertDatabaseHas('subscription_payments',['amount'=>300000,'reference'=>'TEST-SETUP-001']);
+        $this->post($this->appUrl('/admin/venues/'.$venue->id.'/billing/payments'),['kind'=>'setup','amount'=>'3000.00','reference'=>'TEST-SETUP-001','received_on'=>now()->toDateString()])->assertSessionHasErrors('kind');
+        $this->assertDatabaseMissing('subscription_payments',['reference'=>'TEST-SETUP-001']);
+        $this->get($this->appUrl('/admin/venues/'.$venue->id.'/billing'))->assertOk()->assertSee('Free setup')->assertDontSee('Setup fee');
+        $this->post($this->appUrl('/admin/venues/'.$venue->id.'/billing/payments'),['kind'=>'monthly','amount'=>'1000.00','reference'=>'TEST-MONTHLY-001','received_on'=>now()->toDateString()])->assertRedirect();
+        $this->assertDatabaseHas('subscription_payments',['kind'=>'monthly','amount'=>100000,'reference'=>'TEST-MONTHLY-001']);
         $this->assertDatabaseCount('bookings',0);
         $this->post($this->appUrl('/logout'));
         $this->get($inviteUrl)->assertOk()->assertSee('Join New Venue');
