@@ -1,7 +1,7 @@
 @extends('layout')
 @section('title','Platform administration')
 @section('content')
-<header class="section-heading page-heading"><div><h1>Platform administration</h1><p class="muted">Manage venues, owner access, subscriptions and enquiries.</p></div><a class="button" href="#new-venue">+ New venue</a></header>
+<header class="section-heading page-heading"><div><h1>Platform administration</h1><p class="muted">Manage venues, owner access, subscriptions and enquiries.</p></div><div class="actions"><a class="button secondary" href="{{ route('app.admin.legal.index') }}">Legal policies</a><a class="button secondary" href="{{ route('app.admin.privacy.index') }}">Privacy requests</a><a class="button" href="#new-venue">+ New venue</a></div></header>
 <div class="tenant-stats">
     @foreach(['Venues'=>$stats['venues'],'Published venues'=>$stats['active'],'Active subscription MRR'=>'₱'.number_format($stats['mrr']/100,2),'Overdue subscriptions'=>$stats['overdue']] as $label=>$value)
         <div class="panel"><span class="muted">{{ $label }}</span><strong>{{ $value }}</strong></div>
