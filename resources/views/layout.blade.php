@@ -25,11 +25,14 @@
         <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
     @endif
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=5">
-<script src="/workspace.js?v=5" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=6">
+<script src="/workspace.js?v=6" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
+    $rewardsState = $appShell && $workspace && \App\Services\VenueContext::role()==='owner' &&
+        \App\Services\PlatformRewards::visible($workspace,$subscriptionStatus)
+        ? \App\Services\PlatformRewards::summary($workspace,$subscriptionStatus) : null;
 @endphp
 <body @if($appShell) class="app-workspace" data-workspace-user="{{ auth()->id() }}" @endif>
     @if($publicVenue)
@@ -62,6 +65,7 @@
                             <span class="workspace-nav-caption">Platform</span>
                             <a class="workspace-nav-link" href="{{ route('app.admin.index') }}" title="Platform admin"><x-workspace-icon name="shield"/><span>Platform admin</span></a>
                             <a class="workspace-nav-link" href="{{ route('app.admin.legal.index') }}" title="Legal policies"><x-workspace-icon name="file"/><span>Legal policies</span></a>
+                            <a class="workspace-nav-link" href="{{ route('app.admin.rewards.index') }}" title="Platform rewards"><x-workspace-icon name="gift"/><span>Platform rewards</span></a>
                             <a class="workspace-nav-link" href="{{ route('app.admin.email.index') }}" title="Email service"><x-workspace-icon name="mail"/><span>Email service</span></a>
                         @endcan
                         @if($workspace)
@@ -76,6 +80,9 @@
                             @can('manage-venue')
                                 @if($workspace->self_service && \Illuminate\Support\Facades\DB::table('venue_onboarding')->where('venue_id',$workspace->id)->whereNull('completed_at')->exists())
                                     <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.onboarding') }}" title="Resume onboarding"><x-workspace-icon name="file"/><span>Resume onboarding</span></a>
+                                @endif
+                                @if($rewardsState)
+                                    <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.rewards') }}" data-rewards-open title="Rewards" aria-haspopup="dialog" aria-controls="rewards-drawer"><x-workspace-icon name="gift"/><span>Rewards</span></a>
                                 @endif
                                 <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.subscription') }}" title="Subscription"><x-workspace-icon name="card"/><span>Subscription</span></a>
                                 <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings') }}" title="Settings"><x-workspace-icon name="settings"/><span>Settings</span></a>
@@ -129,6 +136,9 @@
                 <div class="workspace-trial expired"><x-workspace-icon name="clock"/><span>Subscription inactive. Existing bookings remain available.</span>@can('manage-venue')<a href="{{ \App\Services\VenueContext::url('settings.subscription') }}">View subscription</a>@endcan</div>
             @endif
         @endif
+        @if($rewardsState && !\App\Services\VenueContext::is('settings.rewards'))
+            <x-rewards-widget :state="$rewardsState"/>
+        @endif
         @if(session('status'))
             <div class="notice success" role="status" data-toast-success>{{ session('status') }}</div>
         @endif
@@ -150,6 +160,7 @@
         <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
     </footer>
 @if($appShell)<x-notification-drawer />@endif
+@if($rewardsState)<x-rewards-drawer :state="$rewardsState" :venue="$workspace"/>@endif
 @if(auth()->check() && !\App\Services\VenueContext::onBooking())
     <x-sign-out-dialog />
 @endif

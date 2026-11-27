@@ -1,6 +1,8 @@
 @props(['name'])
 <svg class="workspace-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
 @switch($name)
+@case('gift')<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9M12 8v13M12 8H8.5A2.5 2.5 0 1 1 11 5.5L12 8Zm0 0h3.5A2.5 2.5 0 1 0 13 5.5L12 8Z"/>@break
+@case('flame')<path d="M12 22c-4.4 0-7-2.7-7-6.6 0-3.1 2-5.5 4.5-7.7-.4 3 1.2 3.9 1.2 3.9S15 8.5 13 2c4.4 3.7 6 8.6 6 13.4 0 3.9-2.6 6.6-7 6.6Z"/><path d="M12 22c-1.9 0-3-1.4-3-3.1 0-1.6 1.4-2.9 3-4.2 1.6 1.3 3 2.6 3 4.2 0 1.7-1.1 3.1-3 3.1Z"/>@break
 @case('mail')<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>@break
 @case('play')<path d="m8 5 12 7-12 7V5z"/>@break
 @case('menu')<path d="M4 6h16M4 12h16M4 18h16"/>@break

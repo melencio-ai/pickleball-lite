@@ -10,18 +10,26 @@ use Illuminate\Validation\ValidationException;
 
 final class TrialAccess
 {
-    public static function subscription(Venue $venue, bool $lock = false): ?object
+    public static function subscription(Venue $venue, bool $lock = false, bool $shared = false): ?object
     {
         $query = DB::table('venue_subscriptions')->where('venue_id',$venue->id);
         if ($lock) $query->lockForUpdate();
+        elseif ($shared) $query->sharedLock();
         return $query->first();
     }
 
     public static function allowed(Venue $venue): bool
     {
-        if (!$venue->self_service) return true;
-        $sub = self::subscription($venue);
-        return $sub && ($sub->status === 'active' ||
+        if (!$venue->self_service) {
+            // A nonlocking read inside an InnoDB booking transaction can establish
+            // a stale consistent snapshot before the court/session lock is acquired.
+            $legacy=self::subscription($venue, shared:DB::transactionLevel()>0);
+            if (!$legacy?->reward_managed) return true;
+            return $legacy->status==='active' && $legacy->renewal_date && $legacy->renewal_date>now($venue->timezone)->toDateString();
+        }
+        $sub = self::subscription($venue, shared:DB::transactionLevel()>0);
+        return $sub && (($sub->status === 'active' && (!$sub->reward_managed ||
+            ($sub->renewal_date && $sub->renewal_date>now($venue->timezone)->toDateString()))) ||
             ($sub->status === 'trial' && $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->isFuture()));
     }
 
