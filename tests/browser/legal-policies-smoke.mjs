@@ -22,6 +22,13 @@ try {
     await platformSwitcher.waitFor();
     assert.equal(await platformSwitcher.locator('[data-workspace-choice="platform"]').getAttribute('aria-current'),'true');
     await platformSwitcher.getByRole('button',{name:'Close workspace switcher'}).click();
+    await page.setViewportSize({width:390,height:844});
+    const adminTabs=page.locator('[data-mobile-navigation]');
+    await adminTabs.waitFor();
+    assert.equal(await adminTabs.locator('[data-mobile-tab="platform-overview"]').getAttribute('aria-current'),'page');
+    assert.equal(await adminTabs.locator('[data-mobile-tab="platform-rewards"]').count(),1);
+    assert.equal(await adminTabs.locator('[data-mobile-tab="calendar"]').count(),0);
+    await page.setViewportSize({width:1440,height:900});
     await platformSwitcher.waitFor({state:'hidden'});
     await platformNav.getByRole('link',{name:'Legal policies',exact:true}).click();
     await page.waitForURL(app+'/admin/legal');

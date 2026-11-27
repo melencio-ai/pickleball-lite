@@ -10,6 +10,10 @@
 @case('flame')<path d="M12 22c-4.4 0-7-2.7-7-6.6 0-3.1 2-5.5 4.5-7.7-.4 3 1.2 3.9 1.2 3.9S15 8.5 13 2c4.4 3.7 6 8.6 6 13.4 0 3.9-2.6 6.6-7 6.6Z"/><path d="M12 22c-1.9 0-3-1.4-3-3.1 0-1.6 1.4-2.9 3-4.2 1.6 1.3 3 2.6 3 4.2 0 1.7-1.1 3.1-3 3.1Z"/>@break
 @case('mail')<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>@break
 @case('play')<path d="m8 5 12 7-12 7V5z"/>@break
+@case('chevron-down')<path d="m6 9 6 6 6-6"/>@break
+@case('more')<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>@break
+@case('calendar-days')<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01M16 17h.01"/>@break
+@case('layout-dashboard')<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>@break
 @case('menu')<path d="M4 6h16M4 12h16M4 18h16"/>@break
 @case('bell')<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>@break
 @case('user')<circle cx="12" cy="8" r="3.5"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/>@break

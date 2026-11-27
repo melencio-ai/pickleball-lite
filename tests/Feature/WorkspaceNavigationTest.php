@@ -27,6 +27,9 @@ class WorkspaceNavigationTest extends TestCase
         config(['pickle.demo_slug'=>null]);
         $this->actingAs($owner)->get($this->venueUrl($a,'/calendar'))->assertOk()
             ->assertSee('data-nav-context="venue"',false)
+            ->assertSee('data-mobile-tab="calendar"',false)->assertSee('data-mobile-tab="open-play"',false)
+            ->assertSee('data-mobile-tab="alerts"',false)->assertSee('data-mobile-more',false)
+            ->assertDontSee('data-mobile-tab="platform-overview"',false)
             ->assertSee('aria-label="Operations"',false)->assertSee('aria-label="Online booking"',false)
             ->assertSee('aria-label="Membership"',false)->assertSee('aria-label="Administration"',false)
             ->assertSee('data-nav-item="calendar"',false)->assertSee('data-nav-item="open-play"',false)
@@ -53,6 +56,8 @@ class WorkspaceNavigationTest extends TestCase
         $owner->forceFill(['platform_admin'=>true])->save();
         $this->actingAs($owner)->get($this->appUrl('/admin'))->assertOk()
             ->assertSee('data-nav-context="platform"',false)->assertSee('data-nav-item="platform-overview"',false)
+            ->assertSee('data-mobile-tab="platform-overview"',false)->assertSee('data-mobile-tab="platform-rewards"',false)
+            ->assertDontSee('data-mobile-tab="calendar"',false)
             ->assertSee('data-nav-item="platform-rewards"',false)->assertSee('data-nav-item="platform-email"',false)
             ->assertSee('data-nav-item="platform-legal"',false)->assertSee('data-nav-item="platform-privacy"',false)
             ->assertDontSee('data-nav-item="calendar"',false)->assertDontSee('data-nav-item="venue-settings"',false)
@@ -61,6 +66,7 @@ class WorkspaceNavigationTest extends TestCase
         $this->get($this->venueUrl($a,'/calendar'))->assertOk()->assertSee('data-nav-context="venue"',false)
             ->assertSee('data-workspace-choice="platform"',false)->assertDontSee('data-nav-item="platform-overview"',false);
         $this->get($this->appUrl('/venues'))->assertOk()->assertSee('data-nav-context="account"',false)
+            ->assertSee('data-mobile-tab="my-venues"',false)->assertDontSee('data-mobile-tab="calendar"',false)
             ->assertSee('data-nav-item="my-venues"',false)->assertDontSee('data-nav-item="calendar"',false);
         $this->get($this->appUrl('/admin/venues/'.$a->id.'/billing'))->assertOk()->assertSee('data-nav-item="platform-overview"',false);
     }

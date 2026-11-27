@@ -26,66 +26,98 @@
     const backdrop = document.querySelector('[data-workspace-close]');
     const nav = document.getElementById('workspace-navigation');
     const media = matchMedia('(max-width: 850px)');
+    const more = document.querySelector('[data-mobile-more]');
+    const mobileSwitch = document.querySelector('[data-mobile-workspace-switch]');
     if (toggle && nav) {
         const key = 'pickle-sidebar-' + (body.dataset.workspaceUser || '');
+        const main = document.querySelector('body > main');
+        const footer = document.querySelector('body > footer');
         try { if (localStorage.getItem(key) === 'collapsed') body.classList.add('workspace-collapsed'); } catch {}
-        const close = (restoreFocus = false) => {
-            body.classList.remove('workspace-open');
-            if (backdrop) backdrop.hidden = true;
+        const setOpen = (open, restoreFocus = false) => {
+            body.classList.toggle('workspace-open', open);
+            if (backdrop) backdrop.hidden = !open;
+            nav.inert = media.matches && !open;
+            if(main)main.inert=open;
+            if(footer)footer.inert=open;
             toggle.setAttribute('aria-expanded', String(!media.matches && !body.classList.contains('workspace-collapsed')));
-            if (restoreFocus) toggle.focus();
+            more?.setAttribute('aria-expanded',String(open));
+            if(open)nav.querySelector('[data-mobile-more-close]')?.focus({preventScroll:true});
+            if(restoreFocus)(media.matches ? more : toggle)?.focus({preventScroll:true});
         };
         const refresh = () => {
-            close();
-            nav.inert = media.matches;
-        };
-        toggle.addEventListener('click', () => {
-            if (media.matches) {
-                const open = !body.classList.contains('workspace-open');
-                body.classList.toggle('workspace-open', open);
-                backdrop.hidden = !open;
-                nav.inert = !open;
-                toggle.setAttribute('aria-expanded', String(open));
-                if (open) nav.querySelector('a,button')?.focus();
-            } else {
-                const collapsed = body.classList.toggle('workspace-collapsed');
-                toggle.setAttribute('aria-expanded', String(!collapsed));
-                try { localStorage.setItem(key,collapsed?'collapsed':'expanded'); } catch {}
+            setOpen(false);
+            if(mobileSwitch) {
+                if(media.matches) {
+                    mobileSwitch.setAttribute('aria-haspopup','dialog');
+                    mobileSwitch.setAttribute('aria-controls','workspace-switcher');
+                    mobileSwitch.setAttribute('aria-expanded','false');
+                } else {
+                    for(const attr of ['aria-haspopup','aria-controls','aria-expanded'])mobileSwitch.removeAttribute(attr);
+                }
             }
+        };
+        more?.addEventListener('click',()=>setOpen(!body.classList.contains('workspace-open'),body.classList.contains('workspace-open')));
+        toggle.addEventListener('click', () => {
+            if (media.matches) {setOpen(!body.classList.contains('workspace-open'));return;}
+            const collapsed = body.classList.toggle('workspace-collapsed');
+            toggle.setAttribute('aria-expanded', String(!collapsed));
+            try { localStorage.setItem(key,collapsed?'collapsed':'expanded'); } catch {}
         });
-        backdrop?.addEventListener('click', () => { close(true); nav.inert = true; });
+        backdrop?.addEventListener('click', () => setOpen(false,true));
+        nav.querySelector('[data-mobile-more-close]')?.addEventListener('click',()=>setOpen(false,true));
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && body.classList.contains('workspace-open')) {close(true);nav.inert=true;}
+            if(!body.classList.contains('workspace-open') || document.querySelector('dialog[open]'))return;
+            if(e.key==='Escape'){e.preventDefault();setOpen(false,true);return;}
+            if(e.key==='Tab'){
+                const focusable=[...nav.querySelectorAll('a[href],button:not([disabled])'),more].filter(el=>el && el.getClientRects().length);
+                if(!focusable.length)return;
+                const first=focusable[0], last=focusable.at(-1);
+                if(e.shiftKey && (document.activeElement===first || !focusable.includes(document.activeElement))){e.preventDefault();last.focus();}
+                else if(!e.shiftKey && (document.activeElement===last || !focusable.includes(document.activeElement))){e.preventDefault();first.focus();}
+            }
         });
         nav.addEventListener('click',event=>{
             const link=event.target.closest('a.workspace-nav-link');
             if(!media.matches || !link || event.button!==0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey ||
                 link.matches('[data-notification-open],[data-rewards-open]'))return;
-            // Transient drawers preserve navigation context; normal navigation
-            // closes the mobile menu, including links opened in another tab.
-            close(link.target==='_blank');nav.inert=true;
+            setOpen(false,link.target==='_blank');
         });
+        window.addEventListener('pageshow',event=>{if(event.persisted)setOpen(false);});
         media.addEventListener('change',refresh);refresh();
+        // Visual viewport changes on mobile keyboards should not pin the tab bar over inputs.
+        const viewport=window.visualViewport;
+        const keyboard=()=>{
+            const el=document.activeElement;
+            const editing=el?.matches('textarea,input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]),[contenteditable=true]');
+            body.classList.toggle('workspace-keyboard',Boolean(media.matches && editing && viewport && window.innerHeight-viewport.height>150 && viewport.scale<1.1));
+        };
+        viewport?.addEventListener('resize',keyboard);
+        document.addEventListener('focusin',keyboard);
+        document.addEventListener('focusout',()=>setTimeout(keyboard,0));
+        media.addEventListener('change',keyboard);
     }
     const switcher=document.querySelector('[data-workspace-switcher]');
     const switchTrigger=document.querySelector('[data-workspace-switch-open]');
     if(switcher && switchTrigger && typeof switcher.showModal==='function') {
         const close=switcher.querySelector('[data-workspace-switch-close]');
-        let pointerOutside=false;
+        let pointerOutside=false,opener=null;
         const outside=e=>{const rect=switcher.getBoundingClientRect();return e.clientX<rect.left || e.clientX>rect.right || e.clientY<rect.top || e.clientY>rect.bottom;};
-        switchTrigger.addEventListener('click',event=>{
+        for(const trigger of [switchTrigger,mobileSwitch].filter(Boolean))trigger.addEventListener('click',event=>{
+            if(trigger===mobileSwitch && !media.matches)return;
             if(event.button!==0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)return;
             event.preventDefault();
             if(switcher.open)return;
-            switcher.showModal();switchTrigger.setAttribute('aria-expanded','true');close.focus();
+            opener=trigger;switcher.showModal();trigger.setAttribute('aria-expanded','true');close.focus();
         });
         close.addEventListener('click',()=>switcher.close());
         switcher.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation();});
         switcher.addEventListener('pointerdown',event=>{pointerOutside=event.target===switcher && outside(event);});
         switcher.addEventListener('click',event=>{if(pointerOutside && event.target===switcher && outside(event))switcher.close();pointerOutside=false;});
         switcher.addEventListener('close',()=>{
-            switchTrigger.setAttribute('aria-expanded','false');
-            if(nav?.inert)toggle?.focus();else switchTrigger.focus({preventScroll:true});
+            if(opener!==mobileSwitch || media.matches)opener?.setAttribute('aria-expanded','false');
+            if(opener===switchTrigger && nav?.inert)(media.matches?more:toggle)?.focus();
+            else opener?.focus({preventScroll:true});
+            opener=null;
         });
         window.addEventListener('pageshow',event=>{if(event.persisted && switcher.open)switcher.close();});
     }
@@ -174,20 +206,21 @@
         window.addEventListener('pageshow',event=>{if(event.persisted && walkthrough.open)closeWalkthrough();});
         if(walkthrough.hasAttribute('data-walkthrough-auto'))show();
     }
-    const countLink=document.querySelector('[data-notification-count-url]');
-    const count=document.querySelector('[data-unread-count]');
+    const countLinks=Array.from(document.querySelectorAll('[data-notification-count-url]'));
+    const countLink=countLinks[0];
     let loading=false, countRevision=0;
     function setUnread(value) {
         const n=Number(value);
         if(!Number.isSafeInteger(n) || n<0)return;
         countRevision++;
-        if(count && countLink) {
-            count.textContent=n>99?'99+':String(n);count.hidden=!(n>0);
-            countLink.setAttribute('aria-label','Notifications'+(n>0?' ('+n+' unread)':''));
+        for(const link of countLinks) {
+            const badge=link.querySelector('[data-unread-count]');
+            if(badge){badge.textContent=n>99?'99+':String(n);badge.hidden=!(n>0);}
+            link.setAttribute('aria-label',(link.dataset.notificationLabel || 'Notifications')+(n>0?' ('+n+' unread)':''));
         }
     }
     async function refreshCount() {
-        if (!countLink || !count || document.hidden || loading) return;
+        if (!countLink || document.hidden || loading) return;
         loading=true;
         const revision=countRevision;
         try {

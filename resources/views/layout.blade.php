@@ -13,7 +13,7 @@
 <html lang="en" style="{{ \App\Services\VenueTheme::style(($venue ?? request()->attributes->get('venue_context'))?->brand_color) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1{{ $appShell ? ', viewport-fit=cover' : '' }}">
     <title>@yield('title') · {{ $brandVenue?->name ?? 'Pickleball Lite' }}</title>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     @if($logoUrl)
@@ -25,8 +25,8 @@
         <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
     @endif
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=7">
-<script src="/workspace.js?v=7" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=8">
+<script src="/workspace.js?v=8" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
@@ -43,13 +43,14 @@
     <header class="site-header">
         <div class="header-inner">
             @if($staffVenue)
-                <a class="brand workspace-venue-brand" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="{{ $staffVenue->name }}">
+                <a class="brand workspace-venue-brand" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="{{ $staffVenue->name }}" @if($appShell) data-mobile-workspace-switch @endif>
                     @if($logoUrl)<img class="workspace-venue-logo" src="{{ $logoUrl }}" alt="" width="32" height="32">
                     @else<span class="workspace-venue-mark"><x-workspace-icon name="building"/></span>@endif
                     <span class="workspace-brand-name">{{ $staffVenue->name }}</span>
+                    @if($appShell)<span class="mobile-brand-chevron"><x-workspace-icon name="chevron-down"/></span>@endif
                 </a>
             @else
-                <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}"><span class="brand-mark" aria-hidden="true"></span> Pickle Lite</a>
+                <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}" @if($appShell) data-mobile-workspace-switch @endif><span class="brand-mark" aria-hidden="true"></span> Pickle Lite @if($appShell)<span class="mobile-brand-chevron"><x-workspace-icon name="chevron-down"/></span>@endif</a>
             @endif
             @if($appShell)
             <div class="workspace-top-actions">
@@ -132,6 +133,7 @@
         <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
     </footer>
 @if($appShell)
+    <x-workspace-mobile-nav :navigation="$navigation"/>
     <x-workspace-switcher :navigation="$navigation" :venue="$staffVenue"/>
     <x-notification-drawer />
 @endif

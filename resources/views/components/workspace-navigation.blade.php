@@ -1,5 +1,6 @@
 @props(['navigation','venue'=>null,'logoUrl'=>null])
 <div class="workspace-navigation-top">
+    <div class="workspace-more-heading"><strong>More</strong><button type="button" class="quiet" data-mobile-more-close aria-label="Close menu"><x-booking-icon name="x"/></button></div>
     <a class="workspace-switch" href="{{ route('app.venues') }}" data-workspace-switch-open title="Switch workspace"
         aria-label="Switch workspace: {{ $navigation['label'] }}" aria-haspopup="dialog" aria-controls="workspace-switcher" aria-expanded="false">
         @if($venue && $logoUrl)
@@ -13,7 +14,7 @@
 </div>
 <div class="workspace-navigation-scroll" data-nav-context="{{ $navigation['context'] }}">
     @foreach($navigation['groups'] as $caption=>$items)
-        <div class="workspace-nav-group" role="group" aria-label="{{ $caption }}">
+        <div class="workspace-nav-group {{ collect($items)->every(fn($item)=>in_array($item['id'],array_column($navigation['mobile'],'id'),true)) ? 'workspace-mobile-primary-group' : '' }}" role="group" aria-label="{{ $caption }}">
             <span class="workspace-nav-caption">{{ $caption }}</span>
             @foreach($items as $item)
                 <x-workspace-nav-item :item="$item"/>

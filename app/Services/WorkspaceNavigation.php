@@ -54,13 +54,21 @@ final class WorkspaceNavigation
         } else {
             $groups=['Workspaces'=>[self::item('my-venues','My venues','grid',route('app.venues'),['app.venues'])]];
         }
+        // Mobile destinations are a subset of the same server-authorized navigation.
+        $primaryIds=match($context) {
+            'venue'=>['calendar','open-play'],
+            'platform'=>['platform-overview','platform-rewards'],
+            default=>['my-venues'],
+        };
+        $mobile=array_values(array_filter(array_merge(...array_values($groups)),
+            fn(array $item)=>in_array($item['id'],$primaryIds,true)));
         // Bounded quick switch list; the existing My venues page remains the full directory.
         $venues=$user->venues()->wherePivotIn('role',['owner','manager','staff'])
             ->orderByRaw('case when venues.id = ? then 0 else 1 end',[$venue?->id ?? 0])
             ->orderBy('venues.name')->orderBy('venues.id')->limit(21)
             ->get(['venues.id','venues.slug','venues.name','venues.status']);
         return [
-            'context'=>$context,'groups'=>array_filter($groups),'admin'=>$admin,
+            'context'=>$context,'groups'=>array_filter($groups),'mobile'=>$mobile,'admin'=>$admin,
             'venues'=>$venues->take(20),'more'=>$venues->count()>20,
             'label'=>$venue?->name ?? ($context==='platform'?'Pickle Lite':'My venues'),
             'description'=>match($context){'venue'=>ucfirst(VenueContext::role() ?? '').' workspace','platform'=>'Super Admin',default=>'Choose a workspace'},
