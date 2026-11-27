@@ -64,6 +64,28 @@ class MultiVenueTest extends TestCase
         $this->get($this->publicUrl($this->b,'/settings'))->assertNotFound();
     }
 
+    public function test_public_booking_header_uses_the_current_venue_logo_and_navigation(): void
+    {
+        $png=base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII=');
+        $version=hash('sha256',$png);
+        $this->b->media()->create(['kind'=>'logo','mime'=>'image/png','version'=>$version,'content'=>base64_encode($png)]);
+        $logo=$this->publicUrl($this->b,'/branding/logo/'.$version);
+        $home=$this->publicUrl($this->b);
+        $this->get($home)->assertOk()->assertSee($logo);
+        foreach(['/book','/book?step=1','/open-play','/policies'] as $path) {
+            $response=$this->get($home.$path)->assertOk()->assertSee('public-booking-header')->assertSee($logo)
+                ->assertSee('href="'.$home.'"',false)->assertSee($home.'#schedule')->assertSee($home.'#rates')
+                ->assertSee($home.'/open-play')->assertSee($home.'#contact')->assertSee($home.'/book')
+                ->assertDontSee($this->publicUrl($this->a,'/book'))->assertDontSee('class="brand-mark"',false);
+            $this->assertStringContainsString('<strong>Independent Courts</strong>',$response->getContent());
+        }
+        $this->get($logo)->assertOk()->assertHeader('Content-Type','image/png');
+        $this->get($this->publicUrl($this->a,'/branding/logo/'.$version))->assertNotFound();
+        $this->get($this->publicUrl($this->a,'/book'))->assertOk()->assertDontSee($logo)->assertSee('site-mark');
+        $this->get($this->productUrl())->assertOk()->assertDontSee('public-booking-header');
+        $this->actingAs($this->owner)->get($this->workspace($this->a,'/calendar'))->assertOk()->assertDontSee('public-booking-header');
+    }
+
     public function test_booking_and_confirmation_are_scoped_to_the_public_slug(): void
     {
         $this->travelTo(now()->setDate(2030,1,10)->setTime(0,0));

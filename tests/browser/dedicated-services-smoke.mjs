@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { execFileSync } from 'node:child_process';
 
 const web='http://pickle-web.test';
 const app='http://pickle-app.test';
@@ -71,13 +72,43 @@ try {
     await page.goto(app+'/venues/'+slug+'/calendar');
     const website=page.locator('.site-header').getByRole('link',{name:'Venue website'});
     assert.equal(await website.getAttribute('href'),book+'/'+slug);
+    // Fixture-only uploaded venue logo. Use the same image endpoint on the
+    // website and booking pages, and verify the browser can decode it.
+    execFileSync('php',['artisan','tinker','--execute='+[
+        '$venue=App\\Models\\Venue::where("slug","pickleball-lite-courts")->firstOrFail();',
+        '$png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII=";',
+        '$venue->media()->updateOrCreate(["kind"=>"logo"],["mime"=>"image/png","version"=>hash("sha256",base64_decode($png)),"content"=>$png]);',
+    ].join(' ')],{stdio:'pipe'});
     await page.goto(book+'/'+slug);
+    const venueLogo=await page.locator('.site-navigation .site-logo img').getAttribute('src');
+    const venueName=await page.locator('.site-navigation .site-logo strong').textContent();
+    assert.ok(venueLogo.startsWith(book+'/'+slug+'/branding/logo/'));
     await page.getByRole('heading',{name:'Your next game starts here.'}).waitFor();
     await page.locator('.site-navigation').getByRole('link',{name:'Book now'}).click();
     await page.waitForURL(book+'/'+slug+'/book');
     await page.getByRole('heading',{name:'What would you like to book?'}).waitFor();
+    const publicHeader=page.locator('.public-booking-header');
+    assert.equal(await publicHeader.locator('.site-logo img').getAttribute('src'),venueLogo);
+    assert.equal(await publicHeader.locator('.site-logo strong').textContent(),venueName);
+    await publicHeader.locator('.site-logo img').evaluate(img=>img.decode());
+    assert.equal(await publicHeader.locator('.site-logo').getAttribute('href'),book+'/'+slug);
+    assert.equal(await publicHeader.getByRole('link',{name:'Rates',exact:true}).getAttribute('href'),book+'/'+slug+'#rates');
+    assert.equal(await publicHeader.getByRole('link',{name:'Open Play',exact:true}).getAttribute('href'),book+'/'+slug+'/open-play');
+    await page.setViewportSize({width:320,height:740});
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile booking header must not overflow');
+    await publicHeader.getByRole('link',{name:'Home',exact:true}).click();
+    await page.waitForURL(book+'/'+slug);
+    await page.locator('.site-navigation').getByRole('link',{name:'Book now',exact:true}).click();
+    await page.waitForURL(book+'/'+slug+'/book');
     await page.getByRole('link',{name:/Book a court/}).click();
     await page.getByRole('heading',{name:'When do you want to play?'}).waitFor();
+    assert.equal(await publicHeader.locator('.site-logo img').getAttribute('src'),venueLogo);
+    await publicHeader.getByRole('link',{name:'Open Play',exact:true}).click();
+    await page.waitForURL(book+'/'+slug+'/open-play');
+    assert.equal(await publicHeader.getByRole('link',{name:'Open Play',exact:true}).getAttribute('aria-current'),'page');
+    assert.equal(await publicHeader.locator('.site-logo img').getAttribute('src'),venueLogo);
+    await page.setViewportSize({width:1440,height:900});
+    console.log('Public booking header passed: uploaded venue logo, correct venue-scoped navigation, mobile fit, court booking and Open Play.');
     const cookies=await context.cookies();
     assert.ok(cookies.some(c=>c.name.startsWith('remember_web_')&&c.domain==='pickle-app.test'&&c.httpOnly&&c.expires>0));
     assert.ok(!cookies.some(c=>c.name.startsWith('remember_web_')&&c.domain!=='pickle-app.test'));
