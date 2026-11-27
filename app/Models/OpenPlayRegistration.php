@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OpenPlayRegistration extends Model
 {
-    protected $fillable = ['reference', 'customer_name', 'customer_phone', 'total', 'source', 'payment_token', 'payment_qr_payload', 'payment_messenger_url', 'payment_expires_at'];
+    protected $fillable = ['reference', 'customer_name', 'customer_phone', 'total', 'source', 'payment_token', 'payment_qr_payload', 'payment_messenger_url', 'payment_expires_at', 'cancellation_policy'];
     protected $casts = ['total' => 'integer', 'paid_at' => 'immutable_datetime', 'cancelled_at' => 'immutable_datetime', 'payment_expires_at' => 'immutable_datetime', 'checked_in_at' => 'immutable_datetime'];
 
     public function session(): BelongsTo
