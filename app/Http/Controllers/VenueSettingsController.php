@@ -102,6 +102,7 @@ class VenueSettingsController extends Controller
 
     public function addStaff(Request $request)
     {
+        abort_if(\App\Services\VenueContext::onApp(),404);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
@@ -114,9 +115,15 @@ class VenueSettingsController extends Controller
 
     public function removeStaff(Request $request, int $staff)
     {
-        $venue = \App\Services\VenueContext::venue();
-        $venue->members()->wherePivotIn('role',['staff','manager'])->findOrFail($staff);
-        $venue->members()->wherePivotIn('role',['staff','manager'])->detach($staff);
+        DB::transaction(function () use ($request,$staff) {
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
+            $member = $venue->members()->wherePivotIn('role',['staff','manager'])->findOrFail($staff);
+            $venue->members()->wherePivotIn('role',['staff','manager'])->detach($staff);
+            DB::table('venue_invitations')->where('venue_id',$venue->id)->where('email',strtolower($member->email))
+                ->whereNull('accepted_at')->whereNull('revoked_at')->whereIn('role',['staff','manager'])
+                ->update(['revoked_at'=>now(),'updated_at'=>now()]);
+            \App\Services\VenueInvitations::audit($request->user(),$venue,'membership.revoked',['user_id'=>$staff]);
+        },3);
 
         return $this->saved('Staff access removed.');
     }
