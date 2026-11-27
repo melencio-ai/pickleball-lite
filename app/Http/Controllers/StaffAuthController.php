@@ -11,7 +11,7 @@ class StaffAuthController extends Controller
 {
     public function create()
     {
-        return view('staff.login', ['venue' => Venue::query()->orderBy('id')->first()]);
+        return view('staff.login', ['venue' => \App\Services\VenueContext::onApp() ? null : Venue::query()->where('legacy_slot',1)->first()]);
     }
 
     public function store(Request $request)
@@ -23,7 +23,7 @@ class StaffAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('staff.calendar'));
+        return redirect()->intended(\App\Services\VenueContext::onApp() ? route('app.venues') : route('staff.calendar'));
     }
 
     public function destroy(Request $request)
@@ -32,6 +32,6 @@ class StaffAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return \App\Services\VenueContext::redirect('login');
     }
 }
