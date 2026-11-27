@@ -86,7 +86,11 @@ return [
     |
     */
 
-    'table' => env('SESSION_TABLE', 'sessions'),
+    'table' => env('SESSION_TABLE', match (env('SERVICE_ROLE')) {
+        'marketing' => 'marketing_sessions',
+        'booking' => 'booking_sessions',
+        default => 'sessions',
+    }),
 
     /*
     |--------------------------------------------------------------------------
@@ -129,7 +133,11 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
+        match (env('SERVICE_ROLE')) {
+            'marketing' => 'pickle_web_session',
+            'booking' => 'pickle_book_session',
+            default => Str::slug((string) env('APP_NAME', 'laravel')).'-session',
+        }
     ),
 
     /*
