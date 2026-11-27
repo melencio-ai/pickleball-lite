@@ -5,18 +5,18 @@
         <p class="muted">{{ \Carbon\CarbonImmutable::parse($date)->format('D, M j, Y') }} @if($selectedCourt) · {{ $selectedCourt->name }} @endif @if($selectedStart) · {{ \Carbon\CarbonImmutable::parse($selectedStart)->format('g:i A') }} @endif</p>
         <div class="survey-choices calendar-create-choices">
             @foreach(['book' => ['calendar-days','Court booking','Reserve a court for a customer.'], 'open-play' => ['users','Open Play','Create a session for multiple players.'], 'block' => ['lock','Block time','Make a court unavailable.']] as $type => $choice)
-                <a class="survey-choice" href="{{ route('staff.calendar.modal', ['kind' => $type, 'date' => $date, 'court' => $selectedCourt?->id, 'start' => $selectedStart ?: null]) }}" data-calendar-modal>
+                <a class="survey-choice" href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => $type, 'date' => $date, 'court' => $selectedCourt?->id, 'start' => $selectedStart ?: null]) }}" data-calendar-modal>
                     <x-booking-icon :name="$choice[0]" /><span><strong>{{ $choice[1] }}</strong><small>{{ $choice[2] }}</small></span><x-booking-icon name="chevron-right" />
                 </a>
             @endforeach
         </div>
     @elseif(in_array($kind, ['book','block','open-play'], true))
-        <a href="{{ route('staff.calendar.modal', ['kind' => 'new', 'date' => $date, 'court' => $selectedCourt?->id, 'start' => $selectedStart ?: null]) }}" data-calendar-modal class="calendar-modal-back"><x-booking-icon name="chevron-left" /> Back</a>
+        <a href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => 'new', 'date' => $date, 'court' => $selectedCourt?->id, 'start' => $selectedStart ?: null]) }}" data-calendar-modal class="calendar-modal-back"><x-booking-icon name="chevron-left" /> Back</a>
         <h2 id="calendar-modal-title">{{ $kind === 'book' ? 'Add a booking' : ($kind === 'block' ? 'Block court time' : 'Create Open Play') }}</h2>
         @if($courts->isEmpty())
             <p class="notice">There are no active courts. Add one in Settings.</p>
         @else
-            <form class="form-stack calendar-modal-form" method="post" action="{{ route(match($kind) {'book'=>'staff.book','block'=>'staff.block',default=>'staff.open-play.store'}) }}" data-calendar-form>
+            <form class="form-stack calendar-modal-form" method="post" action="{{ \App\Services\VenueContext::url(match($kind) {'book'=>'staff.book','block'=>'staff.block',default=>'staff.open-play.store'}) }}" data-calendar-form>
                 @csrf
                 <label>Date<input type="date" name="date" value="{{ old('date', $date) }}" required></label>
                 @if($kind === 'open-play')
@@ -89,13 +89,13 @@
         @if($entry->payment_reference)<p class="muted">Transaction: {{ $entry->payment_reference }}</p>@endif
         @if($entry->payment_token && !$entry->cancelled_at && !$entry->paid_at)
             <div class="actions calendar-modal-actions">
-                <a class="button secondary" href="{{ route('book.payment',$entry->payment_token) }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="link" /> Payment link</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('book.payment',$entry->payment_token) }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="link" /> Payment link</a>
                 <a class="button secondary" href="{{ $entry->payment_messenger_url }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="message-circle" /> Open Messenger</a>
             </div>
             @if(!$entry->paymentExpired())
                 <details class="calendar-verify">
                     <summary>Verify Messenger payment</summary>
-                    <form class="form-stack" method="post" action="{{ route('staff.paid',$entry->id) }}" data-calendar-form>
+                    <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('staff.paid',$entry->id) }}" data-calendar-form>
                         @csrf @method('PATCH')
                         <label>Received amount (PHP)<input type="number" min=".01" step=".01" name="received_amount" required></label>
                         <label>Transaction reference<input name="payment_reference" maxlength="64" required></label>
@@ -107,12 +107,12 @@
                 <p class="notice">Reconcile late payments with the player in Messenger.</p>
             @endif
         @elseif(!$entry->paid_at && !$entry->cancelled_at)
-            <form method="post" action="{{ route('staff.paid',$entry->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button">Mark paid</button></form>
+            <form method="post" action="{{ \App\Services\VenueContext::url('staff.paid',$entry->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button">Mark paid</button></form>
         @endif
         @unless($entry->cancelled_at)
             <details class="calendar-danger"><summary>Cancel booking</summary>
                 <p class="muted">Release the court. Reconcile any paid amount separately.</p>
-                <form method="post" action="{{ route('staff.cancel',$entry->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button secondary">Confirm cancellation</button></form>
+                <form method="post" action="{{ \App\Services\VenueContext::url('staff.cancel',$entry->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button secondary">Confirm cancellation</button></form>
             </details>
         @endunless
     @elseif($kind === 'blocked')
@@ -124,7 +124,7 @@
             <div><dt>Time</dt><dd>{{ $entry->starts_at->setTimezone($venue->timezone)->format('g:i A') }} – {{ $entry->ends_at->setTimezone($venue->timezone)->format('g:i A') }}</dd></div>
         </dl>
         <details class="calendar-danger"><summary>Remove block</summary><p class="muted">Make this court available again.</p>
-            <form method="post" action="{{ route('staff.unblock',$entry->id) }}" data-calendar-form>@csrf @method('DELETE')<button class="button secondary">Confirm removal</button></form>
+            <form method="post" action="{{ \App\Services\VenueContext::url('staff.unblock',$entry->id) }}" data-calendar-form>@csrf @method('DELETE')<button class="button secondary">Confirm removal</button></form>
         </details>
     @elseif($kind === 'session')
         <h2 id="calendar-modal-title">Open Play details</h2>
@@ -146,17 +146,17 @@
             @forelse($players->take(8) as $player)
                 <div class="calendar-player"><strong>{{ $player->customer_name }}</strong><span class="status-chip {{ $player->paymentStatus()==='confirmed' ? 'paid' : 'unpaid' }}">{{ $player->checked_in_at && !$player->cancelled_at ? 'Checked in' : ucfirst($player->paymentStatus()) }}</span>
                     @if($player->paid_at && !$player->cancelled_at && !$session->cancelled_at && !$player->checked_in_at && $session->ends_at->gt(now()))
-                        <form method="post" action="{{ route('staff.open-play.action',[$session->id,$player->id,'check-in']) }}" data-calendar-form>@csrf @method('PATCH')<button class="small secondary">Check in</button></form>
+                        <form method="post" action="{{ \App\Services\VenueContext::url('staff.open-play.action',[$session->id,$player->id,'check-in']) }}" data-calendar-form>@csrf @method('PATCH')<button class="small secondary">Check in</button></form>
                     @endif
                 </div>
             @empty<p class="muted">No players registered yet.</p>
             @endforelse
             @if($players->count()>8)<p class="muted">Showing 8 of {{ $players->count() }} registrations.</p>@endif
         </div>
-        <a class="button" href="{{ route('staff.open-play.show',$session->id) }}">Manage session</a>
+        <a class="button" href="{{ \App\Services\VenueContext::url('staff.open-play.show',$session->id) }}">Manage session</a>
         @if(!$session->cancelled_at && $session->ends_at->gt(now()) && $active->count()<$session->capacity)
             <details class="calendar-verify"><summary>Add walk-in player</summary>
-                <form class="form-stack" method="post" action="{{ route('staff.open-play.register',$session->id) }}" data-calendar-form>
+                <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('staff.open-play.register',$session->id) }}" data-calendar-form>
                     @csrf
                     <label>Full name<input name="customer_name" maxlength="100" required></label>
                     <label>Mobile number<input name="customer_phone" type="tel" maxlength="32" required></label>
@@ -166,7 +166,7 @@
         @endif
         @if(!$session->cancelled_at && $session->starts_at->gt(now()))
             <details class="calendar-danger"><summary>Cancel session</summary><p class="muted">Release all courts and cancel registrations. Reconcile paid amounts in Messenger.</p>
-                <form method="post" action="{{ route('staff.open-play.cancel',$session->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button secondary">Confirm cancellation</button></form>
+                <form method="post" action="{{ \App\Services\VenueContext::url('staff.open-play.cancel',$session->id) }}" data-calendar-form>@csrf @method('PATCH')<button class="button secondary">Confirm cancellation</button></form>
             </details>
         @endif
     @endif
