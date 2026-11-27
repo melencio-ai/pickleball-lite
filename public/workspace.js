@@ -80,10 +80,28 @@
         const update=()=>{qr.hidden=method.value!=='qr';qr.querySelectorAll('input,textarea').forEach(el=>{el.disabled=qr.hidden;el.required=!qr.hidden;});};
         method.addEventListener('change',update);update();
     }
+    const rateNotice=document.querySelector('[data-email-rate-limit]');
+    const cooldownAction=rateNotice?.dataset.emailRateLimit;
+    const seconds=Number(rateNotice?.dataset.retrySeconds || 0);
+    const deadline=Date.now()+Math.max(0,seconds)*1000;
+    const coolingDown=form=>Boolean(cooldownAction && form.dataset.emailAction===cooldownAction && Date.now()<deadline);
+    if(rateNotice && seconds>0) {
+        window.PickleToast(rateNotice.textContent.trim(),'warning');
+        const button=Array.from(document.querySelectorAll('[data-email-action]')).find(form=>form.dataset.emailAction===cooldownAction)?.querySelector('[data-app-submit]');
+        const countdown=rateNotice.querySelector('[data-retry-countdown]');
+        let timer;
+        const update=()=>{
+            const remaining=Math.max(0,Math.ceil((deadline-Date.now())/1000));
+            if(countdown)countdown.textContent=String(remaining);
+            if(button)button.disabled=remaining>0;
+            if(!remaining){rateNotice.hidden=true;clearInterval(timer);}
+        };
+        timer=setInterval(update,1000);update();
+    }
     for(const form of document.querySelectorAll('[data-app-form]')) {
         const btn=form.querySelector('[data-app-submit]');if(!btn)continue;
         let submitted=false;
-        form.addEventListener('submit',e=>{if(submitted){e.preventDefault();return;}submitted=true;btn.disabled=true;form.setAttribute('aria-busy','true');});
-        window.addEventListener('pageshow',()=>{submitted=false;btn.disabled=false;form.removeAttribute('aria-busy');});
+        form.addEventListener('submit',e=>{if(submitted || coolingDown(form)){e.preventDefault();return;}submitted=true;btn.disabled=true;form.setAttribute('aria-busy','true');});
+        window.addEventListener('pageshow',()=>{submitted=false;btn.disabled=coolingDown(form);form.removeAttribute('aria-busy');});
     }
 })();

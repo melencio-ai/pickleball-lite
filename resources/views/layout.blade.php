@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=1">
-<script src="/workspace.js?v=1" defer></script>
+<script src="/workspace.js?v=2" defer></script>
 </head>
 @php
     $workspace = request()->attributes->get('venue_context');

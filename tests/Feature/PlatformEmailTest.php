@@ -32,13 +32,13 @@ class PlatformEmailTest extends TestCase
         return [$admin,$owner];
     }
 
-    private function mockSend(string $contains, bool $failure=false): void
+    private function mockSend(string $contains, bool $failure=false, int $times=1): void
     {
         $mailer = \Mockery::mock(Mailer::class);
-        $expect = $mailer->shouldReceive('raw')->once()->withArgs(fn ($body,$callback)=>str_contains($body,$contains) && is_callable($callback));
+        $expect = $mailer->shouldReceive('raw')->times($times)->withArgs(fn ($body,$callback)=>str_contains($body,$contains) && is_callable($callback));
         if ($failure) $expect->andThrow(new \RuntimeException('sensitive fake SMTP error'));
         else $expect->andReturnNull();
-        Mail::shouldReceive('build')->once()->withArgs(fn ($config) =>
+        Mail::shouldReceive('build')->times($times)->withArgs(fn ($config) =>
             $config['host'] === 'smtp.gmail.com' && $config['port'] === 465 &&
             $config['scheme'] === 'smtps' && $config['username'] === PlatformEmail::ADDRESS &&
             $config['password'] === 'abcdefghijklmnop' && $config['verify_peer'] === true
@@ -94,6 +94,36 @@ class PlatformEmailTest extends TestCase
         $this->assertNull(PlatformEmail::settings()->verified_at);
         $this->assertDatabaseHas('platform_email_logs',['kind'=>'test','status'=>'failed']);
         $this->get($this->url())->assertOk()->assertDontSee('sensitive fake SMTP error');
+    }
+
+    public function test_polling_and_save_do_not_consume_test_limit_and_excess_requests_return_to_settings(): void
+    {
+        [$admin]=$this->users();
+        $this->actingAs($admin);
+        for ($i=0;$i<12;$i++) $this->getJson($this->url('/notifications/count'))->assertOk();
+        $this->patch($this->url(),['password'=>'abcdefghijklmnop'])->assertRedirect();
+        $this->mockSend('test message',false,5);
+        for ($i=0;$i<5;$i++) {
+            $this->post($this->url('/admin/email/test'))->assertRedirect();
+            $this->getJson($this->url('/notifications/count'))->assertOk();
+        }
+        $this->post($this->url('/admin/email/test'))->assertStatus(303)
+            ->assertRedirect($this->url())->assertHeader('Retry-After')
+            ->assertSessionHas('email_rate_limit.action','test');
+        $this->get($this->url())->assertOk()->assertSee('data-email-rate-limit="test"',false);
+        $this->postJson($this->url('/admin/email/test'))->assertTooManyRequests()->assertJsonStructure(['message','retry_after']);
+        $this->assertDatabaseCount('platform_email_logs',5);
+        $this->patch($this->url('/admin/email/activation'),['enabled'=>1,'received'=>1])->assertRedirect();
+        $this->assertTrue(PlatformEmail::ready());
+        $this->getJson($this->url('/notifications/count'))->assertOk();
+    }
+
+    public function test_guest_password_recovery_throttle_does_not_block_registration(): void
+    {
+        $this->users();
+        for ($i=0;$i<5;$i++) $this->post($this->url('/forgot-password'),['email'=>'unknown@example.test'])->assertNotFound();
+        $this->post($this->url('/forgot-password'),['email'=>'unknown@example.test'])->assertTooManyRequests();
+        $this->post($this->url('/register'),[])->assertNotFound();
     }
 
     public function test_managed_password_recovery_uses_broker_and_generic_response(): void

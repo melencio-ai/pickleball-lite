@@ -68,12 +68,27 @@ final class PlatformEmail
         } catch (\Throwable $e) {
             // Do not log transport exception details, recipients, message bodies,
             // authentication links or SMTP credentials.
-            Log::warning('Platform email submission failed.', ['kind'=>$kind]);
+            Log::warning('Platform email submission failed.', ['kind'=>$kind,'reason'=>self::failureReason($e)]);
             self::record($kind,'failed');
             return false;
         }
         self::record($kind,'submitted');
         return true;
+    }
+
+    private static function failureReason(\Throwable $error): string
+    {
+        if ($error instanceof \Illuminate\Contracts\Encryption\DecryptException) return 'credentials_unreadable';
+        if (!$error instanceof \Symfony\Component\Mailer\Exception\TransportExceptionInterface) return 'configuration_or_internal';
+        // Match internally, emit only fixed diagnostic labels, never the raw error.
+        $message = strtolower($error->getMessage());
+        $code = (int)$error->getCode();
+        if (in_array($code,[530,534,535],true) || str_contains($message,'authenticate') || str_contains($message,'authentication')) return 'smtp_authentication_rejected';
+        if (str_contains($message,'timed out') || str_contains($message,'timeout')) return 'smtp_timeout';
+        if (str_contains($message,'certificate') || str_contains($message,'tls') || str_contains($message,'ssl')) return 'smtp_tls_failed';
+        if (str_contains($message,'connect') || str_contains($message,'network') || str_contains($message,'getaddrinfo')) return 'smtp_connection_failed';
+        if ($code >= 400 && $code <= 599) return 'smtp_rejected_'.$code;
+        return 'smtp_transport_failed';
     }
 
     public static function record(string $kind, string $status): void
