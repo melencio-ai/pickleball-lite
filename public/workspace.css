@@ -257,3 +257,76 @@ html:has(.rewards-drawer[open]){overflow:hidden}
     .workspace-switcher-dialog{width:calc(100vw - 16px);max-width:340px}
 }
 @media(max-height:320px){.workspace-navigation-top,.workspace-navigation-footer{padding-block:3px}.app-workspace .workspace-navigation .workspace-nav-link{min-height:32px}}
+
+/* Native-like mobile shell. The desktop sidebar and public booking surfaces stay independent. */
+.workspace-mobile-nav,.workspace-more-heading,.mobile-brand-chevron{display:none}
+@media(max-width:850px){
+    .app-workspace,.app-workspace.workspace-collapsed{
+        --header-height:calc(56px + env(safe-area-inset-top,0px));
+        --mobile-nav-height:calc(64px + env(safe-area-inset-bottom,0px));
+        padding-bottom:var(--mobile-nav-height);
+    }
+    html:has(body.app-workspace){scroll-padding-top:var(--header-height,56px);scroll-padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+    html:has(body.app-workspace.workspace-open){overflow:hidden}
+    .app-workspace .site-header{border-top:0}
+    .app-workspace .header-inner{min-height:56px;padding:calc(5px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 5px max(12px,env(safe-area-inset-left,0px))}
+    .app-workspace .workspace-top-actions{display:none}
+    .app-workspace .header-inner>.brand{min-height:46px;max-width:100%;gap:8px}
+    .mobile-brand-chevron{display:inline-flex;flex-shrink:0;color:var(--muted)}
+    .mobile-brand-chevron svg{width:18px;height:18px}
+    .app-workspace>main.page{padding:12px max(12px,env(safe-area-inset-right,0px)) 18px max(12px,env(safe-area-inset-left,0px))}
+    .app-workspace>main.calendar-page{padding-inline:max(8px,env(safe-area-inset-left,0px)) max(8px,env(safe-area-inset-right,0px))}
+    .app-workspace .page-heading h1{font-size:clamp(20px,5.7vw,25px);letter-spacing:-.035em}
+    .app-workspace .page-heading{margin-bottom:12px}
+    .app-workspace .calendar-heading .venue-name{display:none}
+    .app-workspace .workspace-mobile-nav{
+        position:fixed;inset:auto 0 0;z-index:31;display:flex;gap:0;align-items:stretch;justify-content:space-around;
+        min-height:var(--mobile-nav-height);box-sizing:border-box;background:#fff;border-top:1px solid #e0e6e2;
+        padding:3px max(6px,env(safe-area-inset-right,0px)) calc(3px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));
+    }
+    .app-workspace .workspace-mobile-nav .workspace-tab{
+        flex:1 1 0;min-width:0;min-height:56px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+        gap:2px;margin:0;padding:2px;border:0;background:transparent;color:#53615a;border-radius:9px;
+        text-decoration:none;white-space:nowrap;font:600 11px/1.2 system-ui,sans-serif;
+    }
+    .workspace-tab-icon{position:relative;display:grid;place-items:center;width:52px;height:31px;border-radius:18px}
+    .workspace-tab-icon>.workspace-icon{width:24px;height:24px;stroke-width:1.8}
+    .workspace-tab-icon .unread-count{top:0;right:4px;z-index:1}
+    .app-workspace .workspace-mobile-nav .workspace-tab[aria-current],.app-workspace .workspace-mobile-nav .workspace-tab[aria-expanded=true]{
+        color:var(--brand-ink);font-weight:750
+    }
+    .workspace-tab[aria-current] .workspace-tab-icon,.workspace-tab[aria-expanded=true] .workspace-tab-icon{background:var(--brand-soft)}
+    .workspace-tab:focus-visible,.workspace-more-heading button:focus-visible{outline:2px solid var(--brand-focus);outline-offset:-2px}
+    .app-workspace .workspace-navigation,.app-workspace.workspace-collapsed .workspace-navigation{
+        inset:auto 0 var(--mobile-nav-height) 0;width:100%;max-height:calc(100vh - var(--mobile-nav-height) - var(--header-height));
+        max-height:calc(100dvh - var(--mobile-nav-height) - var(--header-height));
+        transform:translateY(20px);opacity:0;border:0;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px #16271e24;
+        transition:transform .18s ease,opacity .18s ease,visibility .18s;visibility:hidden;pointer-events:none;
+    }
+    .app-workspace.workspace-open .workspace-navigation{transform:translateY(0);opacity:1;visibility:visible;pointer-events:auto}
+    .app-workspace .workspace-backdrop:not([hidden]){inset:0 0 var(--mobile-nav-height);z-index:29}
+    .workspace-more-heading{display:flex;justify-content:space-between;align-items:center;padding:0 4px 6px;font-size:17px}
+    .workspace-more-heading button{display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:12px}
+    .workspace-navigation-top,.workspace-navigation-footer{padding-inline:12px}
+    .workspace-navigation-scroll{padding:4px 12px 8px}
+    .workspace-mobile-primary-group,.workspace-navigation-footer .workspace-notifications{display:none!important}
+    .app-workspace .workspace-navigation .workspace-nav-link,.app-workspace .workspace-navigation .workspace-switch,.workspace-choice{min-height:48px;font-size:14px}
+    .workspace-switcher-dialog{inset:auto 0 0;margin:0;width:100%;max-width:none;max-height:85dvh;border:0;border-radius:20px 20px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .workspace-switcher-close,.notification-drawer-close,.notification-drawer-refresh{width:48px;height:48px;min-width:48px;min-height:48px}
+    .notification-drawer-content .notification-row form button,.notification-drawer-toolbar button{min-height:44px}
+    .app-workspace .app-toast-region{bottom:calc(var(--mobile-nav-height) + 8px);left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));width:auto}
+    .app-workspace.workspace-keyboard{padding-bottom:0}
+    .app-workspace.workspace-keyboard .workspace-mobile-nav{display:none}
+    .app-workspace.workspace-keyboard .app-toast-region{bottom:12px}
+    .app-workspace .workspace-trial{margin-bottom:8px;padding:7px 10px;gap:6px;font-size:12px}
+    .app-workspace .rewards-widget{margin-bottom:10px}
+    .app-workspace input:not([type=checkbox]):not([type=radio]),.app-workspace textarea,.app-workspace select{font-size:16px;min-height:44px}
+    .app-workspace .calendar-toolbar .button,.app-workspace .calendar-toolbar button,.app-workspace .calendar-heading .button,.app-workspace .calendar-icon-button{min-height:44px}
+    .app-workspace .calendar-icon-button{min-width:44px}
+    .app-workspace .compact-calendar-scroll{max-height:calc(100dvh - var(--mobile-nav-height) - var(--header-height) - 100px);min-height:160px}
+    .app-workspace .compact-calendar-grid{--slot-height:44px}
+    .app-workspace .calendar-dialog{border-radius:20px 20px 0 0}
+    .app-workspace .open-play-list-row .button{min-height:44px}
+    .app-workspace .open-play-admin-list{padding:12px}
+}
+@media(max-width:850px) and (prefers-reduced-motion:reduce){.app-workspace .workspace-navigation{transition:none!important}}

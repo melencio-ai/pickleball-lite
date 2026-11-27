@@ -75,10 +75,24 @@ try {
     await switchDialog.getByRole('button',{name:'Close workspace switcher'}).click();
     await switchDialog.waitFor({state:'hidden'});
     await page.getByRole('button',{name:'Toggle navigation'}).click();
+    assert.equal(await page.locator('[data-mobile-navigation]').isVisible(),false);
     await page.setViewportSize({width:320,height:740});
     await page.waitForFunction(()=>getComputedStyle(document.querySelector('#workspace-navigation')).visibility==='hidden');
+    const mobileNav=page.locator('[data-mobile-navigation]');
+    const more=mobileNav.locator('[data-mobile-more]');
+    await mobileNav.waitFor();
+    assert.deepEqual(await mobileNav.locator('.workspace-tab').allTextContents().then(items=>items.map(s=>s.trim())),['Calendar','Open Play','Alerts','More']);
+    assert.equal(await mobileNav.locator('[data-mobile-tab="calendar"]').getAttribute('aria-current'),'page');
+    const bar=await mobileNav.boundingBox();
+    assert.ok(bar && Math.abs(bar.y+bar.height-740)<2 && bar.width<=320);
+    for(const tab of await mobileNav.locator('.workspace-tab').all()){const box=await tab.boundingBox();assert.ok(box && box.width>=48 && box.height>=48);}
+    assert.equal(await page.getByRole('button',{name:'Toggle navigation'}).isVisible(),false);
+    await page.locator('[data-mobile-workspace-switch]').click();
+    await switchDialog.waitFor();
+    await switchDialog.getByRole('button',{name:'Close workspace switcher'}).click();
+    await switchDialog.waitFor({state:'hidden'});
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile management page must not overflow');
-    await page.getByRole('button',{name:'Toggle navigation'}).click();
+    await more.click();
     await navigation.waitFor({state:'visible'});
     assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-open')));
     await switchTrigger.click();
@@ -88,11 +102,17 @@ try {
     await page.keyboard.press('Escape');
     await switchDialog.waitFor({state:'hidden'});
     assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-open')));
-    await navigation.getByRole('link',{name:'Open Play',exact:true}).click();
+    await mobileNav.getByRole('link',{name:'Open Play',exact:true}).click();
     await page.waitForURL(app+'/venues/'+slug+'/open-play');
     await page.waitForFunction(()=>!document.body.classList.contains('workspace-open'));
+    assert.equal(await mobileNav.locator('[data-mobile-tab="open-play"]').getAttribute('aria-current'),'page');
     await page.goto(app+'/venues/'+slug+'/calendar');
-    await page.getByRole('button',{name:'Toggle navigation'}).click();
+    await more.click();
+    await navigation.getByRole('link',{name:'Booking setup',exact:true}).click();
+    await page.waitForURL(app+'/venues/'+slug+'/booking-setup');
+    assert.equal(await more.getAttribute('aria-current'),'true');
+    await page.goto(app+'/venues/'+slug+'/calendar');
+    await more.click();
     await page.keyboard.press('Escape');
     await page.waitForFunction(()=>!document.body.classList.contains('workspace-open'));
     // Seed only this isolated CI database with two unread items.
@@ -102,7 +122,8 @@ try {
         'App\\Services\\VenueNotifications::emit($venue,"payment","drawer-two","Drawer test payment","Payment received");',
     ].join(' ')],{stdio:'pipe'});
     const calendarUrl=page.url();
-    await page.locator('.workspace-bell').click();
+    const mobileAlerts=mobileNav.locator('[data-mobile-tab="alerts"]');
+    await mobileAlerts.click();
     const drawer=page.getByRole('dialog',{name:'Notifications',exact:true});
     await drawer.waitFor();
     await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
@@ -115,12 +136,12 @@ try {
     assert.equal(await drawer.locator('[data-notification-record]').filter({hasText:'Drawer test booking'}).getByRole('button',{name:'Mark notification as read'}).count(),0);
     await drawer.getByRole('button',{name:'Mark all as read'}).click();
     await drawer.getByText('All notifications marked as read.',{exact:true}).waitFor();
-    await page.waitForFunction(()=>document.querySelector('[data-unread-count]').hidden);
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-unread-count]')].every(el=>el.hidden));
     assert.equal(await drawer.locator('.notification-row.unread').count(),0);
     assert.equal(page.url(),calendarUrl);
     await drawer.getByRole('button',{name:'Close notifications'}).click();
     await drawer.waitFor({state:'hidden'});
-    assert.equal(await page.locator('.workspace-bell').evaluate(el=>el===document.activeElement),true);
+    assert.equal(await mobileAlerts.evaluate(el=>el===document.activeElement),true);
     await page.setViewportSize({width:1440,height:900});
     await page.locator('.workspace-notifications').click();
     await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
@@ -156,6 +177,7 @@ try {
     await page.waitForURL(book+'/'+slug+'/book');
     await page.getByRole('heading',{name:'What would you like to book?'}).waitFor();
     const publicHeader=page.locator('.public-booking-header');
+    assert.equal(await page.locator('[data-mobile-navigation]').count(),0);
     assert.equal(await publicHeader.locator('.site-logo img').getAttribute('src'),venueLogo);
     assert.equal(await publicHeader.locator('.site-logo strong').textContent(),venueName);
     await publicHeader.locator('.site-logo img').evaluate(img=>img.decode());
@@ -235,7 +257,7 @@ try {
     await confirmation.waitFor({state:'hidden'});
     assert.equal(logoutPosts,0);
     await page.setViewportSize({width:320,height:740});
-    await page.getByRole('button',{name:'Toggle navigation'}).click();
+    await more.click();
     await signOut.click();
     await confirmation.waitFor();
     const bounds=await confirmation.boundingBox();
