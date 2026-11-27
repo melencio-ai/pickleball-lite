@@ -21,8 +21,10 @@
                             <a href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener">Venue website</a>
                             <a href="{{ \App\Services\VenueContext::url('staff.calendar') }}" @if(\App\Services\VenueContext::is('staff.calendar*')) aria-current="page" @endif>Calendar</a>
                             <a href="{{ \App\Services\VenueContext::url('staff.open-play') }}" @if(\App\Services\VenueContext::is('staff.open-play*')) aria-current="page" @endif>Open Play</a>
-                            @can('manage-venue')
+                            @can('manage-website')
                                 <a href="{{ \App\Services\VenueContext::url('settings.website') }}">Website settings</a>
+                            @endcan
+                            @can('manage-venue')
                                 <a href="{{ \App\Services\VenueContext::url('settings') }}">Settings</a>
                             @endcan
                         @endif
