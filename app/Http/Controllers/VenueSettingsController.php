@@ -14,10 +14,10 @@ class VenueSettingsController extends Controller
 {
     public function index(Request $request)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $courts = $venue->courts()->orderBy('id')->get();
         $hours = $venue->hours()->get()->keyBy('weekday');
-        $staff = $venue->users()->where('role', 'staff')->orderBy('name')->get();
+        $staff = $venue->members()->wherePivot('role', 'staff')->orderBy('name')->get();
 
         return view('staff.settings', compact('venue', 'courts', 'hours', 'staff'));
     }
@@ -31,7 +31,7 @@ class VenueSettingsController extends Controller
             'timezone' => ['required', 'timezone:all'],
         ]);
         DB::transaction(function () use ($request, $data) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             if ($venue->timezone !== $data['timezone'] && $venue->openPlaySessions()
                 ->whereNull('cancelled_at')->where('ends_at', '>', now())->exists()) {
                 throw ValidationException::withMessages(['timezone' => 'Cancel future Open Play sessions before changing the time zone.']);
@@ -58,7 +58,7 @@ class VenueSettingsController extends Controller
             }
         }
         DB::transaction(function () use ($request, $data) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             foreach ($venue->openPlaySessions()->whereNull('cancelled_at')->where('ends_at', '>', now())->get() as $session) {
                 $start = $session->starts_at->setTimezone($venue->timezone);
                 $end = $session->ends_at->setTimezone($venue->timezone);
@@ -78,7 +78,7 @@ class VenueSettingsController extends Controller
 
     public function addCourt(Request $request)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $data = $this->courtData($request, $venue);
         $venue->courts()->create($data);
 
@@ -88,7 +88,7 @@ class VenueSettingsController extends Controller
     public function updateCourt(Request $request, int $court)
     {
         DB::transaction(function () use ($request, $court) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             $record = $venue->courts()->lockForUpdate()->findOrFail($court);
             $data = $this->courtData($request, $venue, $court);
             if (!$data['active'] && $record->blocks()->whereNotNull('open_play_session_id')->where('ends_at', '>', now())->exists()) {
@@ -107,14 +107,16 @@ class VenueSettingsController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:12', 'max:72'],
         ]);
-        $request->user()->venue->users()->create($data + ['role' => 'staff']);
+        DB::transaction(fn () => \App\Services\VenueContext::venue()->users()->create($data + ['role' => 'staff']));
 
         return $this->saved('Staff account added.');
     }
 
     public function removeStaff(Request $request, int $staff)
     {
-        $request->user()->venue->users()->where('role', 'staff')->findOrFail($staff)->delete();
+        $venue = \App\Services\VenueContext::venue();
+        $venue->members()->wherePivot('role','staff')->findOrFail($staff);
+        $venue->members()->wherePivot('role','staff')->detach($staff);
 
         return $this->saved('Staff access removed.');
     }
@@ -142,6 +144,6 @@ class VenueSettingsController extends Controller
 
     private function saved(string $status)
     {
-        return redirect()->route('settings')->with('status', $status);
+        return \App\Services\VenueContext::redirect('settings')->with('status', $status);
     }
 }
