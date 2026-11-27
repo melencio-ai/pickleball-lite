@@ -170,11 +170,20 @@ class SelfServiceTest extends TestCase
         $n=DB::table('venue_notifications')->first();
         $this->getJson($this->appUrl('/notifications/count'))->assertJson(['unread'=>0]);
         $this->post($this->appUrl('/notifications/'.$n->id.'/read'))->assertNotFound();
+        $this->get($this->appUrl('/notifications/drawer'))->assertOk()->assertHeader('X-Pickle-Notification-Drawer','1')
+            ->assertDontSee('New court booking')->assertDontSee('class="site-header"',false);
+        $this->postJson($this->appUrl('/notifications/'.$n->id.'/read'))->assertNotFound();
         $this->actingAs($owner)->getJson($this->appUrl('/notifications/count'))->assertJson(['unread'=>1]);
         $this->get($this->appUrl('/notifications'))->assertOk()->assertSee('New court booking');
+        $this->get($this->appUrl('/notifications/drawer'))->assertOk()->assertHeader('X-Pickle-Notification-Drawer','1')
+            ->assertSee('data-drawer-unread="1"',false)->assertSee('New court booking');
+        $this->postJson($this->appUrl('/notifications/'.$n->id.'/read'))->assertOk()->assertJson(['unread'=>0,'message'=>'Notification marked as read.']);
+        VenueNotifications::emit($venue,'booking','new-2','Another court booking','Court 2');
+        $this->postJson($this->appUrl('/notifications/read-all'))->assertOk()->assertJson(['unread'=>0,'message'=>'All notifications marked as read.']);
         $this->post($this->appUrl('/notifications/'.$n->id.'/read'))->assertRedirect();
         $this->getJson($this->appUrl('/notifications/count'))->assertJson(['unread'=>0]);
         $owner->venues()->detach($venue->id);
         $this->get($this->appUrl('/notifications'))->assertOk()->assertDontSee('New court booking');
+        $this->get($this->appUrl('/notifications/drawer'))->assertOk()->assertDontSee('New court booking')->assertDontSee('Another court booking');
     }
 }

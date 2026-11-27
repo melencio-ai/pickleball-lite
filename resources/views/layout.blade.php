@@ -25,8 +25,8 @@
         <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
     @endif
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=4">
-<script src="/workspace.js?v=4" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=5">
+<script src="/workspace.js?v=5" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
@@ -50,7 +50,7 @@
             @if($appShell)
             <div class="workspace-top-actions">
                 <button type="button" class="workspace-toggle" aria-label="Toggle navigation" aria-controls="workspace-navigation" aria-expanded="true" data-workspace-toggle><x-workspace-icon name="menu"/></button>
-                <a class="workspace-bell" href="{{ route('app.notifications.index') }}" aria-label="Notifications" data-notification-count-url="{{ route('app.notifications.count') }}"><x-workspace-icon name="bell"/><span class="unread-count" data-unread-count hidden>0</span></a>
+                <a class="workspace-bell" href="{{ route('app.notifications.index') }}" aria-label="Notifications" aria-haspopup="dialog" aria-controls="notification-drawer" aria-expanded="false" data-notification-open data-notification-count-url="{{ route('app.notifications.count') }}"><x-workspace-icon name="bell"/><span class="unread-count" data-unread-count hidden>0</span></a>
                 <span class="workspace-user" title="{{ auth()->user()->name }}"><x-workspace-icon name="user"/></span>
             </div>
             @endif
@@ -81,7 +81,7 @@
                                 <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings') }}" title="Settings"><x-workspace-icon name="settings"/><span>Settings</span></a>
                             @endcan
                         @endif
-                        <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications"><x-workspace-icon name="bell"/><span>Notifications</span></a>
+                        <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications" aria-label="Notifications" aria-haspopup="dialog" aria-controls="notification-drawer" aria-expanded="false" data-notification-open><x-workspace-icon name="bell"/><span>Notifications</span></a>
                         <div class="workspace-logout"><button type="button" class="quiet workspace-nav-link" title="Sign out" aria-label="Sign out" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open><x-workspace-icon name="logout"/><span>Sign out</span></button></div>
                     @else
                         <a href="{{ route('product.home') }}">About Pickle Lite</a>
@@ -149,6 +149,7 @@
         @endif
         <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
     </footer>
+@if($appShell)<x-notification-drawer />@endif
 @if(auth()->check() && !\App\Services\VenueContext::onBooking())
     <x-sign-out-dialog />
 @endif
