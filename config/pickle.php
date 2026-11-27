@@ -7,5 +7,6 @@ return [
     'book_host' => env('PICKLE_BOOK_HOST', 'book.picklelite.cloud'),
     'password_reset_enabled' => (bool) env('PICKLE_PASSWORD_RESET_ENABLED', false),
     'demo_slug' => env('PICKLE_DEMO_SLUG'),
+    'walkthrough_video_url' => env('PICKLE_WALKTHROUGH_VIDEO_URL'),
     'legacy_host' => env('PICKLE_LEGACY_HOST', 'pickleball-lite-production.up.railway.app'),
 ];

@@ -2,6 +2,7 @@
 <svg class="workspace-icon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
 @switch($name)
 @case('mail')<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>@break
+@case('play')<path d="m8 5 12 7-12 7V5z"/>@break
 @case('menu')<path d="M4 6h16M4 12h16M4 18h16"/>@break
 @case('bell')<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>@break
 @case('user')<circle cx="12" cy="8" r="3.5"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/>@break

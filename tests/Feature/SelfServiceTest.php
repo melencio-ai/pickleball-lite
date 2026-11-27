@@ -69,6 +69,9 @@ class SelfServiceTest extends TestCase
         $this->get($this->appUrl('/register'))->assertNotFound();
         $this->publishTestPolicies();
         $this->get($this->appUrl('/register'))->assertOk()->assertSee('30 days free');
+        $this->get('http://'.config('pickle.product_host'))->assertOk()->assertSee('Watch a 5-minute full walkthrough')
+            ->assertSee('Create a free account')->assertSee('Walkthrough video coming soon.')
+            ->assertDontSee("Let's get your venue online")->assertDontSee('Send enquiry');
         $this->post($this->appUrl('/register'),['name'=>'Unaccepted','email'=>'reject@example.test','password'=>'test-password-123','password_confirmation'=>'test-password-123'])
             ->assertSessionHasErrors('legal_accepted');
         $this->assertDatabaseMissing('users',['email'=>'reject@example.test']);
@@ -76,6 +79,7 @@ class SelfServiceTest extends TestCase
 
     public function test_signup_verification_and_seven_step_launch_are_resumable(): void
     {
+        config(['pickle.walkthrough_video_url'=>'https://youtu.be/AbCdEf12345']);
         [$owner,$venue]=$this->signup();
         $this->assertFalse($venue->published);
         $this->assertNull(TrialAccess::subscription($venue)->trial_started_at);
@@ -102,7 +106,14 @@ class SelfServiceTest extends TestCase
         $this->post($this->workspace($venue,'/onboarding/6'),['brand_color'=>'#155542'])->assertRedirect();
         $this->get($this->workspace($venue,'/onboarding'))->assertOk()->assertSee('Review and launch');
         $this->post($this->workspace($venue,'/onboarding/7'),['cancellation_policy'=>'Contact the venue for changes.','launch_confirmed'=>'1'])
-            ->assertRedirect($this->workspace($venue,'/calendar'));
+            ->assertRedirect($this->workspace($venue,'/calendar'))->assertSessionHas('walkthrough_venue_id',$venue->id);
+        $this->get($this->workspace($venue,'/calendar'))->assertOk()->assertSee('data-walkthrough-auto',false)
+            ->assertSee('https://www.youtube-nocookie.com/embed/AbCdEf12345')->assertSee('Play walkthrough');
+        $this->get($this->workspace($venue,'/calendar'))->assertOk()->assertDontSee('data-walkthrough-auto',false)
+            ->assertSee('Watch walkthrough');
+        config(['pickle.walkthrough_video_url'=>null]);
+        $this->withSession(['walkthrough_venue_id'=>$venue->id])->get($this->workspace($venue,'/calendar'))
+            ->assertOk()->assertSee('Walkthrough video coming soon')->assertDontSee('data-video-src',false);
         $venue->refresh();
         $this->assertTrue($venue->published);
         $this->assertTrue($venue->acceptsPublicBookings());
