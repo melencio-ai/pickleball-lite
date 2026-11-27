@@ -50,5 +50,44 @@ try {
     await page.locator('[data-booking-submit]').click();
     await page.waitForURL(book+'/bookings/confirmed');
     await page.getByText('Terms of Use (v1)',{exact:true}).waitFor();
+    // Registration is enabled only in this CI fixture and the policies above
+    // have been published. Use a separate guest context and never submit email.
+    const registration=await browser.newPage({viewport:{width:1440,height:900}});
+    await registration.goto(app+'/register');
+    await registration.getByRole('heading',{name:'Start your free trial'}).waitFor();
+    assert.ok(await registration.locator('body').evaluate(el=>el.classList.contains('auth-register')));
+    const name=registration.locator('#signup-name'),email=registration.locator('#signup-email');
+    const password=registration.locator('#signup-password'),confirm=registration.locator('#signup-confirm');
+    const n=await name.boundingBox(),e=await email.boundingBox(),p=await password.boundingBox(),c=await confirm.boundingBox();
+    assert.ok(n && e && p && c && Math.abs(n.y-e.y)<2 && e.x>n.x && Math.abs(p.y-c.y)<2 && c.x>p.x,'Desktop fields must form two aligned columns');
+    assert.ok(await registration.locator('.auth-aside').isVisible());
+    await registration.setViewportSize({width:1024,height:460});
+    const scroll=await registration.evaluate(()=>{
+        const right=document.querySelector('.auth-main'),left=document.querySelector('.auth-aside');
+        const before=left.getBoundingClientRect().top;
+        right.scrollTop=right.scrollHeight;
+        return {overflow:right.scrollHeight>right.clientHeight,top:right.scrollTop,leftBefore:before,leftAfter:left.getBoundingClientRect().top,bodyTop:window.scrollY,bodyFits:document.documentElement.scrollHeight<=innerHeight+1};
+    });
+    assert.ok(scroll.overflow && scroll.top>0 && scroll.leftBefore===scroll.leftAfter && scroll.bodyTop===0 && scroll.bodyFits,'Right side scrolls independently of the pinned left panel');
+    assert.ok(await registration.getByRole('button',{name:'Create free account'}).isVisible());
+    await registration.locator('.auth-footer').scrollIntoViewIfNeeded();
+    await registration.setViewportSize({width:390,height:844});
+    assert.equal(await registration.locator('.auth-aside').isVisible(),false);
+    assert.ok(await registration.locator('.auth-mobile-brand').isVisible());
+    const mn=await name.boundingBox(),me=await email.boundingBox();
+    assert.ok(mn && me && Math.abs(mn.x-me.x)<2 && me.y>mn.y,'Mobile fields must stack vertically');
+    await registration.setViewportSize({width:320,height:568});
+    assert.ok(await registration.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Registration must fit a narrow phone');
+    await name.fill('Layout Test');
+    await email.fill('layout-test@example.test');
+    await password.fill('layout-test-password');
+    await confirm.fill('layout-test-password');
+    await registration.locator('#legal-accepted').check();
+    await registration.locator('#subscription-accepted').check();
+    await registration.getByRole('button',{name:'Create free account'}).scrollIntoViewIfNeeded();
+    assert.ok(await registration.getByRole('button',{name:'Create free account'}).isVisible());
+    assert.equal(await registration.locator('.auth-form').evaluate(form=>form.checkValidity()),true);
+    await registration.close();
+    console.log('Registration layout passed: two desktop columns, pinned left panel, independent right scroll, mobile stacked fields and reachable legal consent.');
     console.log('Legal browser smoke passed: draft visibility, admin publish, staff terms review, mobile legal page, booking consent and recorded version.');
 } finally { await browser.close(); }
