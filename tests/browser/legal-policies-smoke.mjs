@@ -13,7 +13,17 @@ try {
     await page.getByLabel('Password',{exact:true}).fill('browser-test-password-123');
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
     await page.waitForURL(app+'/admin');
-    await page.locator('#workspace-navigation').getByRole('link',{name:'Legal policies',exact:true}).click();
+    const platformNav=page.locator('#workspace-navigation');
+    assert.equal(await platformNav.locator('[data-nav-context]').getAttribute('data-nav-context'),'platform');
+    assert.deepEqual(await platformNav.locator('.workspace-nav-caption').allTextContents(),['Platform','Configuration','Compliance']);
+    assert.equal(await platformNav.locator('[data-nav-item="calendar"]').count(),0);
+    await page.locator('[data-workspace-switch-open]').click();
+    const platformSwitcher=page.getByRole('dialog',{name:'Switch workspace',exact:true});
+    await platformSwitcher.waitFor();
+    assert.equal(await platformSwitcher.locator('[data-workspace-choice="platform"]').getAttribute('aria-current'),'true');
+    await platformSwitcher.getByRole('button',{name:'Close workspace switcher'}).click();
+    await platformSwitcher.waitFor({state:'hidden'});
+    await platformNav.getByRole('link',{name:'Legal policies',exact:true}).click();
     await page.waitForURL(app+'/admin/legal');
     await page.getByRole('heading',{name:'Legal policies',exact:true}).waitFor();
     await page.locator('input[name="legal_name"]').fill('Browser Test Operator');

@@ -198,3 +198,62 @@ html:has(.rewards-drawer[open]){overflow:hidden}
 .reward-chart-dates{display:flex;justify-content:space-between;margin-top:5px;color:#626d66}
 .reward-reference{display:block;white-space:normal;overflow-wrap:anywhere;max-width:320px;min-width:160px}
 @media(max-width:600px){.rewards-widget{gap:7px;padding:9px}.rewards-widget-end{padding-left:7px}.rewards-widget-end>span{display:none}.rewards-widget-progress{width:25%}.rewards-stats strong{font-size:14px}.rewards-stats>div{padding:8px}.reward-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reward-report-stat strong{font-size:20px}}
+
+
+/* Grouped workspace navigation: fixed switcher/footer, one independent scroll area. */
+.app-workspace .workspace-navigation{box-sizing:border-box;overflow:hidden;padding:0;gap:0;min-height:0}
+.workspace-navigation-top,.workspace-navigation-footer{flex:0 0 auto;padding:8px;background:#fff}
+.workspace-navigation-top{border-bottom:1px solid #e6ebe7}
+.workspace-navigation-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:5px 8px 10px}
+.workspace-navigation-footer{border-top:1px solid #e6ebe7;display:grid;gap:2px}
+.workspace-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.workspace-nav-group:last-child{margin-bottom:0}
+.workspace-nav-group .workspace-nav-caption{margin:8px 8px 3px;font-size:10px}
+.app-workspace .workspace-navigation .workspace-nav-link{min-height:36px;gap:9px;padding:7px 9px;font-size:13px;box-sizing:border-box}
+.workspace-nav-link .workspace-nav-label{flex:1;min-width:0}
+.workspace-nav-link .workspace-nav-meta{margin-left:auto;font-size:10px;font-weight:600;color:#a14b1d}
+.workspace-nav-external{display:inline-flex;margin-left:auto;color:#78847c}
+.workspace-nav-external svg{width:13px;height:13px}
+.workspace-navigation [data-nav-item="rewards"]>svg{color:#c75d21}
+.workspace-navigation .workspace-logout{margin-top:0}
+.app-workspace .workspace-navigation .workspace-switch{gap:8px;min-height:50px;padding:7px 8px;box-sizing:border-box}
+.workspace-switch-logo,.workspace-switch-mark{flex:0 0 28px;width:28px;height:28px;object-fit:contain;border-radius:6px}
+.workspace-switch-mark{display:grid;place-items:center;background:var(--brand-tint);color:var(--brand-ink)}
+.workspace-switch-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.workspace-switch-copy strong,.workspace-switch-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.workspace-switch-copy strong{font-size:13px;font-weight:700}
+.workspace-switch-copy small{font-size:10px;color:#67756d;font-weight:500}
+.workspace-switch-chevron{display:inline-flex;flex:none;color:#68776d}
+.workspace-switch-chevron svg{width:15px;height:15px}
+.app-workspace .workspace-navigation a:focus-visible,.app-workspace .workspace-navigation button:focus-visible,.workspace-choice:focus-visible,.workspace-switcher-close:focus-visible{outline:2px solid var(--brand-focus,#3268a7);outline-offset:-2px}
+.workspace-switcher-dialog{position:fixed;inset:calc(var(--header-height,57px) + 8px) auto auto 8px;margin:0;width:min(340px,calc(100vw - 16px));max-width:calc(100vw - 16px);max-height:calc(100dvh - var(--header-height,57px) - 16px);box-sizing:border-box;background:white;color:var(--ink);border:1px solid #dce4df;border-radius:11px;padding:0;overflow:hidden;box-shadow:0 12px 35px #10261e30}
+.workspace-switcher-dialog[open]{display:flex;flex-direction:column}
+.workspace-switcher-dialog::backdrop{background:#10261e38}
+.workspace-switcher-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:13px 14px 12px;border-bottom:1px solid #e6ebe7;flex-shrink:0}
+.workspace-switcher-header h2{font-size:16px;margin:0 0 3px;line-height:1.3}
+.workspace-switcher-header p{font-size:12px;margin:0}
+.workspace-switcher-close{min-width:34px;width:34px;height:34px;padding:4px;flex-shrink:0}
+.workspace-switcher-list{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:6px 8px 9px}
+.workspace-switcher-list .workspace-nav-caption{margin:9px 8px 5px}
+.workspace-choice{display:flex;align-items:center;gap:9px;min-height:46px;padding:7px 8px;box-sizing:border-box;text-decoration:none;border-radius:7px;color:#405048}
+.workspace-choice:hover,.workspace-choice[aria-current]{background:var(--brand-tint);color:var(--brand-ink)}
+.workspace-choice-icon{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:7px;background:#f0f3f1;color:#405048}
+.workspace-choice-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.workspace-choice-copy strong,.workspace-choice-copy small{overflow-wrap:anywhere;line-height:1.2}
+.workspace-choice-copy strong{font-size:13px;font-weight:650}
+.workspace-choice-copy small,.workspace-switcher-empty{font-size:11px;color:#67756d}
+.workspace-switcher-empty{padding:6px 8px}
+@media(min-width:851px){
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-nav-link,.app-workspace.workspace-collapsed .workspace-navigation .workspace-switch{justify-content:center;padding:7px 0;gap:0}
+    .app-workspace.workspace-collapsed .workspace-switch-mark{display:grid}
+    .app-workspace.workspace-collapsed .workspace-nav-group{margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid #e6ebe7}
+    .app-workspace.workspace-collapsed .workspace-nav-group:last-child{border-bottom:0;padding-bottom:0}
+}
+@media(max-width:850px){
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-mark{display:grid}
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-copy{display:flex}
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-chevron,.app-workspace.workspace-collapsed .workspace-navigation .workspace-nav-external{display:inline-flex}
+    .app-workspace .workspace-navigation .workspace-nav-link{min-height:42px}
+    .workspace-switcher-dialog{width:calc(100vw - 16px);max-width:340px}
+}
+@media(max-height:320px){.workspace-navigation-top,.workspace-navigation-footer{padding-block:3px}.app-workspace .workspace-navigation .workspace-nav-link{min-height:32px}}
