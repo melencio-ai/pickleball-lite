@@ -256,7 +256,7 @@
             <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
         </section>
     </main>
-    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ auth()->check() ? \App\Services\VenueContext::url('staff.calendar') : \App\Services\VenueContext::url('login') }}">Staff sign in</a></span></div></footer>
+    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ \App\Services\VenueContext::onBooking() || \App\Services\VenueContext::onApp() ? route('app.home') : (auth()->check() ? route('staff.calendar') : route('login')) }}">Staff sign in</a></span></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
 </body>
