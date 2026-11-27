@@ -16,6 +16,7 @@ use App\Http\Middleware\ResolvePublicVenue;
 use App\Http\Middleware\ResolveStaffVenue;
 use App\Http\Controllers\PlatformController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\PasswordRecoveryController;
 
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
@@ -103,6 +104,10 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
     Route::middleware('guest')->group(function () {
         Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
         Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+        Route::get('/forgot-password', [PasswordRecoveryController::class,'request'])->name('password.request');
+        Route::post('/forgot-password', [PasswordRecoveryController::class,'send'])->middleware('throttle:5,1')->name('password.email');
+        Route::get('/reset-password/{token}', [PasswordRecoveryController::class,'reset'])->where('token','[a-f0-9]{64}')->name('password.reset');
+        Route::post('/reset-password', [PasswordRecoveryController::class,'update'])->middleware('throttle:10,1')->name('password.update');
     });
     Route::middleware('auth')->group(function () use ($staffRoutes) {
         Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
