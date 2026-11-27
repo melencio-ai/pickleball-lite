@@ -59,7 +59,8 @@ try {
     await page.waitForFunction(()=>getComputedStyle(document.querySelector('#workspace-navigation')).visibility==='hidden');
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile management page must not overflow');
     await page.getByRole('button',{name:'Toggle navigation'}).click();
-    assert.equal(await navigation.isVisible(),true);
+    await navigation.waitFor({state:'visible'});
+    assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-open')));
     await page.keyboard.press('Escape');
     await page.waitForFunction(()=>!document.body.classList.contains('workspace-open'));
     await page.locator('.workspace-bell').click();
