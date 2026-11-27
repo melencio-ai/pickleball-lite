@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             'timezone' => 'Asia/Manila',
         ]);
 
+        \Illuminate\Support\Facades\DB::table('venue_subscriptions')->insert(['venue_id'=>$venue->id,'status'=>'onboarding','created_at'=>now(),'updated_at'=>now()]);
+
         foreach (range(0, 6) as $day) {
             $venue->hours()->create(['weekday' => $day, 'opens_at' => '07:00', 'closes_at' => '22:00']);
         }
