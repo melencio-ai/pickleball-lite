@@ -3,10 +3,10 @@
 @section('content')
 <header class="section-heading page-heading"><div><a href="{{ route('app.admin.index') }}">← Platform administration</a><h1>{{ $record->name }}</h1><p class="muted">Subscription billing · Separate from player booking payments</p></div></header>
 <div class="settings-grid">
-    <section class="panel form-stack"><h2>Subscription</h2><p>Setup: ₱{{ number_format(($subscription->setup_fee ?? 300000)/100,2) }} · Monthly: ₱{{ number_format(($subscription->monthly_fee ?? 100000)/100,2) }}</p>
+    <section class="panel form-stack"><h2>Subscription</h2>@if($subscription?->trial_ends_at)<p class="muted">Trial ends {{ $subscription->trial_ends_at }} · {{ $subscription->trial_extensions_count }} extensions used.</p>@endif @if($subscription?->upgrade_requested_at)<p class="notice">Paid upgrade requested {{ $subscription->upgrade_requested_at }}.</p>@endif<p>Setup: ₱{{ number_format(($subscription->setup_fee ?? 300000)/100,2) }} · Monthly: ₱{{ number_format(($subscription->monthly_fee ?? 100000)/100,2) }}</p>
         <form class="form-stack" method="post" action="{{ route('app.admin.billing.save',$record->id) }}">@csrf @method('PATCH')
-            <label>Status<select name="status">@foreach(['onboarding','active','overdue','suspended','cancelled'] as $state)<option value="{{ $state }}" @selected(($subscription->status ?? 'onboarding')===$state)>{{ ucfirst($state) }}</option>@endforeach</select></label>
-            <label>Renewal date<input type="date" name="renewal_date" value="{{ old('renewal_date',$subscription->renewal_date ?? '') }}"></label><p class="muted">Billing status does not automatically suspend the venue website.</p><button>Save subscription</button>
+            <label>Status<select name="status">@foreach(['onboarding','trial','trial_expired','active','overdue','suspended','cancelled'] as $state)<option value="{{ $state }}" @selected(($subscription->status ?? 'onboarding')===$state)>{{ ucfirst($state) }}</option>@endforeach</select></label>
+            <label>Renewal date<input type="date" name="renewal_date" value="{{ old('renewal_date',$subscription->renewal_date ?? '') }}"></label><p class="muted">Self-service venues require active trial or paid access. Legacy venues keep their existing publication rules.</p><button>Save subscription</button>
         </form>
     </section>
     <section class="panel form-stack"><h2>Record received payment</h2><p class="muted">Record only payments you have verified. This does not charge the customer.</p>

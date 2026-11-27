@@ -8,6 +8,7 @@
     const grid = () => document.querySelector('[data-calendar-grid]');
 
     function announce(message, error = false) {
+        if (window.PickleToast) { window.PickleToast(message,error?'error':'success'); return; }
         toast.textContent = message;
         toast.classList.toggle('error', error);
         toast.hidden = false;

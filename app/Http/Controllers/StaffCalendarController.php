@@ -160,6 +160,8 @@ class StaffCalendarController extends Controller
 
                 $record->$field = now();
                 $record->save();
+                \App\Services\VenueNotifications::emit($venue,$pay?'payment':'booking',($pay?'booking-paid-':'cancelled-').$record->id,
+                    $pay?'Court payment verified':'Court booking cancelled',$court->name.' · '.$record->starts_at->setTimezone($venue->timezone)->format('M j, g:i A'),'calendar');
             }
 
             return $record->starts_at->setTimezone($venue->timezone)->toDateString();

@@ -12,7 +12,7 @@ try {
     await page.getByLabel('Password',{exact:true}).fill('browser-test-password-123');
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
     await page.waitForURL(app+'/admin');
-    await page.getByRole('link',{name:'Legal policies',exact:true}).click();
+    await page.locator('#workspace-navigation').getByRole('link',{name:'Legal policies',exact:true}).click();
     await page.waitForURL(app+'/admin/legal');
     await page.getByRole('heading',{name:'Legal policies',exact:true}).waitFor();
     await page.locator('input[name="legal_name"]').fill('Browser Test Operator');

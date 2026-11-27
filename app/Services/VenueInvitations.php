@@ -70,6 +70,7 @@ final class VenueInvitations
             }
             DB::table('venue_invitations')->where('id',$invite->id)->update(['accepted_at'=>now(),'updated_at'=>now()]);
             self::audit($accepted,$venue,'invitation.accepted',['role'=>$invite->role]);
+            VenueNotifications::emit($venue,'account','invite-accepted-'.$invite->id,'New venue member','A new '.$invite->role.' accepted a venue invitation.','settings',true);
 
             return $accepted;
         },3);

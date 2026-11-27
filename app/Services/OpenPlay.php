@@ -20,6 +20,7 @@ class OpenPlay
     {
         return DB::transaction(function () use ($venue, $data) {
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
+            TrialAccess::ensure($venue);
             $courts = $venue->courts()->whereIn('id', $data['court_ids'])->orderBy('id')->lockForUpdate()->get();
             if ($courts->count() !== count($data['court_ids']) || $courts->contains(fn ($court) => ! $court->active)) {
                 $this->reject('court_ids', 'Choose active courts at this venue.');
@@ -70,6 +71,7 @@ class OpenPlay
     {
         return DB::transaction(function () use ($venue, $sessionId, $data, $source) {
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
+            TrialAccess::ensure($venue);
             if ($source === 'online' && !$venue->acceptsPublicBookings()) {
                 $this->reject('session', 'This venue is not accepting online registrations.');
             }
@@ -108,6 +110,10 @@ class OpenPlay
                 'cancellation_policy' => LegalPolicies::venuePolicy($venue),
             ]);
             if ($legal) LegalPolicies::record($legal,'open_play',$registration->id,$venue->id);
+            if ($source==='online') {
+                VenueNotifications::emit($venue,'open_play','registered-'.$registration->id,'New Open Play registration','A player reserved a spot in '.$session->name.'.','open-play');
+                VenueNotifications::emit($venue,'payment','open-play-pending-'.$registration->id,'Open Play payment awaiting verification','A new player hold is awaiting payment.','open-play');
+            }
             return $registration;
         }, 3);
     }
@@ -122,6 +128,7 @@ class OpenPlay
                 if (! $record->cancelled_at) {
                     $record->cancelled_at = now();
                     $record->save();
+                    VenueNotifications::emit($venue,'open_play','cancelled-'.$record->id,'Open Play registration cancelled','A player reservation was cancelled.','open-play');
                 }
 
                 return;
@@ -139,6 +146,7 @@ class OpenPlay
                 $record->payment_reference = PaymentReferences::claim($data['payment_reference']);
                 $record->payment_verified_by = $staffId;
                 $record->paid_at = now();
+                VenueNotifications::emit($venue,'payment','open-play-paid-'.$record->id,'Open Play payment verified','A player payment was verified.','open-play');
             }
             if ($action === 'check-in') {
                 if (! $record->paid_at || $session->ends_at->lte(now())) {
@@ -163,6 +171,7 @@ class OpenPlay
             }
             $venue->courts()->whereIn('id', $session->courts()->pluck('courts.id'))->orderBy('id')->lockForUpdate()->get();
             $session->cancelled_at = now();
+            VenueNotifications::emit($venue,'open_play','session-cancelled-'.$session->id,'Open Play cancelled','An Open Play session was cancelled.','open-play');
             $session->save();
             $session->registrations()->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
             CourtBlock::query()->where('open_play_session_id', $session->id)->delete();

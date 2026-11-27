@@ -14,11 +14,11 @@ class Venue extends Model
     protected $fillable = [
         'name', 'address', 'phone', 'timezone', 'brand_color', 'map_url', 'messenger_url',
         'booking_durations', 'advance_days', 'minimum_notice', 'cancellation_policy', 'website_content', 'slug', 'status', 'published', 'legacy_slot',
-        'qr_payments_enabled', 'payment_qr_base', 'payment_messenger_url',
+        'qr_payments_enabled', 'payment_qr_base', 'payment_messenger_url', 'self_service',
     ];
 
     protected $casts = [
-        'published' => 'boolean', 'booking_durations' => 'array', 'website_content' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer', 'qr_payments_enabled' => 'boolean',
+        'published' => 'boolean', 'self_service' => 'boolean', 'booking_durations' => 'array', 'website_content' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer', 'qr_payments_enabled' => 'boolean',
     ];
 
     protected static function booted(): void
@@ -37,7 +37,7 @@ class Venue extends Model
 
     public function acceptsPublicBookings(): bool
     {
-        return $this->status === 'active' && $this->published;
+        return $this->status === 'active' && $this->published && \App\Services\TrialAccess::allowed($this);
     }
 
     public function durations(): array

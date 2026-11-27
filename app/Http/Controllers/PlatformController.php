@@ -51,7 +51,7 @@ class PlatformController extends Controller
     {
         $search = $request->validate(['q'=>'nullable|string|max:100'])['q'] ?? '';
         $query = Venue::query()->leftJoin('venue_subscriptions','venues.id','=','venue_subscriptions.venue_id')
-            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date')
+            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date','venue_subscriptions.upgrade_requested_at')
             ->withCount('members');
         if ($search !== '') $query->where(fn ($q) => $q->where('venues.name','like','%'.$search.'%')->orWhere('venues.slug','like','%'.$search.'%'));
         $venues = $query->orderBy('venues.name')->paginate(25)->withQueryString();
@@ -109,6 +109,10 @@ class PlatformController extends Controller
         DB::transaction(function () use ($request,$data,$venue) {
             $record = Venue::query()->lockForUpdate()->findOrFail($venue);
             $publish = $data['status'] === 'active' && $request->boolean('published');
+            if ($publish && $record->self_service && (!\App\Services\TrialAccess::allowed($record) ||
+                !DB::table('venue_onboarding')->where('venue_id',$record->id)->whereNotNull('completed_at')->exists())) {
+                throw ValidationException::withMessages(['published'=>'The self-service venue must complete onboarding and have active access.']);
+            }
             if ($publish && (!$record->members()->wherePivot('role','owner')->exists()
                 || !$record->courts()->where('active',true)->exists() || !$record->hours()->where('closed',false)->exists()
                 || ($record->qr_payments_enabled && (!$record->payment_qr_base || !$record->payment_messenger_url)))) {
@@ -132,14 +136,22 @@ class PlatformController extends Controller
 
     public function saveBilling(Request $request,int $venue)
     {
-        $data = $request->validate(['status'=>['required',Rule::in(['onboarding','active','overdue','suspended','cancelled'])],
+        $data = $request->validate(['status'=>['required',Rule::in(['onboarding','trial','trial_expired','active','overdue','suspended','cancelled'])],
             'renewal_date'=>'nullable|date_format:Y-m-d']);
         DB::transaction(function () use ($request,$data,$venue) {
             $record = Venue::query()->lockForUpdate()->findOrFail($venue);
+            $current = \App\Services\TrialAccess::subscription($record,true);
+            if ($data['status']==='trial' && (!$current || !$current->trial_ends_at || \Carbon\CarbonImmutable::parse($current->trial_ends_at)->lte(now()))) {
+                throw ValidationException::withMessages(['status'=>'A trial can only remain active until its recorded expiration.']);
+            }
+            if ($data['status']==='active' && $record->self_service && !$record->members()->wherePivot('role','owner')->whereNotNull('email_verified_at')->exists()) {
+                throw ValidationException::withMessages(['status'=>'The owner must verify their email before paid activation.']);
+            }
             DB::table('venue_subscriptions')->updateOrInsert(['venue_id'=>$venue],[
                 'status'=>$data['status'],'renewal_date'=>$data['renewal_date'] ?? null,'updated_at'=>now(),
             ]);
             VenueInvitations::audit($request->user(),$record,'subscription.updated',$data);
+            \App\Services\VenueNotifications::emit($record,'subscription','status-'.\Illuminate\Support\Str::ulid(),'Subscription updated','Your subscription status is now '.$data['status'].'.','subscription',true);
         },3);
 
         return back()->with('status','Subscription updated.');
@@ -167,6 +179,7 @@ class PlatformController extends Controller
                 'received_on'=>$data['received_on'],'recorded_by'=>$request->user()->id,'created_at'=>now(),'updated_at'=>now(),
             ]);
             VenueInvitations::audit($request->user(),$record,'subscription.payment_recorded',['amount'=>$amount,'kind'=>$data['kind']]);
+            \App\Services\VenueNotifications::emit($record,'subscription','payment-'.hash('sha256',$ref),'Subscription payment recorded','Your verified subscription payment has been recorded.','subscription',true);
         },3);
 
         return back()->with('status','Subscription payment recorded. Update renewal date and status separately.');
