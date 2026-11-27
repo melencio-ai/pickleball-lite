@@ -72,6 +72,11 @@ jobs:
       SESSION_DRIVER: file
       CACHE_STORE: file
       APP_URL: http://127.0.0.1:8000
+      # Browser-only registration fixture: no email is submitted in this suite.
+      PICKLE_SELF_REGISTRATION_ENABLED: 'true'
+      MAIL_MAILER: smtp
+      MAIL_HOST: smtp.example.test
+      MAIL_FROM_ADDRESS: support@example.test
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

@@ -49,7 +49,7 @@ class ManagementAuthTest extends TestCase
     public function test_login_uses_standalone_layout_and_single_venue_redirect(): void
     {
         $this->get($this->url('/login'))->assertOk()->assertSee('Welcome back')
-            ->assertSee('/auth.css?v=1',false)->assertSee('Remember me')
+            ->assertSee('/auth.css?v=2',false)->assertSee('Remember me')
             ->assertDontSee('class="site-header"',false)->assertDontSee('Forgot password?')
             ->assertHeader('Cache-Control','no-store, private');
         $this->post($this->url('/login'), ['email'=>$this->owner->email,'password'=>'incorrect'])->assertSessionHasErrors('email');

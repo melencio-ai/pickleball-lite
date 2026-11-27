@@ -7,13 +7,13 @@
     <meta name="referrer" content="no-referrer">
     <title>@yield('title') · Pickle Lite</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/auth.css?v=1">
+    <link rel="stylesheet" href="/auth.css?v=2">
     <script src="/auth.js?v=1" defer></script>
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=2">
 <script src="/workspace.js?v=3" defer></script>
 </head>
-<body class="auth-page">
+<body class="auth-page @yield('auth-page-class')">
     <main class="auth-shell">
         <aside class="auth-aside" aria-label="About Pickle Lite">
             <a class="auth-brand" href="{{ route('product.home') }}"><img src="/favicon.svg" width="36" height="36" alt=""><span>Pickle Lite</span></a>
