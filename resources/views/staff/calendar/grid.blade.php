@@ -1,4 +1,4 @@
-<div class="calendar-region" data-calendar-grid data-calendar-url="{{ route('staff.calendar', ['date' => $date, 'fragment' => 'grid']) }}">
+<div class="calendar-region" data-calendar-grid data-calendar-url="{{ \App\Services\VenueContext::url('staff.calendar', ['date' => $date, 'fragment' => 'grid']) }}">
     @if($courts->isEmpty())
         <div class="panel empty">There are no active courts. An owner can add one in Settings.</div>
     @else
@@ -19,7 +19,7 @@
                 @endforeach
                 @foreach($grid['free'] as $slot)
                     <a class="calendar-free-slot" style="grid-row:{{ $slot['row'] }};grid-column:{{ $slot['column'] }}"
-                       href="{{ route('staff.calendar.modal', ['kind' => 'new', 'date' => $date, 'court' => $slot['court']->id, 'start' => $slot['time']]) }}"
+                       href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => 'new', 'date' => $date, 'court' => $slot['court']->id, 'start' => $slot['time']]) }}"
                        data-calendar-modal data-calendar-key="slot-{{ $slot['court']->id }}-{{ $slot['time'] }}"
                        aria-label="Add booking on {{ $slot['court']->name }} at {{ \Carbon\CarbonImmutable::parse($slot['time'])->format('g:i A') }}">
                         <span aria-hidden="true">+</span>
@@ -28,7 +28,7 @@
                 @foreach($grid['events'] as $event)
                     <a class="calendar-event calendar-event--{{ $event['status'] }} {{ $event['rows'] === 1 ? 'calendar-event--short' : '' }}"
                        style="grid-row:{{ $event['row'] }} / span {{ $event['rows'] }};grid-column:{{ $event['column'] }} / span {{ $event['columns'] }}"
-                       href="{{ route('staff.calendar.modal', ['kind' => $event['kind'], 'record' => $event['id'], 'date' => $date]) }}"
+                       href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => $event['kind'], 'record' => $event['id'], 'date' => $date]) }}"
                        data-calendar-modal data-calendar-key="{{ $event['kind'] }}-{{ $event['id'] }}-{{ $event['column'] }}"
                        @if($event['expires']) data-hold-expires="{{ $event['expires'] }}" @endif
                        aria-label="{{ $event['title'] }}, {{ $event['time'] }}, {{ $event['summary'] }}">
@@ -55,7 +55,7 @@
         <details class="calendar-history">
             <summary>Cancelled and expired bookings ({{ count($grid['history']) }})</summary>
             @foreach($grid['history'] as $item)
-                <a class="calendar-history-row" href="{{ route('staff.calendar.modal', ['kind' => 'booking', 'record' => $item['entry']->id, 'date' => $date]) }}"
+                <a class="calendar-history-row" href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => 'booking', 'record' => $item['entry']->id, 'date' => $date]) }}"
                    data-calendar-modal data-calendar-key="history-{{ $item['entry']->id }}">
                     <strong>{{ $item['entry']->customer_name }}</strong>
                     <span>{{ $item['court']->name }} · {{ $item['entry']->starts_at->setTimezone($venue->timezone)->format('g:i A') }}</span>
