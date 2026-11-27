@@ -16,6 +16,7 @@ final class VenueInvitations
         $email = strtolower(trim($email));
         DB::transaction(function () use ($venue,$email,$role,$actor,$token) {
             Venue::query()->lockForUpdate()->findOrFail($venue->id);
+            self::authorizeIssuer($actor->fresh(),$venue,$role);
             DB::table('venue_invitations')->where('venue_id',$venue->id)->where('email',$email)
                 ->whereNull('accepted_at')->whereNull('revoked_at')->update(['revoked_at'=>now(),'updated_at'=>now()]);
             DB::table('venue_invitations')->insert([
@@ -45,15 +46,15 @@ final class VenueInvitations
             $initial = self::find($token);
             $venue = Venue::query()->lockForUpdate()->findOrFail($initial->venue_id);
             $invite = self::find($token,true);
+            self::authorizeIssuer(User::findOrFail($invite->invited_by),$venue,$invite->role);
             $existing = User::query()->whereRaw('LOWER(email) = ?',[$invite->email])->lockForUpdate()->first();
             if ($existing) {
                 abort_unless($user && $user->id === $existing->id,403);
                 $member = $existing->venues()->where('venues.id',$venue->id)->first();
                 if (!$member) {
                     $existing->venues()->attach($venue->id,['role'=>$invite->role]);
-                } elseif ($member->pivot->role !== 'owner' && $invite->role === 'owner') {
-                    // An owner invitation is issued only by a platform admin.
-                    $existing->venues()->updateExistingPivot($venue->id,['role'=>'owner']);
+                } elseif (array_search($invite->role,['staff','manager','owner'],true) > array_search($member->pivot->role,['staff','manager','owner'],true)) {
+                    $existing->venues()->updateExistingPivot($venue->id,['role'=>$invite->role]);
                 }
                 $accepted = $existing;
             } else {
@@ -72,6 +73,13 @@ final class VenueInvitations
 
             return $accepted;
         },3);
+    }
+
+    private static function authorizeIssuer(User $actor, Venue $venue, string $role): void
+    {
+        abort_unless(in_array($role,['owner','manager','staff'],true),403);
+        abort_unless($actor->platform_admin || ($role !== 'owner' &&
+            $actor->venues()->where('venues.id',$venue->id)->wherePivot('role','owner')->exists()),403);
     }
 
     public static function audit(User $actor, ?Venue $venue, string $action, array $details = []): void
