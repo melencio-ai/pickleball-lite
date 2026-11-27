@@ -1,11 +1,22 @@
 <!doctype html>
+@php
+    $publicVenue = \App\Services\VenueContext::onBooking() ? request()->attributes->get('venue_context') : null;
+    $publicLogoVersion = $publicVenue
+        ? (isset($media) ? $media->get('logo')?->version : $publicVenue->media()->where('kind','logo')->value('version'))
+        : null;
+@endphp
 <html lang="en" style="{{ \App\Services\VenueTheme::style(($venue ?? request()->attributes->get('venue_context'))?->brand_color) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') · Pickleball Lite</title>
+    <title>@yield('title') · {{ $publicVenue?->name ?? 'Pickleball Lite' }}</title>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @if($publicVenue)
+        <link rel="icon" href="{{ $publicLogoVersion ? \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$publicLogoVersion],venue:$publicVenue) : asset('favicon.svg') }}">
+        <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
+    @else
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @endif
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=3">
 <script src="/workspace.js?v=4" defer></script>
@@ -16,6 +27,10 @@
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
 @endphp
 <body @if($appShell) class="app-workspace" data-workspace-user="{{ auth()->id() }}" @endif>
+    @if($publicVenue)
+        <a class="site-skip" href="#main-content">Skip to content</a>
+        <x-public-booking-header :venue="$publicVenue" :logo-version="$publicLogoVersion"/>
+    @else
     <header class="site-header">
         <div class="header-inner">
             <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}"><span class="brand-mark" aria-hidden="true"></span> Pickle Lite</a>
@@ -91,8 +106,9 @@
             </div>
         @endif
     </header>
+    @endif
     @if($appShell)<button type="button" class="workspace-backdrop" data-workspace-close aria-label="Close navigation" hidden></button>@endif
-    <main class="page @yield('page-class')">
+    <main id="main-content" class="page @yield('page-class')">
         @if($workspace && $appShell && $workspace->self_service)
             @if($subscriptionStatus?->status==='trial' && \App\Services\TrialAccess::allowed($workspace))
                 <div class="workspace-trial"><x-workspace-icon name="clock"/><span>{{ max(1,(int)ceil(now()->diffInSeconds(\Carbon\CarbonImmutable::parse($subscriptionStatus->trial_ends_at))/86400)) }} days left in your trial</span>@can('manage-venue')<a href="{{ \App\Services\VenueContext::url('settings.subscription') }}">{{ \App\Services\TrialAccess::canExtend($subscriptionStatus) ? 'Extend trial' : 'View subscription' }}</a>@endcan</div>
@@ -114,7 +130,12 @@
         @endif
         @yield('content')
     </main>
-    <footer class="legal-footer"><x-legal-links :venue="$venue ?? null" /></footer>
+    <footer class="legal-footer">
+        @if($publicVenue)
+            <p style="text-align:center;margin:0 0 12px;font-size:12px">{{ $publicVenue->name }} · Powered by Pickle Lite · <a href="{{ route('app.login') }}">Staff sign in</a></p>
+        @endif
+        <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
+    </footer>
 @if(auth()->check() && !\App\Services\VenueContext::onBooking())
     <x-sign-out-dialog />
 @endif

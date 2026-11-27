@@ -22,14 +22,7 @@
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header">
         <div class="site-container site-navigation">
-            <a class="site-logo" href="{{ \App\Services\VenueContext::url('landing') }}">
-                @if($media->has('logo'))
-                    <img src="{{ \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}" alt="">
-                @else
-                    <span class="site-mark"><x-booking-icon name="layout-grid" /></span>
-                @endif
-                <strong>{{ $venue->name }}</strong>
-            </a>
+            <x-venue-site-brand :venue="$venue" :logo-version="$media->get('logo')?->version"/>
             <nav aria-label="Venue navigation">
                 <a href="#schedule">Schedule</a><a href="#rates">Rates</a><a href="#open-play">Open Play</a><a href="#facilities">Facilities</a>@if(count($galleryPhotos))<a href="#gallery">Gallery</a>@endif<a href="#faq">FAQ</a><a href="#contact">Contact</a>
             </nav>

@@ -8,7 +8,7 @@
         @endif
         <div>
             <p class="venue-name">
-                @if($media->has('logo'))<img class="venue-logo" src="{{ \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}" alt="">@endif
+                @if($media->has('logo') && !\App\Services\VenueContext::onBooking())<img class="venue-logo" src="{{ \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}" alt="">@endif
                 {{ $venue->name }}
             </p>
             <h1>Let's play!</h1>
