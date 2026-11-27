@@ -27,7 +27,7 @@
             <h1>More games. Less admin work.</h1>
             <p class="site-lead">Give your players a place to book courts, join Open Play and pay online. Manage your venue in one simple app.</p>
             <div class="site-actions"><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get Pickle Lite' }} <x-booking-icon name="chevron-right" /></a><a class="site-button site-outline" href="{{ route('product.demo') }}">Ask for a demo</a></div>
-            <p class="site-footnote">@if($selfSignup)30-day free trial · No credit card required · @endifFree setup · ₱1,000 per month</p>
+            <p class="site-footnote">@if($selfSignup)30-day free trial · No credit card required · @endif Free setup · ₱1,000 per month</p>
         </div></section>
         <section class="site-container site-section" id="features">
             <div class="site-section-heading"><p class="site-eyebrow">Everything you need to get started</p><h2>Make it easy to book your courts</h2><p>Give your staff fewer messages to answer and your players a faster way to find a game.</p></div>
