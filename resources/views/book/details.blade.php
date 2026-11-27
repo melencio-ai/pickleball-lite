@@ -16,12 +16,12 @@
         <input type="hidden" name="quoted_total" value="{{ $selection['slots'][$selectedStart]['total'] }}">
         <label>Full name<input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}" maxlength="100" autocomplete="name" required></label>
         <label>Mobile number<input name="customer_phone" type="tel" value="{{ is_string(old('customer_phone')) ? old('customer_phone') : '' }}" maxlength="32" autocomplete="tel" required></label>
-        @if($venue->cancellation_policy)
+        @php($legal = \App\Services\LegalPolicies::context($venue))
             <details class="compact-policy">
                 <summary>Cancellation policy <x-booking-icon name="chevron-down" /></summary>
-                <p>{{ $venue->cancellation_policy }}</p>
+                <p>{{ $legal['policy'] }}</p>
             </details>
-        @endif
+        <x-legal-acceptance :legal="$legal" :venue="$venue" />
         <button class="booking-button" data-booking-submit>
             @if($venue->qr_payments_enabled)<x-booking-icon name="qr-code" /> Continue to payment
             @else Confirm booking
