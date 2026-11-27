@@ -68,3 +68,10 @@ Owners can edit website copy, confirmed facilities, up to five FAQs, SEO metadat
 ### Gallery and FAQs
 
 A new venue with no uploaded gallery photos displays five clearly labeled AI-generated demo images (1200×900 WebP). Once an owner uploads a real gallery photo, the entire illustrative gallery is replaced by the actual photos. Owners can also disable the fallback in Website settings. The image viewer supports previous/next buttons, arrow keys and Escape. Default FAQs adapt to QR payment setup, booking durations, advance notice and cancellation policy; owners can add five custom FAQs. The demo assets are stored as base64 WebP resources and served as binary WebP responses through an allowlisted route.
+
+
+## Management authentication
+
+The canonical sign-in page is `https://app.picklelite.cloud/login`. The original staff login URL remains available for compatibility. Platform admins open the platform dashboard; a member of exactly one venue opens its calendar; multiple or zero venue memberships open the venue selector. Same-origin protected workspace and invitation links take priority after sign-in. The optional Remember me checkbox on the management host issues a 30-day host-only remember cookie. Normal logout revokes the remember token.
+
+Password recovery is disabled by default. To enable it, configure and verify SMTP on **pickle-app** using `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` and the provider's appropriate `MAIL_SCHEME`; then set `PICKLE_PASSWORD_RESET_ENABLED=true` and redeploy. Do not enable the flag with the log mailer. Reset links are issued on the management host, expire after 60 minutes and are single-use. Successful resets revoke the remembered token and stored management sessions. Public bookings do not require player accounts. New staff and owners still join by private invitation.

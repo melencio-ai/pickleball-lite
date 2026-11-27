@@ -15,7 +15,7 @@ class PlatformController extends Controller
 {
     public function home()
     {
-        return redirect()->route(auth()->check() ? 'app.venues' : 'app.login');
+        return redirect()->to(\App\Services\AuthDestination::home(auth()->user()));
     }
 
     public function venues(Request $request)
