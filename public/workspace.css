@@ -65,3 +65,22 @@
 .app-toast-region{bottom:12px;right:10px;width:calc(100vw - 20px)}
 }
 @media(prefers-reduced-motion:reduce){.workspace-navigation{transition:none!important}}
+
+/* Shared confirmation for app, legacy and auth screens. */
+.sign-out-dialog{box-sizing:border-box;border:1px solid #dce4df;border-radius:12px;background:#fff;color:#25332b;width:min(400px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);overflow:auto;padding:0;margin:auto;box-shadow:0 20px 60px #10261e33;font:inherit}
+.sign-out-dialog::backdrop{background:rgba(16,29,23,.48)}
+.sign-out-form{margin:0;padding:22px}
+.sign-out-heading{display:flex;align-items:flex-start;gap:13px;margin-bottom:24px}
+.sign-out-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px;height:40px;border-radius:10px;background:#fff0ee;color:#b42318}
+.sign-out-icon svg{width:20px;height:20px}
+.sign-out-heading h2{font-size:18px;font-weight:700;line-height:1.3;margin:0 0 6px;color:#25332b}
+.sign-out-heading p{font-size:14px;line-height:1.5;margin:0;color:#56635b}
+.sign-out-actions{display:flex;justify-content:flex-end;gap:8px}
+.sign-out-actions button{display:inline-flex;justify-content:center;align-items:center;font:600 14px/1.2 system-ui,sans-serif;min-height:44px;padding:10px 16px;cursor:pointer;border-radius:7px;white-space:nowrap}
+.sign-out-actions .sign-out-cancel{background:#fff;color:#405048;border:1px solid #cfd8d2}
+.sign-out-actions .sign-out-cancel:hover{background:#f5f7f5}
+.sign-out-actions .sign-out-confirm{background:#b42318;color:white;border:1px solid #b42318}
+.sign-out-actions .sign-out-confirm:hover{background:#941b12}
+.sign-out-actions button:focus-visible{outline:2px solid #3268a7;outline-offset:2px}
+.sign-out-actions button:disabled{opacity:.65;cursor:wait}
+@media(max-width:420px){.sign-out-form{padding:18px}.sign-out-actions button{flex:1}}

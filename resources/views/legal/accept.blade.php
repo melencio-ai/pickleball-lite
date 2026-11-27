@@ -7,5 +7,5 @@
     <x-legal-acceptance :legal="$legal"/>
     <button class="auth-submit" type="submit" data-auth-submit data-busy-text="Saving…"><span data-submit-label>Accept and continue</span><x-auth-icon name="arrow-right"/></button>
 </form>
-<form method="post" action="{{ \App\Services\VenueContext::url('logout') }}" class="auth-secondary">@csrf<button type="submit" class="legal-text-button">Sign out</button></form>
+<div class="auth-secondary"><button type="button" class="legal-text-button" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open>Sign out</button></div>
 @endsection
