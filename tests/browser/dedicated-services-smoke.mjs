@@ -81,7 +81,7 @@ try {
     const mobileNav=page.locator('[data-mobile-navigation]');
     const more=mobileNav.locator('[data-mobile-more]');
     await mobileNav.waitFor();
-    assert.deepEqual(await mobileNav.locator('.workspace-tab').allTextContents().then(items=>items.map(s=>s.trim())),['Calendar','Open Play','Alerts','More']);
+    assert.deepEqual(await mobileNav.locator('.workspace-tab > span:last-child').allTextContents().then(items=>items.map(s=>s.trim())),['Calendar','Open Play','Alerts','More']);
     assert.equal(await mobileNav.locator('[data-mobile-tab="calendar"]').getAttribute('aria-current'),'page');
     const bar=await mobileNav.boundingBox();
     assert.ok(bar && Math.abs(bar.y+bar.height-740)<2 && bar.width<=320);
@@ -94,6 +94,10 @@ try {
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile management page must not overflow');
     await more.click();
     await navigation.waitFor({state:'visible'});
+    await navigation.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished.catch(()=>{}))));
+    const sheetBounds=await navigation.boundingBox();
+    assert.ok(sheetBounds && sheetBounds.width<=320 && sheetBounds.y>=0 && Math.abs(sheetBounds.y+sheetBounds.height-bar.y)<2,'More sheet must fit above the tab bar');
+    assert.equal(await more.getAttribute('aria-expanded'),'true');
     assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-open')));
     await switchTrigger.click();
     await switchDialog.waitFor();
@@ -127,6 +131,7 @@ try {
     const drawer=page.getByRole('dialog',{name:'Notifications',exact:true});
     await drawer.waitFor();
     await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
+    await page.waitForFunction(()=>!document.querySelector('.workspace-mobile-alerts [data-unread-count]').hidden);
     assert.equal(page.url(),calendarUrl);
     await drawer.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
     const drawerBounds=await drawer.boundingBox();
