@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="/auth.css?v=1">
     <script src="/auth.js?v=1" defer></script>
 <link rel="stylesheet" href="/legal.css?v=1">
+<link rel="stylesheet" href="/workspace.css?v=1">
+<script src="/workspace.js?v=1" defer></script>
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -31,7 +33,7 @@
             <a class="auth-brand auth-mobile-brand" href="{{ route('product.home') }}"><img src="/favicon.svg" width="36" height="36" alt=""><span>Pickle Lite</span></a>
             <div class="auth-content">
                 @if(session('status'))
-                    <div class="auth-notice" role="status">{{ session('status') }}</div>
+                    <div class="auth-notice" role="status" data-toast-success>{{ session('status') }}</div>
                 @endif
                 @if($errors->any())
                     <div class="auth-error" role="alert">{{ $errors->first() }}</div>
@@ -45,5 +47,6 @@
             <div class="legal-footer"><x-legal-links /></div>
         </section>
     </main>
+<div class="app-toast-region" data-toast-region aria-live="polite" aria-atomic="false"></div>
 </body>
 </html>

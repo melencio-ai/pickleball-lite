@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Update only the unpublished commercial draft. Never rewrite a published policy.
+        $document = \Illuminate\Support\Facades\DB::table('legal_documents')->where('slug','subscription-terms')->first();
+        if ($document) \Illuminate\Support\Facades\DB::table('legal_documents')->where('slug','subscription-terms')->update([
+            'draft_body'=>$document->draft_body."\n\nFree trial (review before publication)\nThe free trial begins after email verification and lasts 30 days. The venue owner may request up to three 15-day extensions during the last five days of an active trial, for a maximum of 75 days. No automatic charges apply. Upon expiration, new reservations are disabled; existing booking and payment records remain available. The standard setup fee and monthly maintenance apply when the owner requests and completes paid activation.",
+            'updated_at'=>now(),
+        ]);
         Schema::table('users',function(Blueprint $table) {
             $table->boolean('self_registered')->default(false);
         });

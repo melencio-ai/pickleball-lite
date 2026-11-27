@@ -51,7 +51,7 @@ class PlatformController extends Controller
     {
         $search = $request->validate(['q'=>'nullable|string|max:100'])['q'] ?? '';
         $query = Venue::query()->leftJoin('venue_subscriptions','venues.id','=','venue_subscriptions.venue_id')
-            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date')
+            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date','venue_subscriptions.upgrade_requested_at')
             ->withCount('members');
         if ($search !== '') $query->where(fn ($q) => $q->where('venues.name','like','%'.$search.'%')->orWhere('venues.slug','like','%'.$search.'%'));
         $venues = $query->orderBy('venues.name')->paginate(25)->withQueryString();

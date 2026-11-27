@@ -36,5 +36,5 @@
         @endif
         <button class="auth-submit" type="submit" data-auth-submit data-busy-text="Signing in…"><span data-submit-label>Sign in</span><x-auth-icon name="arrow-right" /></button>
     </form>
-    <div class="auth-secondary">New to Pickle Lite? <a href="{{ route('product.home') }}#get-started">Get started</a></div>
+    <div class="auth-secondary">New to Pickle Lite? @if(\App\Services\SelfService::ready())<a href="{{ route('app.register') }}">Start free trial</a>@else<a href="{{ route('product.home') }}#get-started">Get started</a>@endif</div>
 @endsection
