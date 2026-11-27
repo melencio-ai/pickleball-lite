@@ -4,12 +4,12 @@
 @section('content')
     <header class="section-heading page-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Venue settings</h1></div>
-        <div class="actions"><a class="button secondary" href="{{ route('settings.website') }}">Website settings</a><a class="button" href="{{ route('settings.customization') }}">Booking setup</a></div>
+        <div class="actions"><a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.website') }}">Website settings</a><a class="button" href="{{ \App\Services\VenueContext::url('settings.customization') }}">Booking setup</a></div>
     </header>
     <div class="settings-grid">
         <section class="panel">
             <h2>Venue details</h2>
-            <form class="form-stack" method="post" action="{{ route('settings.venue') }}">
+            <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.venue') }}">
                 @csrf
                 @method('PATCH')
                 <label>Venue name<input name="name" value="{{ $venue->name }}" maxlength="100" required></label>
@@ -28,7 +28,7 @@
         <section class="panel">
             <h2>Weekly opening hours</h2>
             <p class="muted">Use 24-hour times in 30-minute increments. Enter 24:00 for midnight.</p>
-            <form class="form-stack" method="post" action="{{ route('settings.hours') }}">
+            <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.hours') }}">
                 @csrf
                 @method('PATCH')
                 @foreach([1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 0 => 'Sunday'] as $weekday => $day)
@@ -45,7 +45,7 @@
         <section class="panel">
             <h2>Courts</h2>
             @foreach($courts as $court)
-                <form class="form-row settings-row" method="post" action="{{ route('settings.court.update', $court->id) }}">
+                <form class="form-row settings-row" method="post" action="{{ \App\Services\VenueContext::url('settings.court.update', $court->id) }}">
                     @csrf
                     @method('PATCH')
                     <label>Name<input name="name" value="{{ $court->name }}" maxlength="80" required></label>
@@ -63,7 +63,7 @@
             @endforeach
             <details class="settings-row">
                 <summary>Add a court</summary>
-                <form class="form-row" method="post" action="{{ route('settings.court.add') }}">
+                <form class="form-row" method="post" action="{{ \App\Services\VenueContext::url('settings.court.add') }}">
                     @csrf
                     <input type="hidden" name="active" value="1">
                     <label>Name<input name="name" maxlength="80" required></label>
@@ -78,7 +78,7 @@
             @forelse($staff as $member)
                 <div class="section-heading settings-row">
                     <div><strong>{{ $member->name }}</strong><br><span class="muted">{{ $member->email }}</span></div>
-                    <form method="post" action="{{ route('settings.staff.remove', $member->id) }}" onsubmit="return confirm('Remove this staff member’s access?')">
+                    <form method="post" action="{{ \App\Services\VenueContext::url('settings.staff.remove', $member->id) }}" onsubmit="return confirm('Remove this staff member’s access?')">
                         @csrf
                         @method('DELETE')
                         <button class="secondary">Remove</button>
@@ -89,7 +89,7 @@
             @endforelse
             <details class="settings-row">
                 <summary>Add a staff account</summary>
-                <form class="form-stack" method="post" action="{{ route('settings.staff.add') }}">
+                <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.staff.add') }}">
                     @csrf
                     <label>Name<input name="name" maxlength="100" required></label>
                     <label>Email<input name="email" type="email" autocomplete="off" required></label>
