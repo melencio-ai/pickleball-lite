@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO);
-        $middleware->redirectUsersTo(fn () => route('staff.calendar'));
+        $middleware->redirectGuestsTo(fn () => \App\Services\VenueContext::url('login'));
+        $middleware->redirectUsersTo(fn () => \App\Services\VenueContext::onApp() ? route('app.venues') : route('staff.calendar'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
