@@ -59,6 +59,44 @@
         });
         media.addEventListener('change',refresh);refresh();
     }
+    const signOutDialog=document.querySelector('[data-sign-out-dialog]');
+    if(signOutDialog) {
+        const form=signOutDialog.querySelector('[data-sign-out-form]');
+        const cancel=signOutDialog.querySelector('[data-sign-out-cancel]');
+        const confirm=signOutDialog.querySelector('[data-sign-out-confirm]');
+        let opener=null, submitting=false, pointerOutside=false;
+        const outside=e=>{
+            const rect=signOutDialog.getBoundingClientRect();
+            return e.clientX<rect.left || e.clientX>rect.right || e.clientY<rect.top || e.clientY>rect.bottom;
+        };
+        const reset=()=>{
+            submitting=false;
+            cancel.disabled=false;confirm.disabled=false;
+            confirm.textContent='Sign out';
+            form.removeAttribute('aria-busy');
+        };
+        for(const trigger of document.querySelectorAll('[data-sign-out-open]')) {
+            trigger.addEventListener('click',()=>{
+                if(signOutDialog.open)return;
+                opener=trigger;reset();signOutDialog.showModal();cancel.focus();
+            });
+        }
+        cancel.addEventListener('click',()=>{if(!submitting)signOutDialog.close();});
+        signOutDialog.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopPropagation();});
+        signOutDialog.addEventListener('cancel',e=>{if(submitting)e.preventDefault();});
+        signOutDialog.addEventListener('pointerdown',e=>{pointerOutside=e.target===signOutDialog && outside(e);});
+        signOutDialog.addEventListener('click',e=>{
+            if(pointerOutside && e.target===signOutDialog && outside(e) && !submitting)signOutDialog.close();
+            pointerOutside=false;
+        });
+        signOutDialog.addEventListener('close',()=>{reset();opener?.focus();opener=null;});
+        form.addEventListener('submit',e=>{
+            if(submitting || !signOutDialog.open){e.preventDefault();return;}
+            submitting=true;form.setAttribute('aria-busy','true');
+            confirm.disabled=true;cancel.disabled=true;confirm.textContent='Signing out…';
+        });
+        window.addEventListener('pageshow',()=>{if(signOutDialog.open)signOutDialog.close();reset();});
+    }
     const countLink=document.querySelector('[data-notification-count-url]');
     const count=document.querySelector('[data-unread-count]');
     let loading=false;

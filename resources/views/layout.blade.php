@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=1">
-<script src="/workspace.js?v=2" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=2">
+<script src="/workspace.js?v=3" defer></script>
 </head>
 @php
     $workspace = request()->attributes->get('venue_context');
@@ -54,7 +54,7 @@
                             @endcan
                         @endif
                         <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications"><x-workspace-icon name="bell"/><span>Notifications</span></a>
-                        <form method="post" class="workspace-logout" action="{{ route('app.logout') }}">@csrf<button class="quiet workspace-nav-link" title="Sign out"><x-workspace-icon name="logout"/><span>Sign out</span></button></form>
+                        <div class="workspace-logout"><button type="button" class="quiet workspace-nav-link" title="Sign out" aria-label="Sign out" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open><x-workspace-icon name="logout"/><span>Sign out</span></button></div>
                     @else
                         <a href="{{ route('product.home') }}">About Pickle Lite</a>
                     @endauth
@@ -73,7 +73,7 @@
                             <a href="{{ route('settings.website') }}">Website settings</a>
                             <a href="{{ route('settings') }}">Settings</a>
                         @endcan
-                        <form method="post" action="{{ route('logout') }}">@csrf<button class="quiet">Sign out</button></form>
+                        <button type="button" class="quiet" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open>Sign out</button>
                     @else
                         <a href="{{ \App\Services\VenueContext::url('landing') }}">Venue website</a>
                         <a href="{{ \App\Services\VenueContext::url('book') }}">Book now</a>
@@ -115,6 +115,9 @@
         @yield('content')
     </main>
     <footer class="legal-footer"><x-legal-links :venue="$venue ?? null" /></footer>
+@if(auth()->check() && !\App\Services\VenueContext::onBooking())
+    <x-sign-out-dialog />
+@endif
 <div class="app-toast-region" data-toast-region aria-live="polite" aria-atomic="false"></div>
 </body>
 </html>

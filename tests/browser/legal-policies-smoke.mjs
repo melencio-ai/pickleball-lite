@@ -24,6 +24,11 @@ try {
     await page.locator('#publish-confirmed').check();
     await page.getByRole('button',{name:'Publish all four policies'}).click();
     await page.waitForURL(app+'/accept-terms');
+    await page.locator('[data-sign-out-open]').click();
+    const confirmation=page.getByRole('dialog',{name:'Sign out?'});
+    await confirmation.waitFor();
+    await confirmation.getByRole('button',{name:'Cancel',exact:true}).click();
+    await confirmation.waitFor({state:'hidden'});
     await page.locator('#legal-accepted').check();
     await page.getByRole('button',{name:'Accept and continue'}).click();
     await page.waitForURL(app+'/admin');

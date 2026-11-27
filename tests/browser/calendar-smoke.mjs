@@ -51,6 +51,15 @@ try {
     await dialog.getByRole('heading', {name:'What would you like to add?'}).waitFor();
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('#calendar-dialog').open);
+    const signOut=page.locator('[data-sign-out-open]');
+    const confirmation=page.getByRole('dialog',{name:'Sign out?'});
+    await signOut.click();
+    await confirmation.waitFor();
+    await confirmation.getByRole('button',{name:'Cancel',exact:true}).click();
+    await confirmation.waitFor({state:'hidden'});
+    await signOut.click();
+    await confirmation.getByRole('button',{name:'Sign out',exact:true}).click();
+    await page.waitForURL('**/staff/login');
     assert.deepEqual(errors, []);
     console.log('Calendar browser smoke passed: desktop create/mark paid, mobile cancel, date preserved, dialog and slot refresh.');
 } finally {

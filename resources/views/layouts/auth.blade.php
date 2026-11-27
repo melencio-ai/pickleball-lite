@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="/auth.css?v=1">
     <script src="/auth.js?v=1" defer></script>
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=1">
-<script src="/workspace.js?v=1" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=2">
+<script src="/workspace.js?v=3" defer></script>
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -47,6 +47,9 @@
             <div class="legal-footer"><x-legal-links /></div>
         </section>
     </main>
+@auth
+    <x-sign-out-dialog />
+@endauth
 <div class="app-toast-region" data-toast-region aria-live="polite" aria-atomic="false"></div>
 </body>
 </html>
