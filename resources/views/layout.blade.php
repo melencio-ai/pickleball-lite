@@ -36,14 +36,20 @@
                             <a class="workspace-nav-link" href="{{ route('app.admin.legal.index') }}" title="Legal policies"><x-workspace-icon name="file"/><span>Legal policies</span></a>
                         @endcan
                         @if($workspace)
-                            <a href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener">Venue website</a>
-                            <a href="{{ \App\Services\VenueContext::url('staff.calendar') }}" @if(\App\Services\VenueContext::is('staff.calendar*')) aria-current="page" @endif>Calendar</a>
-                            <a href="{{ \App\Services\VenueContext::url('staff.open-play') }}" @if(\App\Services\VenueContext::is('staff.open-play*')) aria-current="page" @endif><x-workspace-icon name="users"/><span>Open Play</span></a>
+                            <span class="workspace-nav-caption">Venue</span>
+                            <a class="workspace-switch" href="{{ route('app.venues') }}" title="Switch venue"><x-workspace-icon name="building"/><span>{{ $workspace->name }}</span></a>
+                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener" title="Venue website"><x-workspace-icon name="globe"/><span>Venue website</span></a>
+                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="Calendar" @if(\App\Services\VenueContext::is('staff.calendar*')) aria-current="page" @endif><x-workspace-icon name="calendar"/><span>Calendar</span></a>
+                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.open-play') }}" title="Open Play" @if(\App\Services\VenueContext::is('staff.open-play*')) aria-current="page" @endif><x-workspace-icon name="users"/><span>Open Play</span></a>
                             @can('manage-website')
-                                <a href="{{ \App\Services\VenueContext::url('settings.website') }}">Website settings</a>
+                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.website') }}" title="Website settings"><x-workspace-icon name="globe"/><span>Website settings</span></a>
                             @endcan
                             @can('manage-venue')
-                                <a href="{{ \App\Services\VenueContext::url('settings') }}">Settings</a>
+                                @if($workspace->self_service && \Illuminate\Support\Facades\DB::table('venue_onboarding')->where('venue_id',$workspace->id)->whereNull('completed_at')->exists())
+                                    <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.onboarding') }}" title="Resume onboarding"><x-workspace-icon name="file"/><span>Resume onboarding</span></a>
+                                @endif
+                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.subscription') }}" title="Subscription"><x-workspace-icon name="card"/><span>Subscription</span></a>
+                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings') }}" title="Settings"><x-workspace-icon name="settings"/><span>Settings</span></a>
                             @endcan
                         @endif
                         <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications"><x-workspace-icon name="bell"/><span>Notifications</span></a>
@@ -76,7 +82,7 @@
                 @endif
             </nav>
         </div>
-        @if(\App\Services\VenueContext::onApp() && $workspace && auth()->check())
+        @if(!$appShell && \App\Services\VenueContext::onApp() && $workspace && auth()->check())
             <div class="workspace-strip header-inner">
                 <strong>{{ $workspace->name }}</strong>
                 <span class="muted">{{ ucfirst(\App\Services\VenueContext::role() ?? '') }}</span>

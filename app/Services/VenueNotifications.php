@@ -12,13 +12,15 @@ final class VenueNotifications
 
     public static function emit(Venue $venue,string $category,string $key,string $title,string $message,string $destination='calendar',bool $ownersOnly=false): void
     {
-        $members = $venue->members()->when($ownersOnly,fn($q)=>$q->wherePivot('role','owner'))->pluck('users.id');
+        $membership = $venue->members();
+        if ($ownersOnly) $membership->wherePivot('role','owner');
+        $members = $membership->pluck('users.id');
         if ($members->isEmpty()) return;
         $disabled = DB::table('notification_preferences')->whereIn('user_id',$members)->where('category',$category)->where('enabled',false)->pluck('user_id')->all();
         $rows=[];
         foreach ($members as $id) {
             // Trial and subscription notices are essential account information.
-            if (!in_array($category,['trial','subscription'],true) && in_array($id,$disabled)) continue;
+            if (!in_array($category,['trial','subscription'],true) && in_array((int)$id,array_map('intval',$disabled),true)) continue;
             $rows[]=['user_id'=>$id,'venue_id'=>$venue->id,'category'=>$category,'event_key'=>$venue->id.':'.$category.':'.$key,
                 'title'=>$title,'message'=>$message,'destination'=>$destination,'created_at'=>now()];
         }
@@ -48,7 +50,6 @@ final class VenueNotifications
                         DB::table('venue_subscriptions')->where('id',$sub->id)->update(['status'=>'trial_expired','updated_at'=>now()]);
                         self::emit($venue,'trial','expired-'.$sub->trial_extensions_count,'Free trial ended','New reservations are disabled. Existing bookings and payment links remain available.','subscription',true);
                     } elseif ($end->lte(now()->addDays(5))) {
-                        $remaining=max(1,(int)ceil(now()->diffInSeconds($end)/86400));
                         self::emit($venue,'trial','ending-'.$sub->trial_extensions_count,'Free trial ending','Your free trial is ending soon. Review your extension or upgrade options.','subscription',true);
                     }
                 },3);

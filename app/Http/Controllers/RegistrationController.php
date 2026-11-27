@@ -36,6 +36,9 @@ class RegistrationController extends Controller
             }],
             'website'=>'nullable|string|max:0',
         ]);
+        if (User::whereRaw('LOWER(email) = ?',[$data['email']])->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['email'=>'An account already exists for this email. Sign in instead.']);
+        }
         $user=DB::transaction(function() use($request,$data) {
             $legal=LegalPolicies::context(subscription:true,lock:true);
             abort_unless($legal['terms'] && $legal['privacy'] && $legal['subscriptionVersion'],409);

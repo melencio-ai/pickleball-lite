@@ -22,7 +22,7 @@ class ResolveStaffVenue
         $request->attributes->set('venue_context',$venue);
         $request->attributes->set('venue_membership_role',$venue->pivot->role);
 
-        if ($venue->self_service && $venue->pivot->role === 'owner' &&
+        if ($venue->self_service && $mode !== 'legacy' && $venue->pivot->role === 'owner' &&
             !\App\Services\VenueContext::is('settings.onboarding*') &&
             !\App\Services\VenueContext::is('settings.subscription*') &&
             !\App\Services\VenueContext::is('settings.website.preview') &&
