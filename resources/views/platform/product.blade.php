@@ -15,6 +15,7 @@
 <body class="venue-site">
     @php($selfSignup=\App\Services\PlatformEmail::registrationEnabled() && \App\Services\LegalPolicies::current()->count()===4)
     @php($signupUrl=$selfSignup?route('app.register'):'#get-started')
+    @php($walkthrough=\App\Services\WalkthroughVideo::source())
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header"><div class="site-container site-navigation">
         <a class="site-logo" href="{{ route('product.home') }}"><img src="{{ asset('favicon.svg') }}" alt=""><strong>Pickle Lite</strong></a>
@@ -49,19 +50,24 @@
             <div class="site-data-panel"><span class="muted">Monthly maintenance</span><h2 class="site-price">₱1,000<span class="muted">/month</span></h2><div class="site-data-row"><strong>Account creation and setup</strong><strong>Free</strong></div><p>Includes the venue website, court booking, Open Play, QR payment workflow and staff calendar.</p><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a></div>
         </div></section>
         <section class="site-container site-section site-two-column" id="get-started">
-            <div class="site-section-heading"><p class="site-eyebrow">Let's get your venue online</p><h2>Tell us about your venue</h2><p>Send your details to ask about setup or a live demo.</p></div>
+            <div class="site-section-heading">
+                <p class="site-eyebrow">See how Pickle Lite works</p>
+                <h2>Watch a 5-minute full walkthrough</h2>
+                <p>Create a free account, finish the quick setup survey and watch the full walkthrough inside your new venue workspace.</p>
+                <p class="site-footnote">30-day free trial · No credit card required · Free setup</p>
+            </div>
             <section class="site-data-panel">
+                <span class="site-icon"><x-workspace-icon name="play"/></span>
+                <h3>From setup to your first booking</h3>
+                <p>Learn how to manage your courts, online bookings, Open Play and payments in one place.</p>
                 @if(session('status'))<p class="notice success" role="status" data-toast-success>{{ session('status') }}</p>@endif
-                @if($errors->any())<div class="notice error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
-                <form class="form-stack" method="post" action="{{ route('product.enquiry') }}">@csrf
-                    <label>Venue name<input name="venue_name" value="{{ old('venue_name') }}" maxlength="100" required></label>
-                    <label>Your name<input name="name" value="{{ old('name') }}" maxlength="100" autocomplete="name" required></label>
-                    <label>Email<input name="email" type="email" value="{{ old('email') }}" maxlength="255" autocomplete="email" required></label>
-                    <label>Phone<input name="phone" type="tel" value="{{ old('phone') }}" maxlength="32" autocomplete="tel"></label>
-                    <label>Message<textarea name="message" maxlength="1000" rows="3">{{ old('message') }}</textarea></label>
-                    <div class="visually-hidden" aria-hidden="true"><label>Leave this blank<input name="website" tabindex="-1" autocomplete="off"></label></div>
-                    <p class="site-footnote">We use your details to respond to your enquiry. Read our <a href="{{ route('product.legal.show',['document'=>'privacy']) }}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p><button class="button">Send enquiry</button>
-                </form>
+                @if(!$walkthrough)<p class="site-footnote">Walkthrough video coming soon.</p>@endif
+                @if($selfSignup)
+                    <a class="site-button site-primary" href="{{ route('app.register') }}">Create a free account <x-booking-icon name="chevron-right"/></a>
+                @else
+                    <p class="site-footnote">Free registration is not available at the moment. Please check back soon.</p>
+                    <a class="site-button site-outline" href="{{ route('app.login') }}">Already have an account? Sign in</a>
+                @endif
             </section>
         </section>
     </main>

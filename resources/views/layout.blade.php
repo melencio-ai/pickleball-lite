@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=2">
-<script src="/workspace.js?v=3" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=3">
+<script src="/workspace.js?v=4" defer></script>
 </head>
 @php
     $workspace = request()->attributes->get('venue_context');

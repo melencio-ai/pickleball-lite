@@ -118,7 +118,7 @@ class OnboardingController extends Controller
             DB::table('venue_onboarding')->where('venue_id',$venue->id)->update(['step'=>max($record->step,$step+1),'updated_at'=>now()]);
         },3);
         $venue->refresh();
-        if($step===7) return redirect()->route('app.staff.calendar',['venueSlug'=>$venue->slug])->with('status','Your venue website is live!');
+        if($step===7) return redirect()->route('app.staff.calendar',['venueSlug'=>$venue->slug])->with('status','Your venue website is live!')->with('walkthrough_venue_id',$venue->id);
         return redirect()->route('app.settings.onboarding',['venueSlug'=>$venue->slug,'step'=>$step+1])->with('status','Progress saved.');
     }
 }

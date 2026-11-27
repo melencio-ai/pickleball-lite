@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 
 const web='http://pickle-web.test',app='http://pickle-app.test',book='http://pickle-book.test/pickleball-lite-courts';
 const browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP pickle-web.test 127.0.0.1:8001, MAP pickle-app.test 127.0.0.1:8002, MAP pickle-book.test 127.0.0.1:8003']});
@@ -88,6 +89,61 @@ try {
     assert.ok(await registration.getByRole('button',{name:'Create free account'}).isVisible());
     assert.equal(await registration.locator('.auth-form').evaluate(form=>form.checkValidity()),true);
     await registration.close();
+
+    // Test-only fixture avoids actually sending a verification email. All
+    // launch validations and the real completion endpoint remain in use.
+    execFileSync('php',['artisan','tinker','--execute='+[
+        '$venue=App\\Models\\Venue::create(["name"=>"Walkthrough Test Courts","slug"=>"walkthrough-test-courts","address"=>"Test venue address","phone"=>"09171234567","timezone"=>"Asia/Manila","status"=>"onboarding","published"=>false,"self_service"=>true]);',
+        '$owner=$venue->users()->create(["name"=>"Walkthrough Owner","email"=>"walkthrough-owner@example.test","password"=>"browser-test-password-123","role"=>"owner"]);',
+        '$owner->forceFill(["self_registered"=>true,"email_verified_at"=>now()])->save();',
+        'Illuminate\\Support\\Facades\\DB::table("venue_subscriptions")->insert(["venue_id"=>$venue->id,"status"=>"onboarding","created_at"=>now(),"updated_at"=>now()]);',
+        'App\\Services\\TrialAccess::start($venue);',
+        'Illuminate\\Support\\Facades\\DB::table("venue_onboarding")->insert(["venue_id"=>$venue->id,"step"=>7,"created_at"=>now(),"updated_at"=>now()]);',
+        '$venue->courts()->create(["name"=>"Court 1","hourly_rate"=>40000,"active"=>true]);',
+        'foreach(range(0,6) as $day) $venue->hours()->create(["weekday"=>$day,"opens_at"=>"07:00","closes_at"=>"22:00","closed"=>false]);',
+        'App\\Services\\LegalPolicies::record(App\\Services\\LegalPolicies::context(subscription:true),"user",$owner->id,$venue->id,$owner->id);',
+    ].join(' ')],{stdio:'pipe'});
+    const walkthrough=await browser.newPage({viewport:{width:390,height:844}});
+    let loads=0;
+    await walkthrough.route('https://www.youtube-nocookie.com/**',async route=>{
+        loads++;
+        await route.fulfill({contentType:'text/html',body:'<html><body>Video test fixture</body></html>'});
+    });
+    await walkthrough.goto(web);
+    await walkthrough.getByRole('heading',{name:'Watch a 5-minute full walkthrough'}).waitFor();
+    assert.equal(await walkthrough.locator('#get-started').getByRole('link',{name:'Create a free account'}).getAttribute('href'),app+'/register');
+    assert.equal(await walkthrough.locator('#get-started input').count(),0);
+    await walkthrough.goto(app+'/login');
+    await walkthrough.getByLabel('Email address',{exact:true}).fill('walkthrough-owner@example.test');
+    await walkthrough.getByLabel('Password',{exact:true}).fill('browser-test-password-123');
+    await walkthrough.getByRole('button',{name:'Sign in',exact:true}).click();
+    await walkthrough.waitForURL(app+'/venues/walkthrough-test-courts/onboarding');
+    await walkthrough.getByRole('heading',{name:'Review and launch'}).waitFor();
+    await walkthrough.getByLabel('Booking and cancellation policy').fill('Contact the venue to change a booking.');
+    await walkthrough.locator('input[name="launch_confirmed"]').check();
+    await walkthrough.getByRole('button',{name:'Launch my venue'}).click();
+    await walkthrough.waitForURL(app+'/venues/walkthrough-test-courts/calendar');
+    const tour=walkthrough.getByRole('dialog',{name:'Your 5-minute walkthrough'});
+    await tour.waitFor();
+    assert.equal(await tour.locator('iframe').count(),0);
+    assert.equal(loads,0);
+    const rect=await tour.boundingBox();
+    assert.ok(rect && rect.x>=0 && rect.x+rect.width<=390 && rect.y>=0 && rect.y+rect.height<=844,'Walkthrough modal fits mobile viewport');
+    await tour.getByRole('button',{name:'Play walkthrough'}).click();
+    await walkthrough.frameLocator('#venue-walkthrough iframe').getByText('Video test fixture').waitFor();
+    assert.equal(loads,1);
+    await tour.getByRole('button',{name:'Go to calendar'}).click();
+    await tour.waitFor({state:'hidden'});
+    assert.equal(await walkthrough.locator('#venue-walkthrough iframe').count(),0,'Closing stops the embedded video');
+    await walkthrough.reload();
+    await tour.waitFor({state:'hidden'});
+    assert.equal(await walkthrough.locator('[data-walkthrough-auto]').count(),0,'Onboarding modal is one-time');
+    await walkthrough.getByRole('button',{name:'Watch walkthrough'}).click();
+    await tour.waitFor();
+    await walkthrough.keyboard.press('Escape');
+    await tour.waitFor({state:'hidden'});
+    await walkthrough.close();
+    console.log('Walkthrough passed: landing CTA, completed onboarding, one-time responsive modal, deferred video, close and replay.');
     console.log('Registration layout passed: two desktop columns, pinned left panel, independent right scroll, mobile stacked fields and reachable legal consent.');
     console.log('Legal browser smoke passed: draft visibility, admin publish, staff terms review, mobile legal page, booking consent and recorded version.');
 } finally { await browser.close(); }

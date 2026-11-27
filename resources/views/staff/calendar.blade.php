@@ -2,9 +2,19 @@
 @section('title', 'Court calendar')
 @section('page-class', 'calendar-page')
 @section('content')
+    @php
+        $walkthroughEligible = \App\Services\VenueContext::onApp() && $venue->self_service && \App\Services\VenueContext::role()==='owner';
+        $autoWalkthrough = $walkthroughEligible && (int)session('walkthrough_venue_id',0)===(int)$venue->id;
+        $walkthrough = $walkthroughEligible ? \App\Services\WalkthroughVideo::source() : null;
+    @endphp
     <header class="section-heading page-heading calendar-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Court calendar</h1></div>
-        <a class="button" href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => 'new', 'date' => $date]) }}" data-calendar-modal data-calendar-key="new"><x-booking-icon name="plus" /> New</a>
+        <div class="actions">
+            @if($walkthrough)
+                <button type="button" class="secondary" data-walkthrough-open aria-haspopup="dialog" aria-controls="venue-walkthrough"><x-workspace-icon name="play"/> Watch walkthrough</button>
+            @endif
+            <a class="button" href="{{ \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => 'new', 'date' => $date]) }}" data-calendar-modal data-calendar-key="new"><x-booking-icon name="plus" /> New</a>
+        </div>
     </header>
     <div class="panel calendar-toolbar">
         <div class="actions">
@@ -38,6 +48,9 @@
     </dialog>
     @if($initialModal)
         <noscript><a class="button" href="{{ $initialModal }}">Continue to calendar form</a></noscript>
+    @endif
+    @if($autoWalkthrough || $walkthrough)
+        <x-venue-walkthrough :video="$walkthrough" :auto="$autoWalkthrough"/>
     @endif
     <script src="{{ asset('calendar.js') }}?v=1" defer></script>
 @endsection

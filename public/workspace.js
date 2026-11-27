@@ -97,6 +97,44 @@
         });
         window.addEventListener('pageshow',()=>{if(signOutDialog.open)signOutDialog.close();reset();});
     }
+    const walkthrough=document.querySelector('[data-walkthrough-dialog]');
+    if(walkthrough && typeof walkthrough.showModal==='function') {
+        const player=walkthrough.querySelector('[data-walkthrough-player]');
+        const play=walkthrough.querySelector('[data-walkthrough-play]');
+        let opener=null;
+        const show=trigger=>{
+            if(walkthrough.open)return;
+            opener=trigger || null;
+            walkthrough.showModal();
+        };
+        for(const trigger of document.querySelectorAll('[data-walkthrough-open]')) {
+            trigger.addEventListener('click',()=>show(trigger));
+        }
+        for(const close of walkthrough.querySelectorAll('[data-walkthrough-close]')) {
+            close.addEventListener('click',()=>walkthrough.close());
+        }
+        play?.addEventListener('click',()=>{
+            if(!player || player.querySelector('iframe'))return;
+            const iframe=document.createElement('iframe');
+            iframe.title='Pickle Lite full walkthrough';
+            iframe.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';
+            iframe.allowFullscreen=true;
+            iframe.referrerPolicy='strict-origin-when-cross-origin';
+            iframe.src=play.dataset.videoSrc;
+            play.hidden=true;
+            player.append(iframe);
+            iframe.focus();
+        });
+        walkthrough.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation();});
+        walkthrough.addEventListener('close',()=>{
+            player?.querySelector('iframe')?.remove();
+            if(play)play.hidden=false;
+            (opener || document.querySelector('[data-walkthrough-open]'))?.focus();
+            opener=null;
+        });
+        window.addEventListener('pageshow',event=>{if(event.persisted && walkthrough.open)walkthrough.close();});
+        if(walkthrough.hasAttribute('data-walkthrough-auto'))show();
+    }
     const countLink=document.querySelector('[data-notification-count-url]');
     const count=document.querySelector('[data-unread-count]');
     let loading=false;
