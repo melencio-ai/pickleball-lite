@@ -34,6 +34,7 @@
                             <span class="workspace-nav-caption">Platform</span>
                             <a class="workspace-nav-link" href="{{ route('app.admin.index') }}" title="Platform admin"><x-workspace-icon name="shield"/><span>Platform admin</span></a>
                             <a class="workspace-nav-link" href="{{ route('app.admin.legal.index') }}" title="Legal policies"><x-workspace-icon name="file"/><span>Legal policies</span></a>
+                            <a class="workspace-nav-link" href="{{ route('app.admin.email.index') }}" title="Email service"><x-workspace-icon name="mail"/><span>Email service</span></a>
                         @endcan
                         @if($workspace)
                             <span class="workspace-nav-caption">Venue</span>

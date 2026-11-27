@@ -63,7 +63,8 @@ Artisan::command('platform:check-schema', function () {
         return 1;
     }
     $required = ['2026_11_27_000000_add_venue_tenancy','2026_11_27_000100_add_platform_operations',
-        '2026_11_27_000200_add_public_service_sessions','2026_11_27_000300_add_legal_policies','2026_11_27_000400_add_self_service_platform'];
+        '2026_11_27_000200_add_public_service_sessions','2026_11_27_000300_add_legal_policies','2026_11_27_000400_add_self_service_platform',
+        '2026_11_27_000500_remove_setup_fee','2026_11_27_000600_add_platform_email_settings'];
     if (\Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration',$required)->count() !== count($required)) {
         $this->error('Management migrations have not completed.');
         return 1;
@@ -79,3 +80,11 @@ Artisan::command('platform:notifications', function () {
 })->purpose('Reconcile trial expiry and deduplicated subscription reminders');
 
 \Illuminate\Support\Facades\Schedule::command('platform:notifications')->everyFiveMinutes()->withoutOverlapping(10);
+
+
+Artisan::command('platform:prune-email-logs', function () {
+    $deleted = \Illuminate\Support\Facades\DB::table('platform_email_logs')->where('created_at','<',now()->subDays(90))->delete();
+    $this->info('Pruned '.$deleted.' expired email log records.');
+})->purpose('Remove email submission metadata older than 90 days');
+
+\Illuminate\Support\Facades\Schedule::command('platform:prune-email-logs')->daily()->withoutOverlapping(10);

@@ -13,7 +13,7 @@
 <script src="/workspace.js?v=1" defer></script>
 </head>
 <body class="venue-site">
-    @php($selfSignup=config('selfservice.enabled') && \App\Services\LegalPolicies::current()->count()===4)
+    @php($selfSignup=\App\Services\PlatformEmail::registrationEnabled() && \App\Services\LegalPolicies::current()->count()===4)
     @php($signupUrl=$selfSignup?route('app.register'):'#get-started')
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header"><div class="site-container site-navigation">
