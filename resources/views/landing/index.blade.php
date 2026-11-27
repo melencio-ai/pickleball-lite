@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $seoTitle }}</title>
     <meta name="description" content="{{ $seoDescription }}">
-    <link rel="canonical" href="{{ route('landing') }}">
+    <link rel="canonical" href="{{ \App\Services\VenueContext::url('landing') }}">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ $seoTitle }}">
     <meta property="og:description" content="{{ $seoDescription }}">
-    <meta property="og:url" content="{{ route('landing') }}">
+    <meta property="og:url" content="{{ \App\Services\VenueContext::url('landing') }}">
     @if($media->has('cover'))
-        <meta property="og:image" content="{{ route('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}">
+        <meta property="og:image" content="{{ \App\Services\VenueContext::url('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}">
     @endif
-    <link rel="icon" href="{{ $media->has('logo') ? route('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
+    <link rel="icon" href="{{ $media->has('logo') ? \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=theme1">
     <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
 </head>
@@ -21,9 +21,9 @@
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header">
         <div class="site-container site-navigation">
-            <a class="site-logo" href="{{ route('landing') }}">
+            <a class="site-logo" href="{{ \App\Services\VenueContext::url('landing') }}">
                 @if($media->has('logo'))
-                    <img src="{{ route('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}" alt="">
+                    <img src="{{ \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}" alt="">
                 @else
                     <span class="site-mark"><x-booking-icon name="layout-grid" /></span>
                 @endif
@@ -32,9 +32,10 @@
             <nav aria-label="Venue navigation">
                 <a href="#schedule">Schedule</a><a href="#rates">Rates</a><a href="#open-play">Open Play</a><a href="#facilities">Facilities</a>@if(count($galleryPhotos))<a href="#gallery">Gallery</a>@endif<a href="#faq">FAQ</a><a href="#contact">Contact</a>
             </nav>
-            <a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
+            <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
         </div>
     </header>
+    @if(\App\Services\VenueContext::is('settings.website.preview'))<div class="site-container notice">Staff preview. Public booking is available only after the venue is published.</div>@endif
     <main id="main-content">
         <section class="site-container site-hero {{ $media->has('cover') ? 'has-cover' : 'no-cover' }}">
             <div class="site-hero-copy">
@@ -42,8 +43,8 @@
                 <h1>{{ $headline }}</h1>
                 <p class="site-lead">{{ $description }}</p>
                 <div class="site-actions">
-                    <a class="site-button site-primary" href="{{ route('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
-                    <a class="site-button site-outline" href="{{ route('open-play') }}">Join Open Play</a>
+                    <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
+                    <a class="site-button site-outline" href="{{ \App\Services\VenueContext::url('open-play') }}">Join Open Play</a>
                 </div>
                 @if($venue->address || $venue->map_url)
                     <p class="site-hero-location"><x-booking-icon name="map-pin" />
@@ -53,7 +54,7 @@
                 @endif
             </div>
             @if($media->has('cover'))
-                <div class="site-hero-photo"><img src="{{ route('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}" alt="{{ $venue->name }} venue cover" fetchpriority="high"></div>
+                <div class="site-hero-photo"><img src="{{ \App\Services\VenueContext::url('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}" alt="{{ $venue->name }} venue cover" fetchpriority="high"></div>
             @endif
             <div class="site-hero-facts">
                 <div><x-booking-icon name="layout-grid" /><span><strong>{{ $courts->count() }}</strong> active {{ $courts->count() === 1 ? 'court' : 'courts' }}</span></div>
@@ -70,21 +71,21 @@
                     <h3>Court reservations</h3>
                     <p>Your court. Your friends. Your time. Choose a date and available court that fits your plans.</p>
                     @if($rates['minimum'] !== null)<strong class="site-price">From ₱{{ number_format($rates['minimum']/100,2) }} <small>/ hour</small></strong>@endif
-                    <a class="site-button site-primary" href="{{ route('book',['step'=>1]) }}">Book a court</a>
+                    <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book',['step'=>1]) }}">Book a court</a>
                 </article>
                 <article class="site-option">
                     <span class="site-icon"><x-booking-icon name="users" /></span>
                     <h3>Open Play</h3>
                     <p>Come alone or with friends. Register for a player spot and meet others who enjoy the game.</p>
                     @if($sessions->isNotEmpty())<strong class="site-price">From ₱{{ number_format($sessions->min('price')/100,2) }} <small>/ player</small></strong>@endif
-                    <a class="site-button site-outline" href="{{ route('open-play') }}">View Open Play</a>
+                    <a class="site-button site-outline" href="{{ \App\Services\VenueContext::url('open-play') }}">View Open Play</a>
                 </article>
             </div>
         </section>
 
         <section class="site-band" id="schedule">
             <div class="site-container site-section site-two-column">
-                <div class="site-section-heading"><p class="site-eyebrow">Plan your visit</p><h2>Opening hours</h2><p>Pick a day that works for you. Check the booking page for live court availability.</p><a href="{{ route('book') }}" class="site-text-link">Check available times <x-booking-icon name="chevron-right" /></a></div>
+                <div class="site-section-heading"><p class="site-eyebrow">Plan your visit</p><h2>Opening hours</h2><p>Pick a day that works for you. Check the booking page for live court availability.</p><a href="{{ \App\Services\VenueContext::url('book') }}" class="site-text-link">Check available times <x-booking-icon name="chevron-right" /></a></div>
                 <div class="site-data-panel">
                     @foreach($openingHours as $time => $days)
                         <div class="site-data-row"><strong>{{ \App\Services\VenueWebsite::dayLabel($days) }}</strong><span>{{ $time }}</span></div>
@@ -115,7 +116,7 @@
                 @endforelse
             </div>
             <p class="site-footnote site-rates-note">Rates are for one court. Holiday closures and actual availability are checked at booking.</p>
-            <a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
+            <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
         </section>
 
         <section class="site-band" id="open-play">
@@ -133,12 +134,12 @@
                             <small>{{ $session->capacity-$session->spotsLeft() }} of {{ $session->capacity }} spots taken</small>
                             <div class="site-session-footer"><strong>₱{{ number_format($session->price/100,2) }}<small>/player</small></strong>
                                 @if($canJoin && $session->spotsLeft())
-                                    <a class="site-button site-primary" href="{{ route('open-play',['date'=>$localStart->toDateString(),'session'=>$session->id]) }}">Join session</a>
+                                    <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('open-play',['date'=>$localStart->toDateString(),'session'=>$session->id]) }}">Join session</a>
                                 @else<span class="site-footnote">{{ $session->spotsLeft() ? 'Contact venue to join' : 'Session full' }}</span>@endif
                             </div>
                         </article>
                     @empty
-                        <div class="site-data-panel site-empty"><x-booking-icon name="calendar-days" /><h3>More games coming soon</h3><p>No upcoming sessions are listed. Check back for new Open Play dates.</p><a class="site-button site-outline" href="{{ route('open-play') }}">View Open Play</a></div>
+                        <div class="site-data-panel site-empty"><x-booking-icon name="calendar-days" /><h3>More games coming soon</h3><p>No upcoming sessions are listed. Check back for new Open Play dates.</p><a class="site-button site-outline" href="{{ \App\Services\VenueContext::url('open-play') }}">View Open Play</a></div>
                     @endforelse
                 </div>
             </div>
@@ -179,7 +180,7 @@
                             </a>
                         @endforeach
                     </div>
-                    <a class="site-button site-primary site-gallery-book" href="{{ route('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
+                    <a class="site-button site-primary site-gallery-book" href="{{ \App\Services\VenueContext::url('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
                 </div>
                 <dialog class="site-gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-dialog-title">
                     <div class="site-gallery-dialog-top">
@@ -208,15 +209,15 @@
                     <div><span>03</span><h3>{{ $venue->qr_payments_enabled ? 'Pay and confirm' : 'Confirm your booking' }}</h3>
                         <p>{{ $venue->qr_payments_enabled ? 'Pay using the QR code and send your receipt in Messenger. The venue confirms your payment.' : 'Review your booking and pay at the venue.' }}</p></div>
                 </div>
-                <a class="site-button site-primary" href="{{ route('book') }}">Start booking</a>
+                <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Start booking</a>
             </div>
         </section>
 
         <section class="site-container site-section" id="faq">
             <div class="site-section-heading"><p class="site-eyebrow">Good to know</p><h2>Frequently asked questions</h2><p>Here is what you need to know before your next game.</p></div>
             <div class="site-faq">
-                <details><summary>How do I book a court?</summary><p>Click <a href="{{ route('book') }}">Book Now</a> and choose Book a court. Pick your date, how long you want to play, your start time and your court. Enter your details and follow the payment steps.</p></details>
-                <details><summary>Can I join Open Play alone?</summary><p>Yes. Each registration is for one player. Choose an <a href="{{ route('open-play') }}">Open Play session</a> and meet other players. @if(!$canJoin) Contact the venue to ask about joining while online registration is unavailable.@endif</p></details>
+                <details><summary>How do I book a court?</summary><p>Click <a href="{{ \App\Services\VenueContext::url('book') }}">Book Now</a> and choose Book a court. Pick your date, how long you want to play, your start time and your court. Enter your details and follow the payment steps.</p></details>
+                <details><summary>Can I join Open Play alone?</summary><p>Yes. Each registration is for one player. Choose an <a href="{{ \App\Services\VenueContext::url('open-play') }}">Open Play session</a> and meet other players. @if(!$canJoin) Contact the venue to ask about joining while online registration is unavailable.@endif</p></details>
                 <details><summary>Can beginners join Open Play?</summary><p>Look for sessions marked Beginner or All skill levels. Check the session details to find the right game for you.</p></details>
                 <details><summary>How do I know my booking is confirmed?</summary>
                     @if($canJoin)
@@ -227,7 +228,7 @@
                         <p>For a court booking, check your confirmation page after you submit your details. Pay at the venue. Contact the venue to ask about Open Play.</p>
                     @endif
                 </details>
-                <details><summary>What if my preferred time or session is full?</summary><p>Choose another available court, time or Open Play session. You can check live availability on the <a href="{{ route('book') }}">booking page</a>.</p></details>
+                <details><summary>What if my preferred time or session is full?</summary><p>Choose another available court, time or Open Play session. You can check live availability on the <a href="{{ \App\Services\VenueContext::url('book') }}">booking page</a>.</p></details>
                 <details><summary>How much does it cost to play?</summary><p>Check our <a href="#rates">court rates</a> and <a href="#open-play">Open Play schedule</a> for prices. You will see your total before you confirm your booking.</p></details>
                 <details><summary>How long can I book a court?</summary><p>Available durations: {{ collect($venue->durations())->map(fn ($minutes) => \App\Models\Venue::durationLabel($minutes))->join(', ') }}. Choose your duration when booking.</p></details>
                 <details><summary>How far ahead can I book?</summary><p>{{ $venue->advance_days === 0 ? 'You can book for today.' : 'You can book up to '.$venue->advance_days.' days ahead.' }} @if($venue->minimum_notice) Please book at least {{ $venue->minimum_notice }} minutes before play.@endif</p></details>
@@ -253,11 +254,11 @@
 
         <section class="site-container site-section site-final">
             <div><h2>Ready to play?</h2><p>Make time for your next game.</p></div>
-            <a class="site-button site-primary" href="{{ route('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
+            <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
         </section>
     </main>
-    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ auth()->check() ? route('staff.calendar') : route('login') }}">Staff sign in</a></span></div></footer>
-    <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ route('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
+    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ \App\Services\VenueContext::onBooking() || \App\Services\VenueContext::onApp() ? route('app.home') : (auth()->check() ? route('staff.calendar') : route('login')) }}">Staff sign in</a></span></div></footer>
+    <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
 </body>
 </html>

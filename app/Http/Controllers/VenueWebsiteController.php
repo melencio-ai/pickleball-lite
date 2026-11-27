@@ -12,7 +12,7 @@ class VenueWebsiteController extends Controller
 {
     public function index(Request $request)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $content = $venue->website_content ?? [];
         $media = $venue->media()->get(['kind', 'version'])->keyBy('kind');
         return view('staff.website', compact('venue', 'content', 'media'));
@@ -51,14 +51,14 @@ class VenueWebsiteController extends Controller
             if ($question !== '') $content['faqs'][] = ['question' => $question, 'answer' => $answer];
         }
         DB::transaction(function () use ($request, $content) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             $content['show_demo_gallery'] = $request->has('show_demo_gallery')
                 ? $request->boolean('show_demo_gallery')
                 : ($venue->website_content['show_demo_gallery'] ?? true);
             $venue->update(['website_content' => $content]);
         }, 3);
 
-        return redirect()->route('settings.website')->with('status', 'Website content saved.');
+        return \App\Services\VenueContext::redirect('settings.website')->with('status', 'Website content saved.');
     }
 
     public function gallery(Request $request, string $kind)
@@ -70,7 +70,7 @@ class VenueWebsiteController extends Controller
             'remove' => ['sometimes', 'accepted'],
         ]);
         DB::transaction(function () use ($request, $kind, $data) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             if ($request->boolean('remove')) {
                 $venue->media()->where('kind', $kind)->delete();
             } else {
@@ -82,6 +82,6 @@ class VenueWebsiteController extends Controller
             }
         }, 3);
 
-        return redirect()->to(route('settings.website').'#gallery')->with('status', 'Gallery updated.');
+        return redirect()->to(\App\Services\VenueContext::url('settings.website').'#gallery')->with('status', 'Gallery updated.');
     }
 }

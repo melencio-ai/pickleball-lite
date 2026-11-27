@@ -5,12 +5,12 @@
 @section('content')
     <header class="booking-banner venue-banner compact-venue-banner">
         @if($media->has('cover'))
-            <img class="venue-cover" src="{{ route('book.image', ['kind' => 'cover', 'version' => $media['cover']->version]) }}" alt="">
+            <img class="venue-cover" src="{{ \App\Services\VenueContext::url('book.image', ['kind' => 'cover', 'version' => $media['cover']->version]) }}" alt="">
         @endif
         <div>
             <p class="venue-name">
                 @if($media->has('logo'))
-                    <img class="venue-logo" src="{{ route('book.image', ['kind' => 'logo', 'version' => $media['logo']->version]) }}" alt="">
+                    <img class="venue-logo" src="{{ \App\Services\VenueContext::url('book.image', ['kind' => 'logo', 'version' => $media['logo']->version]) }}" alt="">
                 @endif
                 {{ $venue->name }}
             </p>
@@ -30,12 +30,12 @@
 
 
 
-    <p class="booking-back"><a href="{{ route('book') }}">← Booking options</a> · <a href="{{ route('landing') }}">Venue website</a></p>
+    <p class="booking-back"><a href="{{ \App\Services\VenueContext::url('book') }}">← Booking options</a> · <a href="{{ \App\Services\VenueContext::url('landing') }}">Venue website</a></p>
     <section class="panel survey-panel">
         <div class="section-heading">
             <p class="survey-step">Step {{ $step }} of 4</p>
             @if($step > 1)
-                <a class="survey-back" href="{{ route('open-play', $step === 3 ? ['date' => $date] : []) }}">Back</a>
+                <a class="survey-back" href="{{ \App\Services\VenueContext::url('open-play', $step === 3 ? ['date' => $date] : []) }}">Back</a>
             @endif
         </div>
         <ol class="survey-progress open-play-progress" aria-label="Registration progress">
@@ -53,7 +53,7 @@
             <h2 class="booking-icon-label"><x-booking-icon name="calendar-days" /> When do you want to play?</h2>
             <div class="survey-choices">
                 @forelse($dates as $day => $offers)
-                    <a class="survey-choice" href="{{ route('open-play', ['date' => $day]) }}">
+                    <a class="survey-choice" href="{{ \App\Services\VenueContext::url('open-play', ['date' => $day]) }}">
                         <span><strong>{{ \Carbon\CarbonImmutable::parse($day)->format('D, M j') }}</strong><small>{{ $offers->count() }} {{ $offers->count() === 1 ? 'session' : 'sessions' }}</small></span>
                         <span>{{ $offers->sum(fn ($offer) => $offer->spotsLeft()) }} spots</span>
                     </a>
@@ -71,7 +71,7 @@
                     <progress class="open-play-capacity" value="{{ $offer->capacity - $offer->spotsLeft() }}" max="{{ $offer->capacity }}" aria-label="Spots taken"></progress>
                     <div class="section-heading"><span class="muted">{{ $offer->capacity - $offer->spotsLeft() }} of {{ $offer->capacity }} spots taken</span><strong>₱{{ number_format($offer->price / 100, 2) }}/player</strong></div>
                     @if($offer->spotsLeft() && $venue->qr_payments_enabled && $venue->payment_qr_base && $venue->payment_messenger_url)
-                        <a class="button" href="{{ route('open-play', ['date' => $date, 'session' => $offer->id]) }}">Join session</a>
+                        <a class="button" href="{{ \App\Services\VenueContext::url('open-play', ['date' => $date, 'session' => $offer->id]) }}">Join session</a>
                     @endif
                 </article>
             @empty
@@ -85,7 +85,7 @@
                 <strong>₱{{ number_format($session->price / 100, 2) }}/player</strong>
             </div>
             @if($session->spotsLeft() && $venue->qr_payments_enabled && $venue->payment_qr_base && $venue->payment_messenger_url)
-                <form method="post" action="{{ route('open-play.join', $session->id) }}" class="form-stack survey-form" data-booking-form>
+                <form method="post" action="{{ \App\Services\VenueContext::url('open-play.join', $session->id) }}" class="form-stack survey-form" data-booking-form>
                     @csrf
                     <input type="hidden" name="quoted_total" value="{{ $session->price }}">
                     <label>Full name<input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}" maxlength="100" autocomplete="name" required></label>

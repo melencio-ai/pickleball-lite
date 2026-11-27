@@ -16,7 +16,7 @@ class MySqlBookingConcurrencyTest extends TestCase
 {
     public function test_two_simultaneous_open_play_registrations_cannot_oversell_the_last_spot(): void
     {
-        if (DB::getDriverName() !== 'mysql' || !function_exists('pcntl_fork')) {
+        if (!app()->environment('testing') || DB::getDriverName() !== 'mysql' || !str_ends_with(DB::getDatabaseName(), '_test') || !function_exists('pcntl_fork')) {
             $this->markTestSkipped('Requires a disposable MySQL database and the PHP pcntl extension.');
         }
 
@@ -70,7 +70,8 @@ class MySqlBookingConcurrencyTest extends TestCase
             $this->assertEqualsCanonicalizing([0, 1], $results);
             $this->assertSame(1, OpenPlayRegistration::count());
         } finally {
-            $this->artisan('migrate:rollback')->assertSuccessful();
+            // The tenant migrations deliberately forbid destructive rollback. This is a disposable test database.
+            $this->artisan('db:wipe', ['--force' => true])->assertSuccessful();
             RefreshDatabaseState::$migrated = false;
         }
     }
@@ -133,7 +134,8 @@ class MySqlBookingConcurrencyTest extends TestCase
             $this->assertEqualsCanonicalizing([0, 1], $results);
             $this->assertSame(1, Booking::count());
         } finally {
-            $this->artisan('migrate:rollback')->assertSuccessful();
+            // The tenant migrations deliberately forbid destructive rollback. This is a disposable test database.
+            $this->artisan('db:wipe', ['--force' => true])->assertSuccessful();
             RefreshDatabaseState::$migrated = false;
         }
     }

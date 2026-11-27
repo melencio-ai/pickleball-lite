@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -46,11 +47,27 @@ class User extends Authenticatable
         return $this->belongsTo(Venue::class);
     }
 
+    protected static function booted(): void
+    {
+        // Preserve compatibility with existing CLI and relationship-based account creation.
+        static::created(function (User $user) {
+            if ($user->venue_id && in_array($user->role, ['owner','staff','manager'], true)) {
+                $user->venues()->syncWithoutDetaching([$user->venue_id => ['role' => $user->role]]);
+            }
+        });
+    }
+
+    public function venues(): BelongsToMany
+    {
+        return $this->belongsToMany(Venue::class, 'venue_memberships')->withPivot('role')->withTimestamps();
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'platform_admin' => 'boolean',
         ];
     }
 }

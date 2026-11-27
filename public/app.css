@@ -366,3 +366,25 @@ textarea { width: 100%; padding: .5rem .65rem; border: 1px solid #aeb7b3; border
 .survey-step,.compact-payment .price { color:var(--brand-ink); }
 .quiet { border-color:transparent; }
 .secondary:hover,.quiet:hover { color:var(--brand-ink); }
+
+/* Multi-venue workspace and platform admin */
+.workspace-strip { padding-block:.4rem; border-top:1px solid var(--line); justify-content:flex-start; gap:.65rem; }
+.workspace-strip > a { margin-left:auto; font-size:.84rem; }
+.tenant-venue-list { display:grid; gap:.65rem; }
+.tenant-venue-card { display:grid; grid-template-columns:12px minmax(0,1fr) auto; align-items:center; gap:.85rem; }
+.tenant-color { height:100%; min-height:36px; border-radius:5px; }
+.tenant-venue-card .button { gap:.3rem; }
+.tenant-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.65rem; margin-bottom:1rem; }
+.tenant-stats > div { display:grid; gap:.35rem; }
+.tenant-stats strong { font-size:1.4rem; }
+.tenant-panel { margin-top:1rem; }
+.tenant-table-scroll { overflow:auto; margin-top:.6rem; }
+.tenant-table { border-collapse:collapse; width:100%; font-size:.85rem; }
+.tenant-table th,.tenant-table td { padding:.65rem; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); }
+.tenant-table th { position:sticky; top:0; background:var(--brand-tint); white-space:nowrap; }
+.tenant-table td { overflow-wrap:anywhere; }
+.tenant-table td details { min-width:185px; }
+.tenant-table td details form { margin-top:.5rem; }
+.tenant-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+.tenant-pagination { margin-top:.65rem; }
+@media(max-width:640px){.tenant-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.tenant-venue-card{grid-template-columns:10px minmax(0,1fr)}.tenant-venue-card .actions{grid-column:2}.tenant-form-grid{grid-template-columns:1fr}}

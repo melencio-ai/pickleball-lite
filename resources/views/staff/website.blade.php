@@ -3,13 +3,13 @@
 @section('content')
     <header class="section-heading page-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Website settings</h1><p class="muted">Customize the public venue website. Rates and schedules update automatically.</p></div>
-        <div class="actions"><a class="button secondary" href="{{ route('settings.customization') }}">Booking setup</a><a class="button" href="{{ route('landing') }}" target="_blank" rel="noopener">Preview website</a></div>
+        <div class="actions"><a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.customization') }}">Booking setup</a><a class="button" href="{{ \App\Services\VenueContext::url('settings.website.preview') }}" target="_blank" rel="noopener">Preview website</a></div>
     </header>
     <div class="website-settings-grid">
         <section class="panel">
             <h2>Website content</h2>
             <p class="muted">Leave the headline and description blank to use the template copy.</p>
-            <form class="form-stack settings-row" method="post" action="{{ route('settings.website.save') }}">
+            <form class="form-stack settings-row" method="post" action="{{ \App\Services\VenueContext::url('settings.website.save') }}">
                 @csrf @method('PATCH')
                 <label>Hero headline<input name="headline" maxlength="120" value="{{ old('headline',$content['headline'] ?? '') }}" placeholder="Your next game starts here."></label>
                 <label>Short description<textarea name="description" rows="3" maxlength="350" placeholder="Play with friends, meet new players and enjoy your next game.">{{ old('description',$content['description'] ?? '') }}</textarea></label>
@@ -48,21 +48,21 @@
             <section class="panel">
                 <h2>Share your website</h2>
                 <div class="form-stack settings-row">
-                    <label>Website link<input type="url" value="{{ route('landing') }}" readonly></label>
-                    <label>Direct booking link<input type="url" value="{{ route('book') }}" readonly></label>
-                    <a href="{{ route('settings.customization') }}#branding">Update logo, cover, map and Messenger links</a>
-                    <a href="{{ route('settings') }}">Update venue address, phone, courts and opening hours</a>
-                    <a href="{{ route('settings.customization') }}#rates">Update court pricing</a>
+                    <label>Website link<input type="url" value="{{ \App\Services\VenueContext::url('landing') }}" readonly></label>
+                    <label>Direct booking link<input type="url" value="{{ \App\Services\VenueContext::url('book') }}" readonly></label>
+                    <a href="{{ \App\Services\VenueContext::url('settings.customization') }}#branding">Update logo, cover, map and Messenger links</a>
+                    <a href="{{ \App\Services\VenueContext::url('settings') }}">Update venue address, phone, courts and opening hours</a>
+                    <a href="{{ \App\Services\VenueContext::url('settings.customization') }}#rates">Update court pricing</a>
                 </div>
             </section>
             <section class="panel" id="gallery">
                 <h2>Venue photo gallery</h2>
                 <p class="muted">Upload up to six actual venue photos. JPG, PNG or WebP, up to 2 MB each. Real photos take priority over the illustrative demo gallery.</p>
                 @foreach(\App\Services\VenueWebsite::GALLERY as $kind)
-                    <form method="post" action="{{ route('settings.website.gallery',$kind) }}" enctype="multipart/form-data" class="form-stack settings-row">
+                    <form method="post" action="{{ \App\Services\VenueContext::url('settings.website.gallery',$kind) }}" enctype="multipart/form-data" class="form-stack settings-row">
                         @csrf @method('PATCH')
                         @if($media->has($kind))
-                            <img class="website-gallery-preview" src="{{ route('book.image',['kind'=>$kind,'version'=>$media[$kind]->version]) }}" alt="Gallery photo {{ $loop->iteration }}">
+                            <img class="website-gallery-preview" src="{{ \App\Services\VenueContext::url('book.image',['kind'=>$kind,'version'=>$media[$kind]->version]) }}" alt="Gallery photo {{ $loop->iteration }}">
                         @endif
                         <label>Photo {{ $loop->iteration }}<input type="file" name="photo" accept="image/jpeg,image/png,image/webp"></label>
                         <div class="actions">

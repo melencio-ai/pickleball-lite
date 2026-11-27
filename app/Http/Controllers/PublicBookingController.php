@@ -14,7 +14,7 @@ class PublicBookingController extends Controller
 {
     public function index(Request $request, Schedule $schedule)
     {
-        $venue = Venue::query()->orderBy('id')->first();
+        $venue = \App\Services\VenueContext::venue();
         if (! $venue) {
             return response()->view('book.setup', [], 503);
         }
@@ -50,7 +50,7 @@ class PublicBookingController extends Controller
 
     public function store(Request $request, Schedule $schedule)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $today = CarbonImmutable::today($venue->timezone);
         $data = $request->validate([
             'court_id' => ['required', 'integer', Rule::exists('courts', 'id')->where('venue_id', $venue->id)],
@@ -63,11 +63,11 @@ class PublicBookingController extends Controller
         ]);
         $booking = $schedule->reserve($venue, $data, 'online');
         if ($booking->payment_token) {
-            return redirect()->route('book.payment', ['token' => $booking->payment_token]);
+            return \App\Services\VenueContext::redirect('book.payment', ['token' => $booking->payment_token]);
         }
 
         $court = $venue->courts()->findOrFail($booking->court_id);
-        $request->session()->put('booking_confirmation', [
+        $request->session()->put('venue_booking_confirmation.'.\App\Services\VenueContext::venue()->id, [
             'reference' => strtoupper($booking->reference),
             'court' => $court->name,
             'date' => $booking->starts_at->setTimezone($venue->timezone)->format('l, F j, Y'),
@@ -76,12 +76,12 @@ class PublicBookingController extends Controller
             'cancellation_policy' => $booking->cancellation_policy,
         ]);
 
-        return redirect()->route('book.confirmed');
+        return \App\Services\VenueContext::redirect('book.confirmed');
     }
 
     public function payment(string $token)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $booking = $this->paymentBooking($venue, $token)->load('court');
         $status = $booking->paymentStatus();
 
@@ -94,7 +94,7 @@ class PublicBookingController extends Controller
 
     public function paymentStatus(string $token)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $booking = $this->paymentBooking($venue, $token);
 
         return response()->json(['status' => $booking->paymentStatus()])->header('Cache-Control', 'private, no-store');
@@ -108,7 +108,7 @@ class PublicBookingController extends Controller
 
     public function image(string $kind, string $version)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $image = $venue->media()->where('kind', $kind)->where('version', $version)->firstOrFail();
 
         return response(base64_decode($image->content, true), 200, [
@@ -120,12 +120,14 @@ class PublicBookingController extends Controller
 
     public function confirmation(Request $request)
     {
-        $confirmation = $request->session()->get('booking_confirmation');
-        if (! $confirmation) {
-            return redirect()->route('book');
+        $venue = \App\Services\VenueContext::venue();
+        $confirmation = $request->session()->get('venue_booking_confirmation.'.$venue->id);
+        if (!$confirmation && $venue->legacy_slot && !\App\Services\VenueContext::onBooking()) {
+            $confirmation = $request->session()->get('booking_confirmation');
         }
-
-        $venue = Venue::query()->orderBy('id')->first();
+        if (! $confirmation) {
+            return \App\Services\VenueContext::redirect('book');
+        }
 
         return response()->view('book.confirmation', compact('confirmation', 'venue'))->header('Cache-Control', 'private, no-store');
     }

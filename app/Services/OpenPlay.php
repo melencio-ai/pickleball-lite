@@ -70,6 +70,9 @@ class OpenPlay
     {
         return DB::transaction(function () use ($venue, $sessionId, $data, $source) {
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
+            if ($source === 'online' && !$venue->acceptsPublicBookings()) {
+                $this->reject('session', 'This venue is not accepting online registrations.');
+            }
             $session = $venue->openPlaySessions()->lockForUpdate()->findOrFail($sessionId);
             $cutoff = $source === 'staff' ? $session->ends_at : $session->starts_at;
             if ($session->cancelled_at || $cutoff->lte(now())) {

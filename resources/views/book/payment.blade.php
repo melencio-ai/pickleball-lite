@@ -25,7 +25,7 @@
                 <strong class="price">₱{{ number_format($booking->total / 100, 2) }}</strong>
             </div>
             @php($secondsLeft = max(0, $booking->payment_expires_at->getTimestamp() - now()->getTimestamp()))
-            <div class="payment-hold" data-payment-hold data-seconds-left="{{ $secondsLeft }}" data-status-url="{{ route('book.payment.status', $booking->payment_token) }}">
+            <div class="payment-hold" data-payment-hold data-seconds-left="{{ $secondsLeft }}" data-status-url="{{ \App\Services\VenueContext::url('book.payment.status', $booking->payment_token) }}">
                 <span class="booking-icon-label" id="payment-hold-label"><x-booking-icon name="timer" /> Court held for</span>
                 <strong class="hold-countdown" data-hold-countdown role="timer" aria-labelledby="payment-hold-label">{{ sprintf('%02d:%02d', intdiv($secondsLeft, 60), $secondsLeft % 60) }}</strong>
                 <span data-hold-expired role="status" hidden>Hold ended. Checking booking status…</span>
@@ -60,9 +60,9 @@
                 </a>
             @endif
             @if($open)
-                <a class="button secondary" href="{{ route('book.payment', $booking->payment_token) }}">Refresh status</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('book.payment', $booking->payment_token) }}">Refresh status</a>
             @elseif(in_array($status, ['cancelled', 'expired'], true))
-                <a class="button secondary" href="{{ route('book', ['date' => $starts->toDateString(), 'duration' => (int) $booking->starts_at->diffInMinutes($booking->ends_at)]) }}">Pick another time</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('book', ['date' => $starts->toDateString(), 'duration' => (int) $booking->starts_at->diffInMinutes($booking->ends_at)]) }}">Pick another time</a>
             @endif
         </div>
 

@@ -25,7 +25,7 @@
                 <strong class="price">₱{{ number_format($registration->total / 100, 2) }}</strong>
             </div>
             @php($secondsLeft = max(0, $registration->payment_expires_at->getTimestamp() - now()->getTimestamp()))
-            <div class="payment-hold" data-payment-hold data-seconds-left="{{ $secondsLeft }}" data-status-url="{{ route('open-play.payment.status', $registration->payment_token) }}">
+            <div class="payment-hold" data-payment-hold data-seconds-left="{{ $secondsLeft }}" data-status-url="{{ \App\Services\VenueContext::url('open-play.payment.status', $registration->payment_token) }}">
                 <span class="booking-icon-label" id="payment-hold-label"><x-booking-icon name="timer" /> Player spot held for</span>
                 <strong class="hold-countdown" data-hold-countdown role="timer" aria-labelledby="payment-hold-label">{{ sprintf('%02d:%02d', intdiv($secondsLeft, 60), $secondsLeft % 60) }}</strong>
                 <span data-hold-expired role="status" hidden>Hold ended. Checking booking status…</span>
@@ -60,9 +60,9 @@
                 </a>
             @endif
             @if($open)
-                <a class="button secondary" href="{{ route('open-play.payment', $registration->payment_token) }}">Refresh status</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('open-play.payment', $registration->payment_token) }}">Refresh status</a>
             @elseif(in_array($status, ['cancelled', 'expired'], true))
-                <a class="button secondary" href="{{ route('open-play', ['date' => $starts->toDateString()]) }}">Pick another session</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('open-play', ['date' => $starts->toDateString()]) }}">Pick another session</a>
             @endif
         </div>
 

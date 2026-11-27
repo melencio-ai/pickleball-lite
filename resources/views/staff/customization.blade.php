@@ -5,9 +5,9 @@
     <header class="section-heading page-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Booking setup</h1></div>
         <div class="actions">
-            <a class="button secondary" href="{{ route('settings') }}">Venue settings</a>
-            <a class="button secondary" href="{{ route('settings.website') }}">Website settings</a>
-            <a class="button" href="{{ route('book') }}" target="_blank" rel="noopener">Preview booking page</a>
+            <a class="button secondary" href="{{ \App\Services\VenueContext::url('settings') }}">Venue settings</a>
+            <a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.website') }}">Website settings</a>
+            <a class="button" href="{{ \App\Services\VenueContext::url('book') }}" target="_blank" rel="noopener">Preview booking page</a>
         </div>
     </header>
 
@@ -23,7 +23,7 @@
     <div class="settings-grid">
         <section class="panel" id="branding">
             <h2>Venue website and booking branding</h2>
-            <form class="form-stack" method="post" action="{{ route('settings.branding') }}" enctype="multipart/form-data">
+            <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.branding') }}" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
                 <label>Brand color<input type="color" name="brand_color" value="{{ $venue->brand_color ?? '#155542' }}"></label>
@@ -35,7 +35,7 @@
                     </label>
                     @if($media->has($kind))
                         <div class="actions">
-                            <img class="media-preview" src="{{ route('book.image', ['kind' => $kind, 'version' => $media[$kind]->version]) }}" alt="{{ $label }}">
+                            <img class="media-preview" src="{{ \App\Services\VenueContext::url('book.image', ['kind' => $kind, 'version' => $media[$kind]->version]) }}" alt="{{ $label }}">
                             <label class="checkbox"><input type="checkbox" name="remove_{{ $kind }}" value="1"> Remove {{ strtolower($label) }}</label>
                         </div>
                     @endif
@@ -46,7 +46,7 @@
 
         <section class="panel" id="booking-rules">
             <h2>Booking rules</h2>
-            <form class="form-stack" method="post" action="{{ route('settings.rules') }}">
+            <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.rules') }}">
                 @csrf
                 @method('PATCH')
                 <fieldset class="hours-row">
@@ -83,20 +83,20 @@
                         <div class="muted">{{ implode(', ', array_intersect_key($days, array_flip($rate->weekdays))) }} · {{ $rate->starts_at }}–{{ $rate->ends_at }} · ₱{{ number_format($rate->hourly_rate / 100, 2) }}/hr</div>
                     </div>
                     <div class="actions">
-                        <a href="{{ route('settings.customization', ['rate' => $rate->id]) }}#rate-form">Edit</a>
-                        <form method="post" action="{{ route('settings.rates.remove', $rate->id) }}" onsubmit="return confirm('Remove this rate?')">
+                        <a href="{{ \App\Services\VenueContext::url('settings.customization', ['rate' => $rate->id]) }}#rate-form">Edit</a>
+                        <form method="post" action="{{ \App\Services\VenueContext::url('settings.rates.remove', $rate->id) }}" onsubmit="return confirm('Remove this rate?')">
                             @csrf @method('DELETE')
                             <button class="small secondary">Remove</button>
                         </form>
                     </div>
                 </div>
             @endforeach
-            <form class="form-stack settings-row" id="rate-form" method="post" action="{{ $editing ? route('settings.rates.update', $editing->id) : route('settings.rates.add') }}">
+            <form class="form-stack settings-row" id="rate-form" method="post" action="{{ $editing ? \App\Services\VenueContext::url('settings.rates.update', $editing->id) : \App\Services\VenueContext::url('settings.rates.add') }}">
                 @csrf
                 @if($editing) @method('PATCH') @endif
                 <div class="section-heading">
                     <h3>{{ $editing ? 'Edit rate' : 'Add a rate' }}</h3>
-                    @if($editing)<a href="{{ route('settings.customization') }}#rates">Cancel edit</a>@endif
+                    @if($editing)<a href="{{ \App\Services\VenueContext::url('settings.customization') }}#rates">Cancel edit</a>@endif
                 </div>
                 <label>Applies to
                     <select name="court_id">
@@ -130,7 +130,7 @@
                 @forelse($closures as $closure)
                     <div class="section-heading settings-row">
                         <div><strong>{{ $closure->date }}</strong><br><span class="muted">{{ $closure->reason }}</span></div>
-                        <form method="post" action="{{ route('settings.closures.remove', $closure->id) }}">
+                        <form method="post" action="{{ \App\Services\VenueContext::url('settings.closures.remove', $closure->id) }}">
                             @csrf @method('DELETE')
                             <button class="small secondary">Reopen date</button>
                         </form>
@@ -138,7 +138,7 @@
                 @empty
                     <p class="muted">No upcoming closures.</p>
                 @endforelse
-                <form class="form-row settings-row" method="post" action="{{ route('settings.closures.add') }}">
+                <form class="form-row settings-row" method="post" action="{{ \App\Services\VenueContext::url('settings.closures.add') }}">
                     @csrf
                     <label>Date<input type="date" name="date" min="{{ now($venue->timezone)->toDateString() }}" required></label>
                     <label>Reason<input name="reason" maxlength="120" required></label>
@@ -148,7 +148,7 @@
 
             <section class="panel" id="payments">
                 <h2>QR payments</h2>
-                <form class="form-stack" method="post" action="{{ route('settings.payments') }}">
+                <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('settings.payments') }}">
                     @csrf
                     @method('PATCH')
                     <label>Base merchant EMV code
@@ -167,9 +167,9 @@
 
             <section class="panel" id="sharing">
                 <h2>Share your venue</h2>
-                <label>Website link<input type="url" value="{{ route('landing') }}" readonly></label>
-                <label>Booking link<input type="url" value="{{ route('book') }}" readonly></label>
-                <div class="share-qr" data-qr-url="{{ route('book') }}" aria-label="Booking page QR code"></div>
+                <label>Website link<input type="url" value="{{ \App\Services\VenueContext::url('landing') }}" readonly></label>
+                <label>Booking link<input type="url" value="{{ \App\Services\VenueContext::url('book') }}" readonly></label>
+                <div class="share-qr" data-qr-url="{{ \App\Services\VenueContext::url('book') }}" aria-label="Booking page QR code"></div>
                 <a class="button secondary" data-qr-download download="booking-qr.svg" hidden>Download QR code</a>
                 <script src="{{ asset('vendor/qrcode-generator-1.4.4.js') }}" defer></script>
                 <script src="{{ asset('booking-qr.js') }}" defer></script>

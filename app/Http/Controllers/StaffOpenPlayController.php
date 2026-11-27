@@ -13,7 +13,7 @@ class StaffOpenPlayController extends Controller
 {
     public function index(Request $request)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $filter = $request->query('filter') === 'past' ? 'past' : 'upcoming';
         $sessions = $venue->openPlaySessions()->with('courts')
             ->withCount(['registrations as active_count' => fn ($query) => $query->occupying(),
@@ -28,7 +28,7 @@ class StaffOpenPlayController extends Controller
 
     public function store(Request $request, OpenPlay $openPlay)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'date' => ['required', 'date_format:Y-m-d'],
@@ -48,12 +48,12 @@ class StaffOpenPlayController extends Controller
             return response()->json(['message' => count($sessions).' session(s) published.']);
         }
 
-        return redirect()->route('staff.open-play.show', $sessions[0]->id)->with('status', count($sessions).' session(s) published.');
+        return \App\Services\VenueContext::redirect('staff.open-play.show', $sessions[0]->id)->with('status', count($sessions).' session(s) published.');
     }
 
     public function show(Request $request, int $session)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $record = $venue->openPlaySessions()->with('courts')->findOrFail($session);
         $registrations = $record->registrations()->orderBy('id')->get();
         $active = $registrations->filter(fn ($player) => ! $player->cancelled_at && ! $player->paymentExpired());
@@ -69,7 +69,7 @@ class StaffOpenPlayController extends Controller
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
         ]);
-        $openPlay->register($request->user()->venue, $session, $data, 'staff');
+        $openPlay->register(\App\Services\VenueContext::venue(), $session, $data, 'staff');
 
         return $this->result($request, 'Player slot held. Share the payment link with the player.');
     }
@@ -82,7 +82,7 @@ class StaffOpenPlayController extends Controller
             'payment_reference' => ['required', 'string', 'regex:/^[A-Za-z0-9-]{4,64}$/D'],
             'verified_in_messenger' => ['accepted'],
         ]) : [];
-        $openPlay->updateRegistration($request->user()->venue, $session, $registration, $action, $data, $request->user()->id);
+        $openPlay->updateRegistration(\App\Services\VenueContext::venue(), $session, $registration, $action, $data, $request->user()->id);
 
         return $this->result($request, match ($action) {
             'paid' => 'Payment verified.',
@@ -93,7 +93,7 @@ class StaffOpenPlayController extends Controller
 
     public function cancel(Request $request, OpenPlay $openPlay, int $session)
     {
-        $openPlay->cancelSession($request->user()->venue, $session);
+        $openPlay->cancelSession(\App\Services\VenueContext::venue(), $session);
 
         return $this->result($request, 'Session cancelled and courts released. Reconcile any paid registrations in Messenger.');
     }

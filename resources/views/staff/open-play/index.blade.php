@@ -6,25 +6,25 @@
         <a class="button" href="#create-session">Create Open Play</a>
     </div>
     @if(!$venue->qr_payments_enabled || !$venue->payment_qr_base || !$venue->payment_messenger_url)
-        <p class="notice">Set up venue QR payments and Messenger before accepting registrations. @can('manage-venue')<a href="{{ route('settings.customization') }}#payments">Payment settings</a>@endcan</p>
+        <p class="notice">Set up venue QR payments and Messenger before accepting registrations. @can('manage-venue')<a href="{{ \App\Services\VenueContext::url('settings.customization') }}#payments">Payment settings</a>@endcan</p>
     @endif
     <nav class="actions" aria-label="Session filters">
-        <a class="button {{ $filter === 'upcoming' ? '' : 'secondary' }}" href="{{ route('staff.open-play') }}">Upcoming</a>
-        <a class="button {{ $filter === 'past' ? '' : 'secondary' }}" href="{{ route('staff.open-play', ['filter' => 'past']) }}">Past</a>
-        <a class="button secondary" href="{{ route('open-play') }}" target="_blank" rel="noopener">Public registration</a>
+        <a class="button {{ $filter === 'upcoming' ? '' : 'secondary' }}" href="{{ \App\Services\VenueContext::url('staff.open-play') }}">Upcoming</a>
+        <a class="button {{ $filter === 'past' ? '' : 'secondary' }}" href="{{ \App\Services\VenueContext::url('staff.open-play', ['filter' => 'past']) }}">Past</a>
+        <a class="button secondary" href="{{ \App\Services\VenueContext::url('open-play') }}" target="_blank" rel="noopener">Public registration</a>
     </nav>
     <section class="panel open-play-admin-list">
         @forelse($sessions as $session)
             <article class="open-play-list-row">
                 <div>
-                    <a class="session-name" href="{{ route('staff.open-play.show', $session->id) }}">{{ $session->name }}</a>
+                    <a class="session-name" href="{{ \App\Services\VenueContext::url('staff.open-play.show', $session->id) }}">{{ $session->name }}</a>
                     <p class="muted">{{ $session->starts_at->setTimezone($venue->timezone)->format('D, M j · g:i A') }} – {{ $session->ends_at->setTimezone($venue->timezone)->format('g:i A') }}</p>
                     <p class="muted">{{ $session->courts->pluck('name')->join(', ') }} · {{ $session->levelLabel() }}</p>
                 </div>
                 <div><strong>{{ $session->paid_count }}/{{ $session->capacity }}</strong> paid<br><small class="muted">{{ $session->spotsLeft() }} spots left</small></div>
                 <div><strong>₱{{ number_format($session->price / 100, 2) }}</strong><br><small class="muted">per player</small></div>
                 <span class="status-chip {{ $session->cancelled_at ? 'unpaid' : 'paid' }}">{{ $session->cancelled_at ? 'Cancelled' : ($session->ends_at->lte(now()) ? 'Ended' : 'Published') }}</span>
-                <a class="button secondary small" href="{{ route('staff.open-play.show', $session->id) }}">Manage</a>
+                <a class="button secondary small" href="{{ \App\Services\VenueContext::url('staff.open-play.show', $session->id) }}">Manage</a>
             </article>
         @empty
             <p class="muted">No {{ $filter }} Open Play sessions.</p>
@@ -37,7 +37,7 @@
     <section class="panel open-play-create" id="create-session">
         <h2>Create Open Play</h2>
         <p class="muted">Publish one session or a series. Assigned courts are reserved for the entire session.</p>
-        <form class="form-stack" method="post" action="{{ route('staff.open-play.store') }}">
+        <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('staff.open-play.store') }}">
             @csrf
             <label>Session name<input name="name" value="{{ old('name', 'Open Play') }}" maxlength="100" required></label>
             <div class="open-play-form-grid">

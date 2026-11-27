@@ -18,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(30)->by('booking:'.$request->route('token')),
         ]);
 
-        Gate::define('manage-venue', fn (User $user) => $user->role === 'owner' && $user->venue_id !== null);
+        Gate::define('manage-venue', fn (User $user) => \App\Services\VenueContext::role() === 'owner');
+        Gate::define('manage-website', fn (User $user) => in_array(\App\Services\VenueContext::role(), ['owner','manager'], true));
+        Gate::define('platform-admin', fn (User $user) => $user->platform_admin === true);
     }
 }

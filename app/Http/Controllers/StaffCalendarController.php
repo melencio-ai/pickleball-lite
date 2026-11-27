@@ -43,7 +43,7 @@ class StaffCalendarController extends Controller
         }
         $action = $request->query('action');
         $data['initialModal'] = in_array($action, ['new', 'book', 'block', 'open-play'], true)
-            ? route('staff.calendar.modal', ['kind' => $action, 'date' => $date,
+            ? \App\Services\VenueContext::url('staff.calendar.modal', ['kind' => $action, 'date' => $date,
                 'court' => is_scalar($request->query('court')) ? $request->query('court') : null,
                 'start' => is_scalar($request->query('start')) ? $request->query('start') : null])
             : null;
@@ -199,7 +199,7 @@ class StaffCalendarController extends Controller
 
     private function venue(Request $request): Venue
     {
-        return $request->user()->venue()->firstOrFail();
+        return \App\Services\VenueContext::venue();
     }
 
     private function calendar(string $date, string $status)
@@ -208,6 +208,6 @@ class StaffCalendarController extends Controller
             return response()->json(['message' => $status, 'date' => $date]);
         }
 
-        return redirect()->route('staff.calendar', ['date' => $date])->with('status', $status);
+        return \App\Services\VenueContext::redirect('staff.calendar', ['date' => $date])->with('status', $status);
     }
 }

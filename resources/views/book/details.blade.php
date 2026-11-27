@@ -7,7 +7,7 @@
         <strong class="price">₱{{ number_format($selection['slots'][$selectedStart]['total'] / 100, 2) }}</strong>
     </div>
     @include('book.errors')
-    <form class="form-row" method="post" action="{{ route('book.store') }}" data-booking-form>
+    <form class="form-row" method="post" action="{{ \App\Services\VenueContext::url('book.store') }}" data-booking-form>
         @csrf
         <input type="hidden" name="date" value="{{ $date }}">
         <input type="hidden" name="duration" value="{{ $duration }}">

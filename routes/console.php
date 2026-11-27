@@ -4,8 +4,9 @@ use App\Models\Venue;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 
-Artisan::command('venue:create-owner {email} {--name=Venue Owner}', function () {
-    $venue = Venue::query()->orderBy('id')->first();
+Artisan::command('venue:create-owner {email} {--name=Venue Owner} {--venue=}', function () {
+    $slug = $this->option('venue');
+    $venue = $slug ? Venue::where('slug',$slug)->first() : Venue::where('legacy_slot',1)->first();
     if (! $venue) {
         $this->error('Run php artisan db:seed to initialize the venue first.');
 
@@ -31,3 +32,42 @@ Artisan::command('venue:create-owner {email} {--name=Venue Owner}', function () 
 
     return 0;
 })->purpose('Create an owner account for the venue');
+
+
+Artisan::command('platform:grant-admin {email}', function () {
+    $user = \App\Models\User::whereRaw('LOWER(email) = ?', [strtolower($this->argument('email'))])->first();
+    if (!$user) {
+        $this->error('No existing account found. Create the verified operator account first.');
+        return 1;
+    }
+    if (!$this->confirm('Grant platform administration to '.$user->email.'?')) return 1;
+    $user->forceFill(['platform_admin'=>true])->save();
+    $this->info('Platform administration granted.');
+    return 0;
+})->purpose('Grant explicit platform administration to an existing account');
+
+
+Artisan::command('platform:check-schema', function () {
+    // A read-only readiness gate for services that must not run migrations.
+    $schema = \Illuminate\Support\Facades\Schema::class;
+    foreach (['venues', 'venue_memberships', 'venue_subscriptions', 'product_enquiries',
+        'marketing_sessions', 'booking_sessions', 'bookings', 'open_play_sessions', 'migrations'] as $table) {
+        if (!$schema::hasTable($table)) {
+            $this->error('Required schema missing: '.$table.'. Run migrations on the management service first.');
+            return 1;
+        }
+    }
+    if (!$schema::hasColumns('venues', ['slug','published','legacy_slot']) ||
+        !$schema::hasColumn('users', 'platform_admin')) {
+        $this->error('Tenant schema is incomplete.');
+        return 1;
+    }
+    $required = ['2026_11_27_000000_add_venue_tenancy','2026_11_27_000100_add_platform_operations',
+        '2026_11_27_000200_add_public_service_sessions'];
+    if (\Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration',$required)->count() !== count($required)) {
+        $this->error('Management migrations have not completed.');
+        return 1;
+    }
+    $this->info('Shared platform schema is ready.');
+    return 0;
+})->purpose('Verify the shared schema without mutating the database');
