@@ -35,6 +35,7 @@
             <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a>
         </div>
     </header>
+    @if(\App\Services\VenueContext::is('settings.website.preview'))<div class="site-container notice">Staff preview. Public booking is available only after the venue is published.</div>@endif
     <main id="main-content">
         <section class="site-container site-hero {{ $media->has('cover') ? 'has-cover' : 'no-cover' }}">
             <div class="site-hero-copy">
