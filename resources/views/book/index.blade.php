@@ -5,12 +5,12 @@
 @section('content')
     <header class="booking-banner venue-banner compact-venue-banner">
         @if($media->has('cover'))
-            <img class="venue-cover" src="{{ route('book.image', ['kind' => 'cover', 'version' => $media['cover']->version]) }}" alt="">
+            <img class="venue-cover" src="{{ \App\Services\VenueContext::url('book.image', ['kind' => 'cover', 'version' => $media['cover']->version]) }}" alt="">
         @endif
         <div>
             <p class="venue-name">
                 @if($media->has('logo'))
-                    <img class="venue-logo" src="{{ route('book.image', ['kind' => 'logo', 'version' => $media['logo']->version]) }}" alt="">
+                    <img class="venue-logo" src="{{ \App\Services\VenueContext::url('book.image', ['kind' => 'logo', 'version' => $media['logo']->version]) }}" alt="">
                 @endif
                 {{ $venue->name }}
             </p>
@@ -64,12 +64,12 @@
         };
     @endphp
 
-    <p class="booking-back"><a href="{{ route('book') }}">← Booking options</a> · <a href="{{ route('landing') }}">Venue website</a></p>
+    <p class="booking-back"><a href="{{ \App\Services\VenueContext::url('book') }}">← Booking options</a> · <a href="{{ \App\Services\VenueContext::url('landing') }}">Venue website</a></p>
     <section class="panel survey-panel" aria-labelledby="survey-title">
         <div class="section-heading">
             <p class="survey-step">Step {{ $step }} of 6</p>
             @if($step > 1)
-                <a class="survey-back" href="{{ route('book', $back) }}">Back</a>
+                <a class="survey-back" href="{{ \App\Services\VenueContext::url('book', $back) }}">Back</a>
             @endif
         </div>
         <ol class="survey-progress" aria-label="Booking progress">
@@ -95,7 +95,7 @@
 
         @if($step === 1)
             <p class="muted">Pick a date below.</p>
-            <form method="get" action="{{ route('book') }}" class="form-stack survey-form">
+            <form method="get" action="{{ \App\Services\VenueContext::url('book') }}" class="form-stack survey-form">
                 <input type="hidden" name="step" value="2">
                 <input type="hidden" name="duration" value="{{ $duration }}">
                 <label>Booking date
@@ -107,7 +107,7 @@
             <p class="muted">Choose how much time you need.</p>
             <div class="survey-choices">
                 @foreach($venue->durations() as $minutes)
-                    <a class="survey-choice" href="{{ route('book', ['step' => 3, 'date' => $date, 'duration' => $minutes]) }}">
+                    <a class="survey-choice" href="{{ \App\Services\VenueContext::url('book', ['step' => 3, 'date' => $date, 'duration' => $minutes]) }}">
                         <x-booking-icon name="clock" /> <strong>{{ $durationLabel($minutes) }}</strong>
                     </a>
                 @endforeach
@@ -117,21 +117,21 @@
             @if($startTimes)
                 <div class="slots booking-slots survey-times">
                     @foreach($startTimes as $time => $slot)
-                        <a class="slot" href="{{ route('book', ['step' => 4, 'date' => $date, 'duration' => $duration, 'start' => $time]) }}">
+                        <a class="slot" href="{{ \App\Services\VenueContext::url('book', ['step' => 4, 'date' => $date, 'duration' => $duration, 'start' => $time]) }}">
                             {{ $slot['label'] }}<small>{{ $slot['count'] }} {{ $slot['count'] === 1 ? 'court' : 'courts' }}</small>
                         </a>
                     @endforeach
                 </div>
             @else
                 <div class="notice survey-empty">No court times are available on this date for this duration.</div>
-                <a class="button secondary" href="{{ route('book', ['step' => 1, 'date' => $date, 'duration' => $duration]) }}">Pick another date</a>
+                <a class="button secondary" href="{{ \App\Services\VenueContext::url('book', ['step' => 1, 'date' => $date, 'duration' => $duration]) }}">Pick another date</a>
             @endif
         @elseif($step === 4)
             <p class="muted">Pick an available court. Prices are for your full booking.</p>
             <div class="survey-choices">
                 @foreach($courts as $offer)
                     @if(isset($offer['slots'][$selectedStart]))
-                        <a class="survey-choice" href="{{ route('book', ['step' => 5, 'date' => $date, 'duration' => $duration, 'start' => $selectedStart, 'court' => $offer['court']->id]) }}">
+                        <a class="survey-choice" href="{{ \App\Services\VenueContext::url('book', ['step' => 5, 'date' => $date, 'duration' => $duration, 'start' => $selectedStart, 'court' => $offer['court']->id]) }}">
                             <span><strong>{{ $offer['court']->name }}</strong>
                                 @if($offer['court']->surface_type)<small>{{ ucfirst($offer['court']->surface_type) }}</small>@endif
                             </span>
