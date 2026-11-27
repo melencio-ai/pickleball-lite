@@ -75,9 +75,18 @@
         </section>
         <section class="panel">
             <h2>Staff access</h2>
+            @if(session('invite_url'))
+                <div class="notice form-stack"><p>Share this invitation privately. It expires in 72 hours.</p><label>Invitation link<input value="{{ session('invite_url') }}" readonly onclick="this.select()"></label></div>
+            @endif
+            <form class="form-stack settings-row" method="post" action="{{ \App\Services\VenueContext::url('settings.staff.invite') }}">
+                @csrf
+                <label>Invite by email<input name="email" type="email" required></label>
+                <label>Role<select name="role"><option value="staff">Staff</option><option value="manager">Manager</option></select></label>
+                <button>Generate invitation</button>
+            </form>
             @forelse($staff as $member)
                 <div class="section-heading settings-row">
-                    <div><strong>{{ $member->name }}</strong><br><span class="muted">{{ $member->email }}</span></div>
+                    <div><strong>{{ $member->name }}</strong><br><span class="muted">{{ $member->email }} · {{ ucfirst($member->pivot->role) }}</span></div>
                     <form method="post" action="{{ \App\Services\VenueContext::url('settings.staff.remove', $member->id) }}" onsubmit="return confirm('Remove this staff member’s access?')">
                         @csrf
                         @method('DELETE')
