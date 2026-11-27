@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Venue;
 use App\Services\VenueContext;
+use App\Services\LegalPolicies;
+use Illuminate\Support\Facades\DB;
 use App\Services\VenueInvitations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,14 +25,22 @@ class InvitationController extends Controller
         }
         if ($request->user()) abort_unless($existing && $existing->id === $request->user()->id,403);
 
-        return response()->view('platform.invite',compact('invite','record','token','existing'))
+        $legal = LegalPolicies::context(subscription:$invite->role === 'owner');
+        return response()->view('platform.invite',compact('invite','record','token','existing','legal'))
             ->withHeaders(['Cache-Control'=>'private, no-store','Referrer-Policy'=>'no-referrer','X-Robots-Tag'=>'noindex, nofollow']);
     }
 
     public function accept(Request $request,string $token)
     {
         $data = $request->validate(['name'=>'nullable|string|max:100','password'=>'nullable|string|min:12|max:72|confirmed']);
-        $user = VenueInvitations::accept($token,$request->user(),$data);
+        $user = DB::transaction(function () use ($request,$token,$data) {
+            $invite = VenueInvitations::find($token);
+            $legal = LegalPolicies::context(subscription:$invite->role === 'owner',lock:true);
+            LegalPolicies::validate($request->only('legal_fingerprint','legal_accepted','subscription_accepted'),$legal);
+            $user = VenueInvitations::accept($token,$request->user(),$data);
+            LegalPolicies::record($legal,'user',$user->id,$invite->venue_id,$user->id);
+            return $user;
+        },3);
         Auth::login($user);
         $request->session()->regenerate();
 
