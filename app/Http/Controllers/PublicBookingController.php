@@ -59,7 +59,7 @@ class PublicBookingController extends Controller
             'duration' => ['required', 'integer', Rule::in($venue->durations())],
             'quoted_total' => ['required', 'integer', 'min:0'],
             'legal_fingerprint' => ['nullable','string','size:64'],
-            'legal_accepted' => ['nullable','accepted'],
+            'legal_accepted' => ['sometimes','accepted'],
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
         ]);
