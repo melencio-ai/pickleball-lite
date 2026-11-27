@@ -58,7 +58,7 @@ class MultiVenueTest extends TestCase
         $this->get($this->publicUrl($this->b,'/book?step=1'))->assertOk()->assertSee('Independent Courts');
         $this->get($this->publicUrl($this->b,'/open-play'))->assertOk()->assertSee('Independent Courts');
         $this->get('http://'.config('pickle.book_host').'/missing-venue')->assertNotFound();
-        $this->get('/')->assertOk()->assertSee($this->a->name)->assertDontSee('Independent Courts');
+        $this->get('http://'.config('pickle.legacy_host').'/')->assertOk()->assertSee($this->a->name)->assertDontSee('Independent Courts');
         $this->get($this->productUrl('/book'))->assertNotFound();
         $this->get($this->appUrl('/book'))->assertNotFound();
         $this->get($this->publicUrl($this->b,'/settings'))->assertNotFound();
@@ -80,6 +80,28 @@ class MultiVenueTest extends TestCase
         $this->get($this->publicUrl($this->b))->assertNotFound();
         $this->post($this->publicUrl($this->b,'/bookings'),$data)->assertNotFound();
         $this->get($this->publicUrl($this->b,'/bookings/confirmed'))->assertOk();
+    }
+
+    public function test_payment_tokens_and_media_are_scoped_to_the_venue(): void
+    {
+        $this->travelTo(now()->setDate(2030,1,10)->setTime(0,0));
+        $this->a->update(['qr_payments_enabled'=>true,
+            'payment_qr_base'=>'00020101021126320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085802PH5910LITE COURT6006MANILA63041052',
+            'payment_messenger_url'=>'https://m.me/litecourts']);
+        $data = ['court_id'=>$this->a->courts()->firstOrFail()->id,'date'=>'2030-01-11','start'=>'19:00','duration'=>60,'quoted_total'=>40000,'customer_name'=>'Private Player','customer_phone'=>'09171234567'];
+        $this->post($this->publicUrl($this->a,'/bookings'),$data)->assertRedirect();
+        $booking = Booking::firstOrFail();
+        $path = '/payments/'.$booking->payment_token;
+        $this->get($this->publicUrl($this->a,$path))->assertOk()->assertSee($booking->reference);
+        $this->get($this->publicUrl($this->b,$path))->assertNotFound();
+        $this->getJson($this->publicUrl($this->b,$path.'/status'))->assertNotFound();
+        $this->getJson($this->publicUrl($this->a,$path.'/status'))->assertOk()->assertJson(['status'=>'pending']);
+        $this->get('http://'.config('pickle.legacy_host').$path)->assertOk()->assertSee($booking->reference);
+        $this->actingAs($this->owner);
+        $this->owner->venues()->attach($this->b->id,['role'=>'owner']);
+        $this->patch($this->workspace($this->b,'/bookings/'.$booking->id.'/cancel'))->assertNotFound();
+        $this->assertNull($booking->fresh()->cancelled_at);
+        $this->get($this->workspace($this->b,'/calendar/modal/booking/'.$booking->id))->assertNotFound();
     }
 
     public function test_workspace_roles_and_records_never_follow_a_different_venue(): void
