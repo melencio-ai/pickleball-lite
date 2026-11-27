@@ -91,5 +91,15 @@ jobs:
           node tests/browser/calendar-smoke.mjs
           node tests/browser/venue-website-smoke.mjs
           node tests/browser/venue-theme-smoke.mjs
+      - run: |
+          export PICKLE_PRODUCT_HOST=pickle-web.test PICKLE_APP_HOST=pickle-app.test PICKLE_BOOK_HOST=pickle-book.test PICKLE_LEGACY_HOST=pickle-legacy.test
+          SERVICE_ROLE=marketing APP_URL=http://pickle-web.test SESSION_DRIVER=database php artisan platform:check-schema
+          SERVICE_ROLE=marketing APP_URL=http://pickle-web.test SESSION_DRIVER=database php artisan serve --host=127.0.0.1 --port=8001 > /tmp/pickle-web.log 2>&1 &
+          SERVICE_ROLE=management APP_URL=http://pickle-app.test SESSION_DRIVER=database SESSION_COOKIE=pickle_app_test_session php artisan serve --host=127.0.0.1 --port=8002 > /tmp/pickle-app.log 2>&1 &
+          SERVICE_ROLE=booking APP_URL=http://pickle-book.test SESSION_DRIVER=database php artisan serve --host=127.0.0.1 --port=8003 > /tmp/pickle-book.log 2>&1 &
+          for port in 8001 8002 8003; do
+            for i in $(seq 1 20); do curl -fsS http://127.0.0.1:$port/up && break; sleep 1; done
+          done
+          node tests/browser/dedicated-services-smoke.mjs
       - if: failure()
-        run: cat /tmp/pickle-calendar-server.log || true
+        run: cat /tmp/pickle-calendar-server.log /tmp/pickle-web.log /tmp/pickle-app.log /tmp/pickle-book.log || true
