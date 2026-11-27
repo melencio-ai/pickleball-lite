@@ -144,6 +144,10 @@ class PlatformController extends Controller
             if ($data['status']==='trial' && (!$current || !$current->trial_ends_at || \Carbon\CarbonImmutable::parse($current->trial_ends_at)->lte(now()))) {
                 throw ValidationException::withMessages(['status'=>'A trial can only remain active until its recorded expiration.']);
             }
+            if ($current?->reward_managed && $data['status']==='active' &&
+                (!filled($data['renewal_date'] ?? null) || $data['renewal_date']<=now($record->timezone)->toDateString())) {
+                throw ValidationException::withMessages(['renewal_date'=>'A reward-managed subscription requires a future renewal date.']);
+            }
             if ($data['status']==='active' && $record->self_service && !$record->members()->wherePivot('role','owner')->whereNotNull('email_verified_at')->exists()) {
                 throw ValidationException::withMessages(['status'=>'The owner must verify their email before paid activation.']);
             }

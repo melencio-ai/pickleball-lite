@@ -72,6 +72,10 @@ $staffRoutes = function () {
     Route::middleware('can:manage-venue')->group(function () {
         Route::get('/onboarding/{step?}', [OnboardingController::class,'show'])->whereNumber('step')->name('settings.onboarding');
         Route::post('/onboarding/{step}', [OnboardingController::class,'save'])->whereNumber('step')->middleware('throttle:30,1,settings-onboarding-save:')->name('settings.onboarding.save');
+        Route::get('/rewards', [\App\Http\Controllers\RewardsController::class,'index'])->name('settings.rewards');
+        Route::post('/rewards/testimonial', [\App\Http\Controllers\RewardsController::class,'submit'])->middleware('throttle:5,10,rewards-submit:')->name('settings.rewards.submit');
+        Route::post('/rewards/withdraw-marketing', [\App\Http\Controllers\RewardsController::class,'withdraw'])->name('settings.rewards.withdraw');
+        Route::post('/rewards/{grant}/apply', [\App\Http\Controllers\RewardsController::class,'apply'])->whereNumber('grant')->middleware('throttle:5,10,rewards-apply:')->name('settings.rewards.apply');
         Route::get('/subscription', [SubscriptionController::class,'index'])->name('settings.subscription');
         Route::post('/subscription/extend', [SubscriptionController::class,'extend'])->middleware('throttle:5,1,settings-subscription-extend:')->name('settings.subscription.extend');
         Route::post('/subscription/upgrade', [SubscriptionController::class,'upgrade'])->middleware('throttle:5,1,settings-subscription-upgrade:')->name('settings.subscription.upgrade');
@@ -147,9 +151,12 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
         Route::post('/notifications/{record}/read',[NotificationController::class,'read'])->whereNumber('record')->name('notifications.read');
         Route::patch('/notifications/preferences',[NotificationController::class,'preferences'])->name('notifications.preferences');
         Route::prefix('venues/{venueSlug}')->where(['venueSlug'=>'[a-z0-9]+(?:-[a-z0-9]+)*'])
-            ->middleware(ResolveStaffVenue::class)->group($staffRoutes);
+            ->middleware([ResolveStaffVenue::class,\App\Http\Middleware\TrackVenueActivity::class])->group($staffRoutes);
         Route::middleware('can:platform-admin')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [PlatformController::class, 'admin'])->name('index');
+            Route::get('/rewards', [\App\Http\Controllers\RewardAdminController::class,'index'])->name('rewards.index');
+            Route::post('/rewards/testimonials/{record}', [\App\Http\Controllers\RewardAdminController::class,'review'])->whereNumber('record')->name('rewards.review');
+            Route::post('/rewards/grants/{grant}/revoke', [\App\Http\Controllers\RewardAdminController::class,'revoke'])->whereNumber('grant')->name('rewards.revoke');
             Route::get('/email', [\App\Http\Controllers\EmailAdminController::class,'index'])->name('email.index');
             Route::patch('/email', [\App\Http\Controllers\EmailAdminController::class,'save'])->middleware('throttle:platform-email-save')->name('email.save');
             Route::post('/email/test', [\App\Http\Controllers\EmailAdminController::class,'test'])->middleware('throttle:platform-email-test')->name('email.test');

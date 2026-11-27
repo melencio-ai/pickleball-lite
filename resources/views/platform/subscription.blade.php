@@ -6,6 +6,7 @@ $end=$subscription?->trial_ends_at ? \Carbon\CarbonImmutable::parse($subscriptio
 $days=$end && $end->isFuture() ? (int)ceil(now()->diffInSeconds($end)/86400) : 0;
 $status=$subscription?->status ?? 'onboarding';
 if($status==='trial' && !$days) $status='trial_expired';
+if($status==='active' && $subscription?->reward_managed && !\App\Services\TrialAccess::allowed($venue)) $status='overdue';
 @endphp
 <header class="section-heading page-heading"><div><h1>My subscription</h1><p class="muted">{{ $venue->name }}</p></div><span class="status-chip">{{ ucfirst(str_replace('_',' ',$status)) }}</span></header>
 <div class="settings-grid">
@@ -17,7 +18,7 @@ if($status==='trial' && !$days) $status='trial_expired';
     @elseif($status==='trial_expired')
         <h2>Your free trial has ended</h2><p>New reservations are unavailable. Existing bookings, payments and account records remain accessible.</p>
     @elseif($status==='active')
-        <h2>Paid subscription</h2><p>Next renewal: {{ $subscription->renewal_date ?? 'Contact Pickle Lite' }}</p>
+        <h2>{{ $subscription->reward_managed ? 'Subscription (reward-managed)' : 'Paid subscription' }}</h2><p>Next renewal: {{ $subscription->renewal_date ?? 'Contact Pickle Lite' }}</p>
     @else
         <h2>{{ ucfirst(str_replace('_',' ',$status)) }}</h2><p>Contact Pickle Lite for assistance with your subscription.</p>
     @endif
@@ -30,6 +31,9 @@ if($status==='trial' && !$days) $status='trial_expired';
     @if($status!=='active')
         @if($subscription?->upgrade_requested_at)<p class="notice success">Upgrade requested. We will contact you to arrange payment.</p>
         @else<form method="post" action="{{ \App\Services\VenueContext::url('settings.subscription.upgrade') }}" data-app-form>@csrf<button data-app-submit>Request paid upgrade</button></form>@endif
+    @endif
+    @if(\App\Services\VenueContext::onApp() && \App\Services\PlatformRewards::visible($venue,$subscription))
+        <a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.rewards') }}"><x-workspace-icon name="gift"/> View subscription rewards</a>
     @endif
     <a href="{{ route('product.legal.show',['document'=>'subscription-terms']) }}" target="_blank" rel="noopener">Subscription Terms</a>
 </section>

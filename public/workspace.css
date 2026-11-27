@@ -158,3 +158,43 @@ html:has(.notification-drawer[open]){overflow:hidden}
 .notification-skeleton i:first-child{width:65%}.notification-skeleton i:last-child{width:90%}
 @media(max-width:480px){.notification-drawer{width:100%;border-left:0}.notification-drawer-header{padding-top:max(16px,env(safe-area-inset-top))}.notification-drawer-content .notification-icon{flex-basis:28px;height:28px}.notification-drawer-content .notification-row{gap:7px}.notification-drawer-content .notification-row form button{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.notification-drawer[open]{animation:none}}
+
+
+/* Platform rewards, venue-branded and compact. */
+.rewards-widget{display:flex;align-items:center;gap:12px;padding:10px 13px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none;margin:0 0 12px;min-width:0}
+.rewards-widget:hover{background:#fcfcfc;border-color:var(--brand-primary)}
+.rewards-flame,.rewards-streak-number svg{color:#c75d21}
+.rewards-flame{width:31px;height:31px;background:#fff0e7;border-radius:7px;display:grid;place-items:center;flex-shrink:0}
+.rewards-widget-main{display:flex;flex-direction:column;min-width:0;flex:1;gap:3px;font-size:13px}
+.rewards-widget-main small,.rewards-widget-progress{font-size:11px;color:#626d66}
+.rewards-widget-progress{display:grid;gap:3px;width:min(190px,28%)}
+.rewards-widget-progress progress,.rewards-milestone progress{width:100%;height:7px;accent-color:#c75d21;display:block;border:0}
+.rewards-widget-end{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:var(--brand-ink);border-left:1px solid var(--line);padding-left:12px}
+.rewards-widget-end svg{flex-shrink:0}
+.rewards-drawer-content{padding-top:10px}
+.rewards-drawer{width:min(440px,100%)}
+html:has(.rewards-drawer[open]){overflow:hidden}
+.rewards-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rewards-stats>div{background:#f5f7f5;border-radius:8px;padding:10px;display:grid;gap:6px;min-width:0}
+.rewards-stats span{font-size:11px}.rewards-stats strong{font-size:16px;overflow-wrap:anywhere}
+.rewards-streak-number{display:flex;align-items:center;gap:4px}
+.rewards-today{font-size:12px;line-height:1.45;margin:10px 0}
+.rewards-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:8px 0 16px}
+.rewards-week>div{display:grid;gap:5px;text-align:center;font-size:12px}
+.rewards-week span{border-radius:7px;background:#f1f4f2;height:34px;display:grid;place-items:center;color:#a2aaa5}
+.rewards-week span.done{background:#fff0e7;color:#c75d21}
+.rewards-milestone{border:1px solid var(--line);border-radius:8px;display:grid;gap:8px;padding:12px;margin-bottom:10px}
+.rewards-milestone-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:7px;font-size:13px}
+.rewards-milestone-heading>div{display:grid;gap:3px}.rewards-milestone-heading small{font-size:12px;color:#626d66}
+.rewards-milestone>.muted{font-size:11px}.rewards-optional-review{border-top:1px solid var(--line);padding-top:12px}
+.reward-tabs{display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:12px}
+.reward-tabs a{padding:9px 12px;text-decoration:none;font-size:13px;font-weight:600;color:var(--muted)}
+.reward-tabs a[aria-current=page]{border-bottom:2px solid var(--brand-primary);color:var(--brand-ink)}
+.reward-filters{display:flex;align-items:flex-end;gap:8px;margin:10px 0 16px;flex-wrap:wrap}
+.reward-report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.reward-report-stat{display:grid;gap:5px;padding:13px}.reward-report-stat small{color:#626d66;font-size:12px}.reward-report-stat strong{font-size:24px}
+.reward-chart{display:flex;align-items:flex-end;gap:3px;height:128px;border-bottom:1px solid var(--line);padding-top:8px}
+.reward-chart span{flex:1;height:var(--bar);min-width:0;background:var(--brand-primary);border-radius:2px 2px 0 0}
+.reward-chart-dates{display:flex;justify-content:space-between;margin-top:5px;color:#626d66}
+.reward-reference{display:block;white-space:normal;overflow-wrap:anywhere;max-width:320px;min-width:160px}
+@media(max-width:600px){.rewards-widget{gap:7px;padding:9px}.rewards-widget-end{padding-left:7px}.rewards-widget-end>span{display:none}.rewards-widget-progress{width:25%}.rewards-stats strong{font-size:14px}.rewards-stats>div{padding:8px}.reward-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.reward-report-stat strong{font-size:20px}}

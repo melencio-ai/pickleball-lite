@@ -19,9 +19,14 @@ final class TrialAccess
 
     public static function allowed(Venue $venue): bool
     {
-        if (!$venue->self_service) return true;
+        if (!$venue->self_service) {
+            $legacy=self::subscription($venue);
+            if (!$legacy?->reward_managed) return true;
+            return $legacy->status==='active' && $legacy->renewal_date && $legacy->renewal_date>now($venue->timezone)->toDateString();
+        }
         $sub = self::subscription($venue);
-        return $sub && ($sub->status === 'active' ||
+        return $sub && (($sub->status === 'active' && (!$sub->reward_managed ||
+            ($sub->renewal_date && $sub->renewal_date>now($venue->timezone)->toDateString()))) ||
             ($sub->status === 'trial' && $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->isFuture()));
     }
 

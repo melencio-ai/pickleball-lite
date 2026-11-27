@@ -293,6 +293,20 @@
         });
         window.addEventListener('pageshow',event=>{if(event.persisted)dismiss();});
     }
+    const rewardsDrawer=document.querySelector('[data-rewards-drawer]');
+    if(rewardsDrawer && typeof rewardsDrawer.showModal==='function') {
+        let opener=null,pointerOutside=false;
+        const outside=e=>{const rect=rewardsDrawer.getBoundingClientRect();return e.clientX<rect.left || e.clientX>rect.right || e.clientY<rect.top || e.clientY>rect.bottom;};
+        document.querySelectorAll('[data-rewards-open]').forEach(trigger=>trigger.addEventListener('click',event=>{
+            if(event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || rewardsDrawer.open)return;
+            event.preventDefault();opener=trigger;rewardsDrawer.showModal();rewardsDrawer.querySelector('[data-rewards-close]').focus();
+        }));
+        rewardsDrawer.querySelector('[data-rewards-close]').addEventListener('click',()=>rewardsDrawer.close());
+        rewardsDrawer.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation();});
+        rewardsDrawer.addEventListener('pointerdown',event=>{pointerOutside=event.target===rewardsDrawer && outside(event);});
+        rewardsDrawer.addEventListener('click',event=>{if(pointerOutside && event.target===rewardsDrawer && outside(event))rewardsDrawer.close();pointerOutside=false;});
+        rewardsDrawer.addEventListener('close',()=>{opener?.focus({preventScroll:true});opener=null;});
+    }
     const method=document.querySelector('[data-onboard-payment]');
     const qr=document.querySelector('[data-onboard-qr]');
     if(method && qr) {
