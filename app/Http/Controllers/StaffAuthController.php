@@ -21,6 +21,14 @@ class StaffAuthController extends Controller
             throw ValidationException::withMessages(['email' => 'The email or password is incorrect.']);
         }
 
+        if (!\App\Services\VenueContext::onApp() &&
+            !$request->user()->venues()->where('venues.id',$request->user()->venue_id)->exists()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            throw ValidationException::withMessages(['email'=>'The email or password is incorrect.']);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(\App\Services\VenueContext::onApp() ? route('app.venues') : route('staff.calendar'));
