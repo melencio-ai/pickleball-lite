@@ -54,6 +54,28 @@ final class VenueNotifications
                     }
                 },3);
             });
+        // Limit hold expiry notices to recent activity.
+        $since=now()->subDay();
+        DB::table('bookings')->join('courts','courts.id','=','bookings.court_id')
+            ->whereNull('bookings.paid_at')->whereNull('bookings.cancelled_at')
+            ->whereBetween('bookings.payment_expires_at',[$since,now()])
+            ->select('bookings.id','courts.venue_id')
+            ->chunkById(100,function($rows) {
+                foreach($rows as $row) {
+                    $venue=Venue::find($row->venue_id);
+                    if ($venue) self::emit($venue,'payment','booking-expired-'.$row->id,'Court payment hold expired','A court hold expired. Reconcile any late payment directly with the player.','calendar');
+                }
+            },'bookings.id','id');
+        DB::table('open_play_registrations')->join('open_play_sessions','open_play_sessions.id','=','open_play_registrations.open_play_session_id')
+            ->whereNull('open_play_registrations.paid_at')->whereNull('open_play_registrations.cancelled_at')
+            ->whereBetween('open_play_registrations.payment_expires_at',[$since,now()])
+            ->select('open_play_registrations.id','open_play_sessions.venue_id')
+            ->chunkById(100,function($rows) {
+                foreach($rows as $row) {
+                    $venue=Venue::find($row->venue_id);
+                    if ($venue) self::emit($venue,'payment','open-play-expired-'.$row->id,'Open Play payment hold expired','A player hold expired. Reconcile any late payment directly with the player.','open-play');
+                }
+            },'open_play_registrations.id','id');
         DB::table('venue_subscriptions')->where('status','active')->whereNotNull('renewal_date')
             ->whereBetween('renewal_date',[now('Asia/Manila')->toDateString(),now('Asia/Manila')->addDays(5)->toDateString()])
             ->orderBy('id')->chunkById(100,function($rows) {
