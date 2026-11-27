@@ -111,6 +111,8 @@ class Schedule
             if ($source === 'online' && !$venue->acceptsPublicBookings()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['date'=>'This venue is not accepting online reservations.']);
             }
+            $legal = $source === 'online' ? LegalPolicies::context($venue,lock:true) : null;
+            if ($legal) LegalPolicies::validate($data,$legal);
             $court = $venue->courts()->lockForUpdate()->findOrFail($data['court_id']);
             $start = $this->time($venue, $data['date'], $data['start']);
             $end = $source
@@ -175,7 +177,7 @@ class Schedule
                 ];
             }
 
-            return $court->bookings()->create([
+            $booking = $court->bookings()->create([
                 'reference' => (string) Str::ulid(),
                 'starts_at' => $start,
                 'ends_at' => $end,
@@ -183,8 +185,10 @@ class Schedule
                 'customer_phone' => $data['customer_phone'],
                 'total' => $total,
                 'source' => $source,
-                'cancellation_policy' => $venue->cancellation_policy,
+                'cancellation_policy' => LegalPolicies::venuePolicy($venue),
             ] + $payment);
+            if ($legal) LegalPolicies::record($legal,'booking',$booking->id,$venue->id);
+            return $booking;
         }, 3);
     }
 }

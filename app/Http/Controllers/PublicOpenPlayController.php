@@ -42,6 +42,8 @@ class PublicOpenPlayController extends Controller
     {
         $venue = \App\Services\VenueContext::venue();
         $data = $request->validate([
+            'legal_fingerprint' => ['nullable','string','size:64'],
+            'legal_accepted' => ['sometimes','accepted'],
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
             'quoted_total' => ['required', 'integer', 'min:1'],

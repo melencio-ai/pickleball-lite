@@ -69,11 +69,14 @@
         <p class="payment-booking-summary">{{ $registration->session->name }} · {{ $starts->format('D, M j · g:i A') }}–{{ $ends->format('g:i A') }}
             @unless($open) · ₱{{ number_format($registration->total / 100, 2) }} @endunless
         </p>
-        @if($venue->cancellation_policy)
+        <x-legal-receipt type="open_play" :record="$registration" />
+        @if($registration->cancellation_policy)
             <details class="compact-policy">
                 <summary>Cancellation policy <x-booking-icon name="chevron-down" /></summary>
-                <p>{{ $venue->cancellation_policy }}</p>
+                <p>{{ $registration->cancellation_policy }}</p>
             </details>
+        @else
+            <p class="legal-notice">No cancellation policy was recorded for this older registration. Contact the venue for assistance.</p>
         @endif
     </section>
     <script src="{{ asset('payment-qr.js') }}?v=3" defer></script>

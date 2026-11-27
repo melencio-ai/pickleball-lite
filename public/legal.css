@@ -1,0 +1,25 @@
+/* Compact legal information and management controls */
+.legal-public{max-width:820px;margin-inline:auto}
+.legal-heading{margin:24px 0}
+.legal-heading h1{margin:.25rem 0;font-size:clamp(1.65rem,4vw,2.35rem)}
+.legal-prose{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;font-size:.95rem}
+.legal-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem 1rem;font-size:.78rem}
+.legal-links a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.legal-footer{padding:20px 12px 32px;color:#59635e;border-top:1px solid #e2e7e3;margin-top:24px}
+.legal-acceptance{display:grid;gap:10px;padding:12px;border:1px solid var(--brand-border,#d9e3dc);background:var(--brand-tint,#f7f9f8);border-radius:8px;font-size:13px;min-width:0}
+.legal-check{display:flex;align-items:flex-start;gap:9px}
+.legal-check input[type=checkbox]{flex:0 0 17px;width:17px;height:17px;min-width:0;margin:2px 0 0;accent-color:var(--brand-primary,#155542)}
+.legal-check label{display:block;line-height:1.5;font-size:13px;font-weight:500;min-width:0}
+.legal-notice{margin:0;font-size:12px;line-height:1.6;color:#59635e}
+.legal-acceptance a,.legal-notice a{font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.legal-text-button{padding:4px;border:0;background:none;color:var(--brand-ink,#155542);text-decoration:underline;font:inherit;cursor:pointer}
+.legal-editor textarea{min-height:260px;font-family:inherit;line-height:1.5;width:100%}
+.legal-admin-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.legal-editor summary{font-weight:600;cursor:pointer}
+.legal-editor details{margin-top:12px}
+.legal-editor details form{margin-top:14px}
+.legal-state{display:inline-block;font-size:12px;padding:3px 7px;border:1px solid #cdd5d0;border-radius:5px}
+.legal-history{overflow:auto}
+.legal-history table{min-width:600px}
+.legal-section{margin-top:16px}
+@media(max-width:760px){.legal-admin-grid{grid-template-columns:1fr}.legal-footer{padding-bottom:80px}.legal-public{width:100%}}

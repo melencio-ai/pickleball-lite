@@ -69,6 +69,7 @@
         <p class="payment-booking-summary">{{ $booking->court->name }} · {{ $starts->format('D, M j · g:i A') }}–{{ $ends->format('g:i A') }}
             @unless($open) · ₱{{ number_format($booking->total / 100, 2) }} @endunless
         </p>
+        <x-legal-receipt type="booking" :record="$booking" />
         @if($booking->cancellation_policy)
             <details class="compact-policy">
                 <summary>Cancellation policy <x-booking-icon name="chevron-down" /></summary>

@@ -17,9 +17,14 @@ use App\Http\Middleware\ResolveStaffVenue;
 use App\Http\Controllers\PlatformController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PasswordRecoveryController;
+use App\Http\Controllers\LegalController;
+use App\Http\Controllers\LegalAdminController;
+use App\Http\Controllers\PrivacyRequestController;
+use App\Http\Middleware\RequireLegalTerms;
 
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
+    Route::get('/policies', [LegalController::class,'venue'])->name('policies');
     Route::get('/book', [PublicBookingController::class, 'index'])->name('book');
     Route::post('/bookings', [PublicBookingController::class, 'store'])->middleware('throttle:20,1')->name('book.store');
     Route::get('/branding/{kind}/{version}', [PublicBookingController::class, 'image'])
@@ -60,6 +65,9 @@ $staffRoutes = function () {
         Route::patch('/website/gallery/{kind}', [VenueWebsiteController::class, 'gallery'])->whereIn('kind', \App\Services\VenueWebsite::GALLERY)->name('settings.website.gallery');
     });
     Route::middleware('can:manage-venue')->group(function () {
+        Route::get('/privacy-requests', [PrivacyRequestController::class,'index'])->name('settings.privacy');
+        Route::post('/privacy-requests', [PrivacyRequestController::class,'store'])->name('settings.privacy.store');
+        Route::patch('/privacy-requests/{record}', [PrivacyRequestController::class,'update'])->whereNumber('record')->name('settings.privacy.update');
         Route::get('/booking-setup', [VenueCustomizationController::class, 'index'])->name('settings.customization');
         Route::patch('/booking-setup/branding', [VenueCustomizationController::class, 'branding'])->name('settings.branding');
         Route::post('/settings/staff/invite', [InvitationController::class, 'issueStaff'])->name('settings.staff.invite');
@@ -82,6 +90,7 @@ $staffRoutes = function () {
 
 Route::domain(config('pickle.product_host'))->group(function () {
     Route::view('/', 'platform.product')->name('product.home');
+    Route::get('/{document}', [LegalController::class,'show'])->whereIn('document',\App\Services\LegalPolicies::SLUGS)->name('product.legal.show');
     Route::redirect('/features', '/#features');
     Route::redirect('/pricing', '/#pricing');
     Route::get('/demo', [PlatformController::class, 'demo'])->name('product.demo');
@@ -109,13 +118,23 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
         Route::get('/reset-password/{token}', [PasswordRecoveryController::class,'reset'])->where('token','[a-f0-9]{64}')->name('password.reset');
         Route::post('/reset-password', [PasswordRecoveryController::class,'update'])->middleware('throttle:10,1')->name('password.update');
     });
-    Route::middleware('auth')->group(function () use ($staffRoutes) {
+    Route::middleware('auth')->group(function () {
         Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
+        Route::get('/accept-terms', [LegalController::class,'acceptPage'])->name('legal.accept');
+        Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1')->name('legal.accept.store');
+    });
+    Route::middleware(['auth',RequireLegalTerms::class])->group(function () use ($staffRoutes) {
         Route::get('/venues', [PlatformController::class, 'venues'])->name('venues');
         Route::prefix('venues/{venueSlug}')->where(['venueSlug'=>'[a-z0-9]+(?:-[a-z0-9]+)*'])
             ->middleware(ResolveStaffVenue::class)->group($staffRoutes);
         Route::middleware('can:platform-admin')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [PlatformController::class, 'admin'])->name('index');
+            Route::get('/legal', [LegalAdminController::class,'index'])->name('legal.index');
+            Route::patch('/legal/{document}', [LegalAdminController::class,'save'])->whereIn('document',\App\Services\LegalPolicies::SLUGS)->name('legal.save');
+            Route::post('/legal/publish', [LegalAdminController::class,'publish'])->name('legal.publish');
+            Route::get('/privacy-requests', [PrivacyRequestController::class,'index'])->name('privacy.index');
+            Route::post('/privacy-requests', [PrivacyRequestController::class,'store'])->name('privacy.store');
+            Route::patch('/privacy-requests/{record}', [PrivacyRequestController::class,'update'])->whereNumber('record')->name('privacy.update');
             Route::post('/venues', [PlatformController::class, 'createVenue'])->name('venues.create');
             Route::patch('/venues/{venue}/status', [PlatformController::class, 'updateStatus'])->whereNumber('venue')->name('venues.status');
             Route::post('/venues/{venue}/invite', [PlatformController::class, 'ownerInvite'])->whereNumber('venue')->name('venues.invite');
@@ -138,7 +157,9 @@ Route::middleware(LegacyHost::class)->group(function () use ($publicRoutes,$staf
         });
         Route::middleware('auth')->group(function () use ($staffRoutes) {
             Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
-            Route::middleware(ResolveStaffVenue::class.':legacy')->group($staffRoutes);
+            Route::get('/accept-terms', [LegalController::class,'acceptPage'])->name('legal.accept');
+            Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1')->name('legal.accept.store');
+            Route::middleware([RequireLegalTerms::class,ResolveStaffVenue::class.':legacy'])->group($staffRoutes);
         });
     });
 });

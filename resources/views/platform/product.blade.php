@@ -8,6 +8,7 @@
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
+<link rel="stylesheet" href="/legal.css?v=1">
 </head>
 <body class="venue-site">
     <a class="site-skip" href="#main-content">Skip to content</a>
@@ -55,12 +56,12 @@
                     <label>Phone<input name="phone" type="tel" value="{{ old('phone') }}" maxlength="32" autocomplete="tel"></label>
                     <label>Message<textarea name="message" maxlength="1000" rows="3">{{ old('message') }}</textarea></label>
                     <div class="visually-hidden" aria-hidden="true"><label>Leave this blank<input name="website" tabindex="-1" autocomplete="off"></label></div>
-                    <p class="site-footnote">We use your details to respond to your enquiry.</p><button class="button">Send enquiry</button>
+                    <p class="site-footnote">We use your details to respond to your enquiry. Read our <a href="{{ route('product.legal.show',['document'=>'privacy']) }}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p><button class="button">Send enquiry</button>
                 </form>
             </section>
         </section>
     </main>
-    <footer class="site-footer"><div class="site-container"><span>Pickle Lite</span><a href="{{ route('app.login') }}">Venue staff sign in</a></div></footer>
+    <footer class="site-footer"><div class="site-container"><span>Pickle Lite</span><a href="{{ route('app.login') }}">Venue staff sign in</a></div><div class="legal-footer"><x-legal-links :subscription="true"/></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="#get-started">Get started</a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
 </body>

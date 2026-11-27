@@ -102,5 +102,7 @@ jobs:
             for i in $(seq 1 20); do curl -fsS http://127.0.0.1:$port/up && break; sleep 1; done
           done
           node tests/browser/dedicated-services-smoke.mjs
+          php artisan tinker --execute="App\\Models\\User::where('email','browser-calendar@example.test')->firstOrFail()->forceFill(['platform_admin'=>true])->save();"
+          node tests/browser/legal-policies-smoke.mjs
       - if: failure()
         run: cat /tmp/pickle-calendar-server.log /tmp/pickle-web.log /tmp/pickle-app.log /tmp/pickle-book.log || true

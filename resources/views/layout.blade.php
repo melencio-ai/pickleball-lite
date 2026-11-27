@@ -6,6 +6,7 @@
     <title>@yield('title') · Pickleball Lite</title>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+<link rel="stylesheet" href="/legal.css?v=1">
 </head>
 <body>
     @php($workspace = request()->attributes->get('venue_context'))
@@ -80,5 +81,6 @@
         @endif
         @yield('content')
     </main>
+    <footer class="legal-footer"><x-legal-links :venue="$venue ?? null" /></footer>
 </body>
 </html>

@@ -91,7 +91,9 @@
                     <label>Full name<input name="customer_name" value="{{ is_string(old('customer_name')) ? old('customer_name') : '' }}" maxlength="100" autocomplete="name" required></label>
                     <label>Mobile number<input name="customer_phone" type="tel" value="{{ is_string(old('customer_phone')) ? old('customer_phone') : '' }}" maxlength="32" autocomplete="tel" required></label>
                     <p class="muted">One player per registration. Your spot will be held while you pay.</p>
-                    @if($venue->cancellation_policy)<details class="compact-policy"><summary>Cancellation policy</summary><p>{{ $venue->cancellation_policy }}</p></details>@endif
+                    @php($legal = \App\Services\LegalPolicies::context($venue))
+                    <details class="compact-policy"><summary>Cancellation policy</summary><p>{{ $legal['policy'] }}</p></details>
+                    <x-legal-acceptance :legal="$legal" :venue="$venue" />
                     <button class="booking-button" data-booking-submit><x-booking-icon name="qr-code" /> Continue to payment</button>
                 </form>
             @else
