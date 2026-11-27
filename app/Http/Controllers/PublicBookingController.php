@@ -70,6 +70,7 @@ class PublicBookingController extends Controller
 
         $court = $venue->courts()->findOrFail($booking->court_id);
         $request->session()->put('venue_booking_confirmation.'.\App\Services\VenueContext::venue()->id, [
+            'booking_id' => $booking->id,
             'reference' => strtoupper($booking->reference),
             'court' => $court->name,
             'date' => $booking->starts_at->setTimezone($venue->timezone)->format('l, F j, Y'),
@@ -131,6 +132,8 @@ class PublicBookingController extends Controller
             return \App\Services\VenueContext::redirect('book');
         }
 
-        return response()->view('book.confirmation', compact('confirmation', 'venue'))->header('Cache-Control', 'private, no-store');
+        $booking = isset($confirmation['booking_id']) ? Booking::query()
+            ->whereIn('court_id',$venue->courts()->select('id'))->find($confirmation['booking_id']) : null;
+        return response()->view('book.confirmation', compact('confirmation', 'venue','booking'))->header('Cache-Control', 'private, no-store');
     }
 }
