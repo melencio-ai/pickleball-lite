@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venue;
+use App\Services\AuthDestination;
+use App\Services\VenueContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -11,13 +13,17 @@ class StaffAuthController extends Controller
 {
     public function create()
     {
-        return view('staff.login', ['venue' => \App\Services\VenueContext::onApp() ? null : Venue::query()->where('legacy_slot',1)->first()]);
+        return response()->view('staff.login', ['venue' => VenueContext::onApp() ? null : Venue::query()->where('legacy_slot',1)->first()])
+            ->withHeaders(['Cache-Control'=>'private, no-store','Referrer-Policy'=>'no-referrer','X-Robots-Tag'=>'noindex, nofollow']);
     }
 
     public function store(Request $request)
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
-        if (! Auth::attempt($credentials)) {
+        $request->validate(['remember' => ['sometimes', 'boolean']]);
+        $guard = Auth::guard('web');
+        $guard->setRememberDuration(60 * 24 * 30);
+        if (! $guard->attempt($credentials, VenueContext::onApp() && $request->boolean('remember'))) {
             throw ValidationException::withMessages(['email' => 'The email or password is incorrect.']);
         }
 
@@ -31,7 +37,7 @@ class StaffAuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(\App\Services\VenueContext::onApp() ? route('app.venues') : route('staff.calendar'));
+        return redirect()->to(AuthDestination::afterLogin($request, $request->user()));
     }
 
     public function destroy(Request $request)
