@@ -17,7 +17,9 @@ final class LegalPolicies
         $query = DB::table('legal_documents')->orderBy('slug');
         if ($lock) $query->sharedLock();
         $ids = $query->pluck('current_version_id')->filter()->values();
-        return DB::table('legal_document_versions')->whereIn('id',$ids)->get()->keyBy('document_slug');
+        $versions = DB::table('legal_document_versions')->whereIn('id',$ids);
+        if ($lock) $versions->sharedLock();
+        return $versions->get()->keyBy('document_slug');
     }
 
     public static function context(?Venue $venue = null, bool $subscription = false, bool $lock = false): array
