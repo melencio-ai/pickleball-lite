@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Venue extends Model
 {
@@ -11,13 +13,32 @@ class Venue extends Model
 
     protected $fillable = [
         'name', 'address', 'phone', 'timezone', 'brand_color', 'map_url', 'messenger_url',
-        'booking_durations', 'advance_days', 'minimum_notice', 'cancellation_policy', 'website_content',
+        'booking_durations', 'advance_days', 'minimum_notice', 'cancellation_policy', 'website_content', 'slug', 'status', 'published', 'legacy_slot',
         'qr_payments_enabled', 'payment_qr_base', 'payment_messenger_url',
     ];
 
     protected $casts = [
-        'booking_durations' => 'array', 'website_content' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer', 'qr_payments_enabled' => 'boolean',
+        'published' => 'boolean', 'booking_durations' => 'array', 'website_content' => 'array', 'advance_days' => 'integer', 'minimum_notice' => 'integer', 'qr_payments_enabled' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Venue $venue) {
+            if (!$venue->slug) {
+                $venue->slug = (substr(Str::slug($venue->name), 0, 75) ?: 'venue').'-'.strtolower(Str::random(8));
+            }
+        });
+    }
+
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'venue_memberships')->withPivot('role')->withTimestamps();
+    }
+
+    public function acceptsPublicBookings(): bool
+    {
+        return $this->status === 'active' && $this->published;
+    }
 
     public function durations(): array
     {
