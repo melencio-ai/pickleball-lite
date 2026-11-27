@@ -15,6 +15,7 @@ use App\Http\Middleware\LegacyHost;
 use App\Http\Middleware\ResolvePublicVenue;
 use App\Http\Middleware\ResolveStaffVenue;
 use App\Http\Controllers\PlatformController;
+use App\Http\Controllers\InvitationController;
 
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
@@ -51,12 +52,15 @@ $staffRoutes = function () {
     Route::patch('/open-play/{session}/registrations/{registration}/{action}', [StaffOpenPlayController::class, 'action'])->whereNumber('session')->whereNumber('registration')->name('staff.open-play.action');
     Route::patch('/open-play/{session}/cancel', [StaffOpenPlayController::class, 'cancel'])->whereNumber('session')->name('staff.open-play.cancel');
 
-    Route::middleware('can:manage-venue')->group(function () {
+    Route::middleware('can:manage-website')->group(function () {
         Route::get('/website', [VenueWebsiteController::class, 'index'])->name('settings.website');
         Route::patch('/website', [VenueWebsiteController::class, 'save'])->name('settings.website.save');
         Route::patch('/website/gallery/{kind}', [VenueWebsiteController::class, 'gallery'])->whereIn('kind', \App\Services\VenueWebsite::GALLERY)->name('settings.website.gallery');
+    });
+    Route::middleware('can:manage-venue')->group(function () {
         Route::get('/booking-setup', [VenueCustomizationController::class, 'index'])->name('settings.customization');
         Route::patch('/booking-setup/branding', [VenueCustomizationController::class, 'branding'])->name('settings.branding');
+        Route::post('/settings/staff/invite', [InvitationController::class, 'issueStaff'])->name('settings.staff.invite');
         Route::patch('/booking-setup/payments', [VenueCustomizationController::class, 'payment'])->name('settings.payments');
         Route::patch('/booking-setup/rules', [VenueCustomizationController::class, 'rules'])->name('settings.rules');
         Route::post('/booking-setup/closures', [VenueCustomizationController::class, 'closeDate'])->name('settings.closures.add');
@@ -80,6 +84,7 @@ Route::domain(config('pickle.product_host'))->group(function () {
     Route::redirect('/pricing', '/#pricing');
     Route::get('/demo', [PlatformController::class, 'demo'])->name('product.demo');
     Route::redirect('/get-started', '/#get-started');
+    Route::post('/get-started', [PlatformController::class, 'enquiry'])->middleware('throttle:5,1')->name('product.enquiry');
 });
 
 Route::domain(config('pickle.book_host'))->name('public.')->group(function () use ($publicRoutes) {
@@ -92,6 +97,8 @@ Route::domain(config('pickle.book_host'))->name('public.')->group(function () us
 
 Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($staffRoutes) {
     Route::get('/', [PlatformController::class, 'home'])->name('home');
+    Route::get('/invite/{token}', [InvitationController::class, 'show'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:30,1')->name('invite.show');
+    Route::post('/invite/{token}', [InvitationController::class, 'accept'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:10,1')->name('invite.accept');
     Route::middleware('guest')->group(function () {
         Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
         Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
@@ -105,6 +112,10 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
             Route::get('/', [PlatformController::class, 'admin'])->name('index');
             Route::post('/venues', [PlatformController::class, 'createVenue'])->name('venues.create');
             Route::patch('/venues/{venue}/status', [PlatformController::class, 'updateStatus'])->whereNumber('venue')->name('venues.status');
+            Route::post('/venues/{venue}/invite', [PlatformController::class, 'ownerInvite'])->whereNumber('venue')->name('venues.invite');
+            Route::get('/venues/{venue}/billing', [PlatformController::class, 'billing'])->whereNumber('venue')->name('billing');
+            Route::patch('/venues/{venue}/billing', [PlatformController::class, 'saveBilling'])->whereNumber('venue')->name('billing.save');
+            Route::post('/venues/{venue}/billing/payments', [PlatformController::class, 'recordPayment'])->whereNumber('venue')->name('billing.payment');
         });
     });
 });
