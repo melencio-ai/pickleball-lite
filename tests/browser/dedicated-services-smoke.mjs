@@ -69,6 +69,7 @@ try {
     await page.getByRole('button',{name:'Toggle navigation'}).click();
     assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-collapsed')));
     assert.ok(await navigation.getByRole('link',{name:'Calendar',exact:true}).isVisible());
+    assert.ok(await switchTrigger.locator('.workspace-switch-mark,.workspace-switch-logo').isVisible(),'Collapsed switcher retains its icon or logo');
     await switchTrigger.click();
     await switchDialog.waitFor();
     await switchDialog.getByRole('button',{name:'Close workspace switcher'}).click();

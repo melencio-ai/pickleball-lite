@@ -245,14 +245,14 @@ html:has(.rewards-drawer[open]){overflow:hidden}
 .workspace-switcher-empty{padding:6px 8px}
 @media(min-width:851px){
     .app-workspace.workspace-collapsed .workspace-navigation .workspace-nav-link,.app-workspace.workspace-collapsed .workspace-navigation .workspace-switch{justify-content:center;padding:7px 0;gap:0}
-    .app-workspace.workspace-collapsed .workspace-switch-mark{display:grid}
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch .workspace-switch-mark{display:grid}
     .app-workspace.workspace-collapsed .workspace-nav-group{margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid #e6ebe7}
     .app-workspace.workspace-collapsed .workspace-nav-group:last-child{border-bottom:0;padding-bottom:0}
 }
 @media(max-width:850px){
     .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-mark{display:grid}
-    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-copy{display:flex}
-    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch-chevron,.app-workspace.workspace-collapsed .workspace-navigation .workspace-nav-external{display:inline-flex}
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch .workspace-switch-copy{display:flex}
+    .app-workspace.workspace-collapsed .workspace-navigation .workspace-switch .workspace-switch-chevron,.app-workspace.workspace-collapsed .workspace-navigation .workspace-nav-link .workspace-nav-external{display:inline-flex}
     .app-workspace .workspace-navigation .workspace-nav-link{min-height:42px}
     .workspace-switcher-dialog{width:calc(100vw - 16px);max-width:340px}
 }

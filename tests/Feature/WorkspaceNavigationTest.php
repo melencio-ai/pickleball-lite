@@ -18,8 +18,8 @@ class WorkspaceNavigationTest extends TestCase
     {
         $this->seed();
         $a=Venue::firstOrFail();
-        $b=Venue::create(['name'=>'Second Assigned Venue','slug'=>'second-assigned-venue','timezone'=>'Asia/Manila','published'=>true,'status'=>'active']);
-        $c=Venue::create(['name'=>'Unassigned Hidden Venue','slug'=>'unassigned-hidden-venue','timezone'=>'Asia/Manila','published'=>true,'status'=>'active']);
+        $b=Venue::create(['name'=>'Second Assigned Venue','slug'=>'second-assigned-venue','address'=>'Test address','phone'=>'','timezone'=>'Asia/Manila','published'=>true,'status'=>'active']);
+        $c=Venue::create(['name'=>'Unassigned Hidden Venue','slug'=>'unassigned-hidden-venue','address'=>'Test address','phone'=>'','timezone'=>'Asia/Manila','published'=>true,'status'=>'active']);
         $owner=$a->users()->create(['name'=>'Owner','email'=>'nav-owner@example.test','password'=>'test-password-123','role'=>'owner']);
         $owner->venues()->attach($b->id,['role'=>'manager']);
         $staff=$a->users()->create(['name'=>'Staff','email'=>'nav-staff@example.test','password'=>'test-password-123','role'=>'staff']);
