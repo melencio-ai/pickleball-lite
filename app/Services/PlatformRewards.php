@@ -105,11 +105,12 @@ final class PlatformRewards
     // Every caller holds the venue row lock; uniqueness also protects the ledger.
     private static function grant(Venue $venue,object $sub,string $milestone): void
     {
-        $created=DB::table('venue_reward_grants')->insertOrIgnore([
+        if (DB::table('venue_reward_grants')->where('venue_id',$venue->id)->where('milestone',$milestone)->exists()) return;
+        DB::table('venue_reward_grants')->insert([
             'venue_id'=>$venue->id,'milestone'=>$milestone,'months'=>self::MILESTONES[$milestone],
             'monthly_value'=>$sub->monthly_fee,'earned_at'=>now(),
         ]);
-        if ($created) self::notify($venue,'earned-'.$milestone,'Reward earned',self::LABELS[$milestone].': '.self::MILESTONES[$milestone].' free subscription month(s) are available.');
+        self::notify($venue,'earned-'.$milestone,'Reward earned',self::LABELS[$milestone].': '.self::MILESTONES[$milestone].' free subscription month(s) are available.');
     }
 
     public static function submit(Venue $venue,User $actor,string $reference,bool $consent): void
@@ -166,7 +167,7 @@ final class PlatformRewards
     {
         if (!self::visible($venue,$sub) || $venue->status!=='active') return false;
         if ($sub->status==='active') return filled($sub->renewal_date);
-        if ($sub->reward_managed && $sub->status==='overdue' && filled($sub->renewal_date)) return true;
+        if ($sub->reward_managed && $sub->status==='overdue' && $sub->renewal_date && $sub->renewal_date<=now($venue->timezone)->toDateString()) return true;
         return $venue->self_service && in_array($sub->status,['trial','trial_expired'],true) &&
             $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->lte(now());
     }
@@ -183,7 +184,7 @@ final class PlatformRewards
                 throw ValidationException::withMessages(['reward'=>'This credit cannot be applied right now. Review your subscription status.']);
             }
             $today=now($venue->timezone)->toDateString();
-            $start=max($today,$sub->renewal_date ?? $today);
+            $start=in_array($sub->status,['trial','trial_expired'],true) ? $today : max($today,$sub->renewal_date ?? $today);
             $new=CarbonImmutable::parse($start,$venue->timezone)->addMonthsNoOverflow((int)$grant->months)->toDateString();
             DB::table('venue_subscriptions')->where('id',$sub->id)->update([
                 'status'=>'active','renewal_date'=>$new,'reward_managed'=>true,'updated_at'=>now(),

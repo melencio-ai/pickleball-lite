@@ -137,12 +137,20 @@ class PlatformController extends Controller
     public function saveBilling(Request $request,int $venue)
     {
         $data = $request->validate(['status'=>['required',Rule::in(['onboarding','trial','trial_expired','active','overdue','suspended','cancelled'])],
-            'renewal_date'=>'nullable|date_format:Y-m-d']);
+            'renewal_date'=>'nullable|date_format:Y-m-d','expected_renewal'=>'nullable|date_format:Y-m-d']);
         DB::transaction(function () use ($request,$data,$venue) {
             $record = Venue::query()->lockForUpdate()->findOrFail($venue);
             $current = \App\Services\TrialAccess::subscription($record,true);
             if ($data['status']==='trial' && (!$current || !$current->trial_ends_at || \Carbon\CarbonImmutable::parse($current->trial_ends_at)->lte(now()))) {
                 throw ValidationException::withMessages(['status'=>'A trial can only remain active until its recorded expiration.']);
+            }
+            if ($current?->reward_managed && ($data['expected_renewal'] ?? null)!==$current->renewal_date) {
+                throw ValidationException::withMessages(['renewal_date'=>'The subscription changed. Refresh before saving.']);
+            }
+            if ($current?->reward_managed && $data['status']==='active' && $current->renewal_date &&
+                $current->renewal_date>now($record->timezone)->toDateString() &&
+                ($data['renewal_date'] ?? '')<$current->renewal_date) {
+                throw ValidationException::withMessages(['renewal_date'=>'Do not shorten an existing reward-covered term here. Reconcile it separately.']);
             }
             if ($current?->reward_managed && $data['status']==='active' &&
                 (!filled($data['renewal_date'] ?? null) || $data['renewal_date']<=now($record->timezone)->toDateString())) {

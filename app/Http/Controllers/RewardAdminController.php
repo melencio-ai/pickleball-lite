@@ -42,8 +42,8 @@ final class RewardAdminController extends Controller
             $query=DB::table($table)->join('venues','venues.id','=',$table.'.venue_id')
                 ->select($table.'.*','venues.name as venue_name','venues.slug as venue_slug');
             if ($search!=='') $query->where(fn($q)=>$q->where('venues.name','like','%'.$search.'%')->orWhere('venues.slug','like','%'.$search.'%'));
-            if ($tab==='streaks') $query->orderByDesc('current_streak')->orderByDesc('last_active_date')->orderBy('venue_id');
-            elseif ($tab==='testimonials') $query->orderByRaw("CASE WHEN status='pending' THEN 0 ELSE 1 END")->orderByDesc($table.'.updated_at');
+            if ($tab==='streaks') $query->orderByDesc('last_active_date')->orderByDesc('current_streak')->orderBy('venue_id');
+            elseif ($tab==='testimonials') $query->orderByRaw("CASE WHEN venue_reward_testimonials.status='pending' THEN 0 ELSE 1 END")->orderByDesc($table.'.updated_at');
             else $query->orderByDesc('earned_at')->orderByDesc($table.'.id');
             $rows=$query->paginate(25)->withQueryString();
         }
@@ -52,7 +52,8 @@ final class RewardAdminController extends Controller
 
     public function review(Request $request,int $record)
     {
-        $data=$request->validate(['decision'=>'required|in:approve,reject','note'=>'required|string|max:1000','verified'=>'required_if:decision,approve|accepted']);
+        $data=$request->validate(['decision'=>'required|in:approve,reject','note'=>'required|string|max:1000']);
+        if ($data['decision']==='approve') $request->validate(['verified'=>'accepted']);
         PlatformRewards::review($record,$request->user(),$data['decision']==='approve',$data['note']);
         return back()->with('status','Testimonial review recorded.');
     }

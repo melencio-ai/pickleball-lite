@@ -24,6 +24,9 @@ final class TrackVenueActivity
         $mutation=!in_array($request->method(),['GET','HEAD','OPTIONS'],true) &&
             (in_array($name,['app.staff.book','app.staff.paid','app.staff.cancel','app.staff.block','app.staff.unblock','app.staff.open-play.store','app.staff.open-play.register','app.staff.open-play.action','app.staff.open-play.cancel'],true) ||
              in_array($name,['app.settings.venue','app.settings.hours','app.settings.court.add','app.settings.court.update','app.settings.website.save','app.settings.branding','app.settings.payments','app.settings.rules','app.settings.rates.add','app.settings.rates.update'],true));
+        if ($name==='app.staff.open-play.show' && $document) {
+            $page=VenueContext::venue()->openPlaySessions()->whereKey($request->route('session'))->exists();
+        }
         if ($page && $document) $this->record($request);
         $response=$next($request);
         if ($mutation && ($response->isSuccessful() || $response->isRedirection()) && !$request->session()->has('errors')) $this->record($request);

@@ -12,6 +12,7 @@ final class RewardsController extends Controller
 {
     public function index()
     {
+        abort_unless(VenueContext::onApp(),404);
         $venue=VenueContext::venue();
         abort_unless(PlatformRewards::visible($venue,TrialAccess::subscription($venue)),404);
         $state=PlatformRewards::summary($venue);
@@ -21,6 +22,8 @@ final class RewardsController extends Controller
 
     public function submit(Request $request)
     {
+        abort_unless(VenueContext::onApp(),404);
+        $request->merge(['submission_reference'=>is_string($request->input('submission_reference')) ? trim($request->input('submission_reference')) : $request->input('submission_reference')]);
         $data=$request->validate(['submission_reference'=>'required|string|max:500','submitted'=>'accepted','marketing_consent'=>'sometimes|accepted']);
         PlatformRewards::submit(VenueContext::venue(),$request->user(),trim($data['submission_reference']),$request->boolean('marketing_consent'));
         return VenueContext::redirect('settings.rewards')->with('status','Video testimonial submitted for review.');
@@ -28,12 +31,14 @@ final class RewardsController extends Controller
 
     public function withdraw(Request $request)
     {
+        abort_unless(VenueContext::onApp(),404);
         PlatformRewards::withdrawMarketing(VenueContext::venue(),$request->user());
         return VenueContext::redirect('settings.rewards')->with('status','Marketing permission withdrawn. Your earned reward is unchanged.');
     }
 
     public function apply(Request $request,int $grant)
     {
+        abort_unless(VenueContext::onApp(),404);
         $request->validate(['confirmed'=>'accepted']);
         PlatformRewards::apply(VenueContext::venue(),$request->user(),$grant);
         return VenueContext::redirect('settings.rewards')->with('status','Free subscription months applied.');
