@@ -76,6 +76,7 @@ try {
     await drawer.waitFor();
     await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
     assert.equal(page.url(),calendarUrl);
+    await drawer.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
     const drawerBounds=await drawer.boundingBox();
     assert.ok(drawerBounds && drawerBounds.x>=0 && drawerBounds.x+drawerBounds.width<=320 && drawerBounds.height<=741);
     await drawer.locator('[data-notification-record]').filter({hasText:'Drawer test booking'}).getByRole('button',{name:'Mark notification as read'}).click();
@@ -92,6 +93,7 @@ try {
     await page.setViewportSize({width:1440,height:900});
     await page.locator('.workspace-notifications').click();
     await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
+    await drawer.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
     const desktopBounds=await drawer.boundingBox();
     assert.ok(desktopBounds && desktopBounds.width<=440 && Math.abs(desktopBounds.x+desktopBounds.width-1440)<2,'Drawer must be anchored to right edge');
     await page.keyboard.press('Escape');
