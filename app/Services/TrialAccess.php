@@ -27,7 +27,7 @@ final class TrialAccess
 
     public static function ensure(Venue $venue): void
     {
-        if (!self::allowed($venue)) throw ValidationException::withMessages(['subscription'=>'Your trial or subscription is inactive. Existing bookings can still be managed.']);
+        if (!self::allowed($venue) || ($venue->self_service && ($venue->status !== 'active' || !$venue->published))) throw ValidationException::withMessages(['subscription'=>'Your trial or subscription is inactive. Existing bookings can still be managed.']);
     }
 
     public static function canExtend(?object $sub): bool

@@ -28,7 +28,7 @@ class StaffAuthController extends Controller
         }
 
         if (!\App\Services\VenueContext::onApp() &&
-            !$request->user()->venues()->where('venues.id',$request->user()->venue_id)->exists()) {
+            ($request->user()->self_registered || !$request->user()->venues()->where('venues.id',$request->user()->venue_id)->exists())) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

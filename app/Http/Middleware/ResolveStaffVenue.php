@@ -12,6 +12,7 @@ class ResolveStaffVenue
     {
         $user = $request->user();
         abort_unless($user, 403);
+        abort_if($mode === 'legacy' && $user->self_registered,403);
         $query = $user->venues();
         $venue = $mode === 'legacy'
             ? $query->where('venues.id',$user->venue_id)->first()
@@ -21,6 +22,13 @@ class ResolveStaffVenue
         $request->attributes->set('venue_context',$venue);
         $request->attributes->set('venue_membership_role',$venue->pivot->role);
 
+        if ($venue->self_service && $venue->pivot->role === 'owner' &&
+            !\App\Services\VenueContext::is('settings.onboarding*') &&
+            !\App\Services\VenueContext::is('settings.subscription*') &&
+            !\App\Services\VenueContext::is('settings.website.preview') &&
+            \Illuminate\Support\Facades\DB::table('venue_onboarding')->where('venue_id',$venue->id)->whereNull('completed_at')->exists()) {
+            return redirect()->route('app.settings.onboarding',['venueSlug'=>$venue->slug]);
+        }
         return $next($request);
     }
 }

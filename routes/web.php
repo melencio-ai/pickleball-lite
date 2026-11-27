@@ -21,6 +21,11 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LegalAdminController;
 use App\Http\Controllers\PrivacyRequestController;
 use App\Http\Middleware\RequireLegalTerms;
+use App\Http\Middleware\RequireVerifiedOwner;
+use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\NotificationController;
 
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
@@ -65,6 +70,11 @@ $staffRoutes = function () {
         Route::patch('/website/gallery/{kind}', [VenueWebsiteController::class, 'gallery'])->whereIn('kind', \App\Services\VenueWebsite::GALLERY)->name('settings.website.gallery');
     });
     Route::middleware('can:manage-venue')->group(function () {
+        Route::get('/onboarding/{step?}', [OnboardingController::class,'show'])->whereNumber('step')->name('settings.onboarding');
+        Route::post('/onboarding/{step}', [OnboardingController::class,'save'])->whereNumber('step')->middleware('throttle:30,1')->name('settings.onboarding.save');
+        Route::get('/subscription', [SubscriptionController::class,'index'])->name('settings.subscription');
+        Route::post('/subscription/extend', [SubscriptionController::class,'extend'])->middleware('throttle:5,1')->name('settings.subscription.extend');
+        Route::post('/subscription/upgrade', [SubscriptionController::class,'upgrade'])->middleware('throttle:5,1')->name('settings.subscription.upgrade');
         Route::get('/privacy-requests', [PrivacyRequestController::class,'index'])->name('settings.privacy');
         Route::post('/privacy-requests', [PrivacyRequestController::class,'store'])->name('settings.privacy.store');
         Route::patch('/privacy-requests/{record}', [PrivacyRequestController::class,'update'])->whereNumber('record')->name('settings.privacy.update');
@@ -111,6 +121,8 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
     Route::get('/invite/{token}', [InvitationController::class, 'show'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:30,1')->name('invite.show');
     Route::post('/invite/{token}', [InvitationController::class, 'accept'])->where('token','[a-zA-Z0-9]{64}')->middleware('throttle:10,1')->name('invite.accept');
     Route::middleware('guest')->group(function () {
+        Route::get('/register',[RegistrationController::class,'create'])->name('register');
+        Route::post('/register',[RegistrationController::class,'store'])->middleware('throttle:5,60')->name('register.store');
         Route::get('/login', [StaffAuthController::class, 'create'])->name('login');
         Route::post('/login', [StaffAuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
         Route::get('/forgot-password', [PasswordRecoveryController::class,'request'])->name('password.request');
@@ -120,11 +132,19 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
     });
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [StaffAuthController::class, 'destroy'])->name('logout');
+        Route::get('/verify-email',[RegistrationController::class,'notice'])->name('verify.notice');
+        Route::post('/verify-email/resend',[RegistrationController::class,'resend'])->middleware('throttle:5,10')->name('verify.resend');
+        Route::get('/verify-email/{id}/{hash}',[RegistrationController::class,'verify'])->whereNumber('id')->where('hash','[a-f0-9]{40}')->middleware(['signed','throttle:10,1'])->name('verify.complete');
         Route::get('/accept-terms', [LegalController::class,'acceptPage'])->name('legal.accept');
         Route::post('/accept-terms', [LegalController::class,'accept'])->middleware('throttle:10,1')->name('legal.accept.store');
     });
-    Route::middleware(['auth',RequireLegalTerms::class])->group(function () use ($staffRoutes) {
+    Route::middleware(['auth',RequireVerifiedOwner::class,RequireLegalTerms::class])->group(function () use ($staffRoutes) {
         Route::get('/venues', [PlatformController::class, 'venues'])->name('venues');
+        Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
+        Route::get('/notifications/count',[NotificationController::class,'count'])->middleware('throttle:30,1')->name('notifications.count');
+        Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');
+        Route::post('/notifications/{record}/read',[NotificationController::class,'read'])->whereNumber('record')->name('notifications.read');
+        Route::patch('/notifications/preferences',[NotificationController::class,'preferences'])->name('notifications.preferences');
         Route::prefix('venues/{venueSlug}')->where(['venueSlug'=>'[a-z0-9]+(?:-[a-z0-9]+)*'])
             ->middleware(ResolveStaffVenue::class)->group($staffRoutes);
         Route::middleware('can:platform-admin')->prefix('admin')->name('admin.')->group(function () {

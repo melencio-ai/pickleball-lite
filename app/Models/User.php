@@ -68,6 +68,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'platform_admin' => 'boolean',
+            'self_registered' => 'boolean',
         ];
     }
 }

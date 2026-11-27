@@ -108,6 +108,7 @@ class Schedule
             // Settings take an exclusive venue lock. Reservations can share it
             // and serialize only with other writes on the same court.
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
+            if ($source) TrialAccess::ensure($venue);
             if ($source === 'online' && !$venue->acceptsPublicBookings()) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['date'=>'This venue is not accepting online reservations.']);
             }
@@ -188,6 +189,11 @@ class Schedule
                 'cancellation_policy' => LegalPolicies::venuePolicy($venue),
             ] + $payment);
             if ($legal) LegalPolicies::record($legal,'booking',$booking->id,$venue->id);
+            if ($source === 'online') {
+                VenueNotifications::emit($venue,'booking','created-'.$booking->id,'New court booking',
+                    $court->name.' · '.$local->format('M j, g:i A'),'calendar');
+                if ($booking->payment_token) VenueNotifications::emit($venue,'payment','booking-pending-'.$booking->id,'Payment awaiting verification','A new court hold is awaiting payment.','calendar');
+            }
             return $booking;
         }, 3);
     }

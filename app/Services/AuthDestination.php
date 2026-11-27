@@ -15,13 +15,19 @@ final class AuthDestination
         if (!$user) {
             return route('app.login');
         }
+        if ($user->self_registered && !$user->email_verified_at) return route('app.verify.notice');
         if ($user->platform_admin) {
             return route('app.admin.index');
         }
 
         $venues = $user->venues()->wherePivotIn('role', ['owner', 'manager', 'staff'])
-            ->orderBy('venues.id')->limit(2)->get(['venues.id', 'venues.slug']);
+            ->orderBy('venues.id')->limit(2)->get(['venues.id', 'venues.slug','venues.self_service']);
         if ($venues->count() === 1) {
+            $venue=$venues->first();
+            if ($venue->self_service && $venue->pivot->role === 'owner' &&
+                \Illuminate\Support\Facades\DB::table('venue_onboarding')->where('venue_id',$venue->id)->whereNull('completed_at')->exists()) {
+                return route('app.settings.onboarding',['venueSlug'=>$venue->slug]);
+            }
             return route('app.staff.calendar', ['venueSlug' => $venues->first()->slug]);
         }
 
@@ -39,7 +45,7 @@ final class AuthDestination
                 ($parts['port'] ?? ($request->isSecure() ? 443 : 80)) === $request->getPort()) {
                 $path = $parts['path'] ?? '/';
                 $allowed = VenueContext::onApp()
-                    ? preg_match('#^/(?:venues(?:/|$)|admin(?:/|$)|invite/[A-Za-z0-9]{64}$)#D', $path)
+                    ? preg_match('#^/(?:venues(?:/|$)|admin(?:/|$)|notifications(?:/|$)|verify-email/[0-9]+/[a-f0-9]{40}$|invite/[A-Za-z0-9]{64}$)#D', $path)
                     : preg_match('#^/staff/(?:calendar|open-play|settings|website|booking-setup)(?:/|$)#D', $path);
                 if ($allowed) {
                     return $intended;
