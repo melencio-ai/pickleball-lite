@@ -3,7 +3,7 @@
 @section('content')
     <header class="section-heading page-heading">
         <div><p class="venue-name">{{ $venue->name }}</p><h1>Website settings</h1><p class="muted">Customize the public venue website. Rates and schedules update automatically.</p></div>
-        <div class="actions"><a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.customization') }}">Booking setup</a><a class="button" href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener">Preview website</a></div>
+        <div class="actions"><a class="button secondary" href="{{ \App\Services\VenueContext::url('settings.customization') }}">Booking setup</a><a class="button" href="{{ \App\Services\VenueContext::url('settings.website.preview') }}" target="_blank" rel="noopener">Preview website</a></div>
     </header>
     <div class="website-settings-grid">
         <section class="panel">
