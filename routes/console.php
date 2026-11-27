@@ -51,19 +51,19 @@ Artisan::command('platform:check-schema', function () {
     // A read-only readiness gate for services that must not run migrations.
     $schema = \Illuminate\Support\Facades\Schema::class;
     foreach (['venues', 'venue_memberships', 'venue_subscriptions', 'product_enquiries',
-        'marketing_sessions', 'booking_sessions', 'bookings', 'open_play_sessions', 'migrations'] as $table) {
+        'marketing_sessions', 'booking_sessions', 'bookings', 'open_play_sessions', 'legal_documents', 'legal_document_versions', 'legal_acceptances', 'privacy_requests', 'migrations'] as $table) {
         if (!$schema::hasTable($table)) {
             $this->error('Required schema missing: '.$table.'. Run migrations on the management service first.');
             return 1;
         }
     }
     if (!$schema::hasColumns('venues', ['slug','published','legacy_slot']) ||
-        !$schema::hasColumn('users', 'platform_admin')) {
+        !$schema::hasColumn('users', 'platform_admin') || !$schema::hasColumn('open_play_registrations','cancellation_policy')) {
         $this->error('Tenant schema is incomplete.');
         return 1;
     }
     $required = ['2026_11_27_000000_add_venue_tenancy','2026_11_27_000100_add_platform_operations',
-        '2026_11_27_000200_add_public_service_sessions'];
+        '2026_11_27_000200_add_public_service_sessions','2026_11_27_000300_add_legal_policies'];
     if (\Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration',$required)->count() !== count($required)) {
         $this->error('Management migrations have not completed.');
         return 1;
