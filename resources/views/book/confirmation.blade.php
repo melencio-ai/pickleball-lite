@@ -17,6 +17,6 @@
         @if($confirmation['cancellation_policy'] ?? null)
             <div class="booking-policy"><strong>Cancellation policy</strong><p>{{ $confirmation['cancellation_policy'] }}</p></div>
         @endif
-        <a class="button" href="{{ route('book') }}">Book another court</a>
+        <a class="button" href="{{ \App\Services\VenueContext::url('book') }}">Book another court</a>
     </section>
 @endsection
