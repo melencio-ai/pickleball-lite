@@ -75,6 +75,8 @@
                 <summary>Cancellation policy <x-booking-icon name="chevron-down" /></summary>
                 <p>{{ $registration->cancellation_policy }}</p>
             </details>
+        @else
+            <p class="legal-notice">No cancellation policy was recorded for this older registration. Contact the venue for assistance.</p>
         @endif
     </section>
     <script src="{{ asset('payment-qr.js') }}?v=3" defer></script>
