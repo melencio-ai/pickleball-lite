@@ -9,7 +9,7 @@ return [
 Pickle Lite provides software for venue websites, court reservations, Open Play, QR payment instructions and venue management. The venue operator supplies the sports facilities and is responsible for its service, availability, pricing, operating rules, customer care and safety. These roles do not limit duties imposed by applicable law.
 
 2. Accounts and eligibility
-Staff access is by invitation. Keep your credentials private, use only authorized venue accounts and notify your administrator of suspected unauthorized access. People making reservations must have authority to provide the necessary details and make the booking. A parent or legal guardian should arrange or authorize bookings for minors where required.
+Venue owners may create an account through self-service registration where available or accept an authorized invitation. Owners must be at least 18 and authorized to represent the venue. Staff access is by invitation. Keep your credentials private, use only authorized venue accounts and notify your administrator of suspected unauthorized access. People making reservations must have authority to provide the necessary details and make the booking. A parent or legal guardian should arrange or authorize bookings for minors where required.
 
 3. Reservations and Open Play
 Review the venue, date, time, court or session, duration, total price and venue policy before submitting. Availability and price are checked again when a reservation is created. Open Play is subject to capacity. Follow the venue's safety and conduct rules.
@@ -37,7 +37,7 @@ POLICY
 The platform operator handles its account administration, product enquiries, billing, security and service operations. For venue reservation information, the venue generally determines the purposes of processing and Pickle Lite supplies the software on its behalf. The actual responsibilities depend on the processing activity and the venue agreement.
 
 2. Information and purposes
-Players provide their name and mobile number for reservations and Open Play. The system records the selected venue, court or session, booking time, amount, reference, status and payment reconciliation details. Staff accounts contain names, email addresses, password hashes, memberships and access records. Product enquiries collect name, venue, email, optional phone and message. Session identifiers, request metadata and technical logs support security, continuity and troubleshooting. Policy acceptance records show the version and time associated with a booking or account.
+Players provide their name and mobile number for reservations and Open Play. The system records the selected venue, court or session, booking time, amount, reference, status and payment reconciliation details. Owner and staff accounts contain names, email addresses, password hashes, memberships and access records. Self-service registration records email verification, onboarding progress, subscription and trial status. Service notifications and their read status or preferences may be recorded to support account administration and booking operations. Product enquiries collect name, venue, email, optional phone and message. Session identifiers, request metadata and technical logs support security, continuity and troubleshooting. Policy acceptance records show the version and time associated with a booking or account.
 
 3. Lawful processing
 Necessary booking and account data is processed to provide the requested service, perform relevant agreements and meet applicable legal obligations. Security and operational processing may be based on legitimate interests where appropriate and balanced against individual rights. Where consent is required it must be specific and informed. A privacy notice is not blanket consent to unrelated processing.
@@ -70,7 +70,7 @@ POLICY
             'title'=>'Venue Subscription Terms',
             'body'=><<<'POLICY'
 1. Service
-The standard advertised offer is PHP 3,000 one-time setup and PHP 1,000 monthly maintenance for a venue. The actual agreed price, setup deliverables, billing dates and any separately agreed services must be confirmed with the venue operator. The service includes a branded venue website, court booking, Open Play, payment verification workflow and management tools.
+The standard plan is PHP 1,000 per month per venue. Account creation, standard self-service setup and activation are free. There is no setup or activation fee. Any separately requested optional services must be expressly agreed before they are charged. The service includes a branded venue website, court booking, Open Play, payment verification workflow and management tools.
 
 2. Venue obligations
 Provide accurate business identity and contact details, authorized merchant QR details, truthful pricing, opening hours and lawful booking/cancellation rules. Invite only authorized personnel. The venue is responsible for the facilities, customer support, receipt verification, refunds and its own lawful processing of personal information.
@@ -79,7 +79,7 @@ Provide accurate business identity and contact details, authorized merchant QR d
 The venue authorizes the platform to host and process data needed to deliver the service. The parties must document applicable controller/processor responsibilities, authorized processing, confidentiality, security, retention, subprocessors, incident cooperation and return or deletion of records as required. The venue retains its rights to its uploaded branding; personal data remains subject to privacy rights.
 
 4. Billing, renewal and termination
-Payments and renewal status are recorded manually. The agreed payment deadlines, cancellation notice, overdue procedure, setup and subscription refund rules, support commitments and export/termination arrangements are provided in the commercial conditions below. Suspension or termination must respect existing reservations, lawful data retention and consumer rights. Nothing waives mandatory legal obligations.
+Payments and renewal status are recorded manually. No charge is made solely because a trial ends. The owner must request paid activation and arrange the first monthly payment. Monthly maintenance is payable in advance for the paid period. Cancellation stops future billing, subject to any amount already due. Refund requests for duplicate or incorrect subscription payments, undelivered services or other legal grounds will be reviewed. Cancellation does not automatically create a prorated refund. The agreed payment deadlines, cancellation notice, overdue procedure, support commitments and export/termination arrangements are provided in the commercial conditions below. Suspension or termination must respect existing reservations, lawful data retention and consumer rights. Nothing waives mandatory legal obligations.
 POLICY
         ],
     ],

@@ -10,7 +10,7 @@
     <div class="auth-field"><label for="signup-confirm">Confirm password</label><div class="auth-input-wrap"><x-auth-icon name="lock"/><input id="signup-confirm" type="password" name="password_confirmation" required minlength="12" maxlength="72" autocomplete="new-password"></div></div>
     <div hidden aria-hidden="true"><label>Leave blank<input name="website" tabindex="-1" autocomplete="off"></label></div>
     <x-legal-acceptance :legal="$legal"/>
-    <p class="auth-help">Your trial begins when you verify your email. Up to three optional 15-day extensions. No automatic charges. Paid plans: ₱3,000 setup and ₱1,000/month.</p>
+    <p class="auth-help">Your trial begins when you verify your email. Up to three optional 15-day extensions. No automatic charges. Free setup. Continue after your trial for ₱1,000/month per venue.</p>
     <button type="submit" class="auth-submit" data-auth-submit data-busy-text="Creating account…"><span data-submit-label>Create free account</span><x-auth-icon name="arrow-right"/></button>
 </form>
 <div class="auth-secondary">Already have an account? <a href="{{ route('app.login') }}">Sign in</a></div>
