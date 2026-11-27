@@ -54,6 +54,7 @@ $staffRoutes = function () {
 
     Route::middleware('can:manage-website')->group(function () {
         Route::get('/website', [VenueWebsiteController::class, 'index'])->name('settings.website');
+        Route::get('/website/preview', [VenueLandingController::class, 'index'])->name('settings.website.preview');
         Route::patch('/website', [VenueWebsiteController::class, 'save'])->name('settings.website.save');
         Route::patch('/website/gallery/{kind}', [VenueWebsiteController::class, 'gallery'])->whereIn('kind', \App\Services\VenueWebsite::GALLERY)->name('settings.website.gallery');
     });
