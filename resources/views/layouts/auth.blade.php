@@ -9,6 +9,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/auth.css?v=1">
     <script src="/auth.js?v=1" defer></script>
+<link rel="stylesheet" href="/legal.css?v=1">
 </head>
 <body class="auth-page">
     <main class="auth-shell">
@@ -41,6 +42,7 @@
                 <span>&copy; {{ now()->year }} Pickle Lite</span>
                 <a href="{{ route('product.home') }}">About Pickle Lite</a>
             </footer>
+            <div class="legal-footer"><x-legal-links /></div>
         </section>
     </main>
 </body>
