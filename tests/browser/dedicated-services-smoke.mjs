@@ -64,10 +64,47 @@ try {
     assert.ok(await page.locator('body').evaluate(el=>el.classList.contains('workspace-open')));
     await page.keyboard.press('Escape');
     await page.waitForFunction(()=>!document.body.classList.contains('workspace-open'));
+    // Seed only this isolated CI database with two unread items.
+    execFileSync('php',['artisan','tinker','--execute='+[
+        '$venue=App\\Models\\Venue::where("slug","pickleball-lite-courts")->firstOrFail();',
+        'App\\Services\\VenueNotifications::emit($venue,"booking","drawer-one","Drawer test booking","Court booking received");',
+        'App\\Services\\VenueNotifications::emit($venue,"payment","drawer-two","Drawer test payment","Payment received");',
+    ].join(' ')],{stdio:'pipe'});
+    const calendarUrl=page.url();
     await page.locator('.workspace-bell').click();
+    const drawer=page.getByRole('dialog',{name:'Notifications',exact:true});
+    await drawer.waitFor();
+    await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
+    assert.equal(page.url(),calendarUrl);
+    await drawer.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
+    const drawerBounds=await drawer.boundingBox();
+    assert.ok(drawerBounds && drawerBounds.x>=0 && drawerBounds.x+drawerBounds.width<=320 && drawerBounds.height<=741);
+    await drawer.locator('[data-notification-record]').filter({hasText:'Drawer test booking'}).getByRole('button',{name:'Mark notification as read'}).click();
+    await drawer.getByText('Notification marked as read.',{exact:true}).waitFor();
+    assert.equal(await drawer.locator('[data-notification-record]').filter({hasText:'Drawer test booking'}).getByRole('button',{name:'Mark notification as read'}).count(),0);
+    await drawer.getByRole('button',{name:'Mark all as read'}).click();
+    await drawer.getByText('All notifications marked as read.',{exact:true}).waitFor();
+    await page.waitForFunction(()=>document.querySelector('[data-unread-count]').hidden);
+    assert.equal(await drawer.locator('.notification-row.unread').count(),0);
+    assert.equal(page.url(),calendarUrl);
+    await drawer.getByRole('button',{name:'Close notifications'}).click();
+    await drawer.waitFor({state:'hidden'});
+    assert.equal(await page.locator('.workspace-bell').evaluate(el=>el===document.activeElement),true);
+    await page.setViewportSize({width:1440,height:900});
+    await page.locator('.workspace-notifications').click();
+    await drawer.getByText('Drawer test booking',{exact:true}).waitFor();
+    await drawer.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
+    const desktopBounds=await drawer.boundingBox();
+    assert.ok(desktopBounds && desktopBounds.width<=440 && Math.abs(desktopBounds.x+desktopBounds.width-1440)<2,'Drawer must be anchored to right edge');
+    await page.keyboard.press('Escape');
+    await drawer.waitFor({state:'hidden'});
+    assert.equal(page.url(),calendarUrl);
+    await page.locator('.workspace-bell').click();
+    await drawer.getByText('Drawer test payment',{exact:true}).waitFor();
+    await drawer.getByRole('link',{name:/View all notifications/}).click();
     await page.waitForURL(app+'/notifications');
-    await page.getByRole('button',{name:'Mark all as read'}).click();
-    await page.locator('[data-toast-region]').getByText('All notifications marked as read.').waitFor();
+    await page.getByRole('heading',{name:'Notification preferences'}).waitFor();
+    console.log('Notification drawer passed: desktop and mobile, both entry points, read actions, badge sync, preserved calendar URL, close and preferences.');
     await page.setViewportSize({width:1440,height:900});
     await page.goto(app+'/venues/'+slug+'/calendar');
     const website=page.locator('.site-header').getByRole('link',{name:'Venue website'});

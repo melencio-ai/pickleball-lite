@@ -141,6 +141,7 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
     Route::middleware(['auth',RequireVerifiedOwner::class,RequireLegalTerms::class])->group(function () use ($staffRoutes) {
         Route::get('/venues', [PlatformController::class, 'venues'])->name('venues');
         Route::get('/notifications',[NotificationController::class,'index'])->name('notifications.index');
+        Route::get('/notifications/drawer',[NotificationController::class,'drawer'])->middleware('throttle:60,1,notifications-drawer:')->name('notifications.drawer');
         Route::get('/notifications/count',[NotificationController::class,'count'])->middleware('throttle:60,1,notifications-count:')->name('notifications.count');
         Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');
         Route::post('/notifications/{record}/read',[NotificationController::class,'read'])->whereNumber('record')->name('notifications.read');
