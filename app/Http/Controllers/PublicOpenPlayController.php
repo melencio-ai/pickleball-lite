@@ -14,7 +14,7 @@ class PublicOpenPlayController extends Controller
 {
     public function index(Request $request)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $today = CarbonImmutable::today($venue->timezone);
         $lastDay = $today->addDays($venue->advance_days);
         $date = $request->query('date');
@@ -40,7 +40,7 @@ class PublicOpenPlayController extends Controller
 
     public function store(Request $request, OpenPlay $openPlay, int $session)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $data = $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'regex:'.Schedule::PHONE],
@@ -48,12 +48,12 @@ class PublicOpenPlayController extends Controller
         ]);
         $record = $openPlay->register($venue, $session, $data, 'online');
 
-        return redirect()->route('open-play.payment', $record->payment_token);
+        return \App\Services\VenueContext::redirect('open-play.payment', $record->payment_token);
     }
 
     public function payment(string $token)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
         $registration = $this->registration($venue, $token);
         $status = $registration->paymentStatus();
 
@@ -66,7 +66,7 @@ class PublicOpenPlayController extends Controller
 
     public function paymentStatus(string $token)
     {
-        $venue = Venue::query()->orderBy('id')->firstOrFail();
+        $venue = \App\Services\VenueContext::venue();
 
         return response()->json(['status' => $this->registration($venue, $token)->paymentStatus()])
             ->header('Cache-Control', 'private, no-store');
