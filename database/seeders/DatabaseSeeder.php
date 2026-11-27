@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
 
         $venue = Venue::create([
             'name' => 'Pickleball Lite Courts',
+            'slug' => 'pickleball-lite-courts', 'legacy_slot' => 1,
             'address' => '',
             'phone' => '',
             'timezone' => 'Asia/Manila',
