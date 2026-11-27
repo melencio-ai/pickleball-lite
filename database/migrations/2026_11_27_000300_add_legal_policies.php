@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('subject_type',24);
             $table->unsignedBigInteger('subject_id');
             $table->foreignId('venue_id')->nullable()->constrained()->restrictOnDelete();
+            $table->foreignId('accepted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('action',24);
             $table->timestamp('accepted_at');
             $table->unique(['legal_document_version_id','subject_type','subject_id','action'],'legal_acceptance_unique');
