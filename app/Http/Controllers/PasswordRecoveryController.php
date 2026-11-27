@@ -32,7 +32,16 @@ class PasswordRecoveryController extends Controller
         $data = $request->validate(['email'=>['required','email','max:255']]);
 
         try {
-            Password::sendResetLink($data);
+            if (\App\Services\PlatformEmail::settings()) {
+                Password::sendResetLink($data, function (User $user, string $token): void {
+                    $url = route('app.password.reset',['token'=>$token,'email'=>$user->getEmailForPasswordReset()]);
+                    $minutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire',60);
+                    \App\Services\PlatformEmail::send('password_reset',$user->email,'Reset your Pickle Lite password',
+                        "You requested a password reset.\n\nReset your password:\n".$url."\n\nThis link expires in ".$minutes." minutes. If you did not request this, ignore this email.");
+                });
+            } else {
+                Password::sendResetLink($data);
+            }
         } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface) {
             // Avoid disclosing account existence or putting a reset link into a log.
             // Infrastructure mail delivery should be verified before enabling this route.

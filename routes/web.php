@@ -149,6 +149,10 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
             ->middleware(ResolveStaffVenue::class)->group($staffRoutes);
         Route::middleware('can:platform-admin')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [PlatformController::class, 'admin'])->name('index');
+            Route::get('/email', [\App\Http\Controllers\EmailAdminController::class,'index'])->name('email.index');
+            Route::patch('/email', [\App\Http\Controllers\EmailAdminController::class,'save'])->middleware('throttle:5,10')->name('email.save');
+            Route::post('/email/test', [\App\Http\Controllers\EmailAdminController::class,'test'])->middleware('throttle:3,10')->name('email.test');
+            Route::patch('/email/activation', [\App\Http\Controllers\EmailAdminController::class,'activation'])->middleware('throttle:10,10')->name('email.activation');
             Route::get('/legal', [LegalAdminController::class,'index'])->name('legal.index');
             Route::patch('/legal/{document}', [LegalAdminController::class,'save'])->whereIn('document',\App\Services\LegalPolicies::SLUGS)->name('legal.save');
             Route::post('/legal/publish', [LegalAdminController::class,'publish'])->name('legal.publish');
