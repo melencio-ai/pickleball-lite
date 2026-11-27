@@ -19,7 +19,7 @@ class VenueCustomizationController extends Controller
 {
     public function index(Request $request)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $media = $venue->media()->get(['kind', 'version'])->keyBy('kind');
         $closures = $venue->closures()->where('date', '>=', CarbonImmutable::today($venue->timezone)->toDateString())
             ->orderBy('date')->get();
@@ -84,7 +84,7 @@ class VenueCustomizationController extends Controller
                 $generator->generate($data['payment_qr_base'], 100);
             } catch (InvalidArgumentException $exception) {
                 Log::notice('Rejected venue payment QR', [
-                    'venue_id' => $request->user()->venue_id,
+                    'venue_id' => \App\Services\VenueContext::venue()->id,
                     'reason' => $exception->getMessage(),
                 ]);
 
@@ -161,7 +161,7 @@ class VenueCustomizationController extends Controller
 
     public function saveRate(Request $request, ?int $rate = null)
     {
-        $venue = $request->user()->venue;
+        $venue = \App\Services\VenueContext::venue();
         $data = $request->validate([
             'court_id' => ['nullable', 'integer', Rule::exists('courts', 'id')->where('venue_id', $venue->id)],
             'weekdays' => ['required', 'array', 'min:1', 'max:7'],
@@ -213,13 +213,13 @@ class VenueCustomizationController extends Controller
     private function withVenueLock(Request $request, callable $action): void
     {
         DB::transaction(function () use ($request, $action) {
-            $venue = Venue::query()->lockForUpdate()->findOrFail($request->user()->venue_id);
+            $venue = Venue::query()->lockForUpdate()->findOrFail(\App\Services\VenueContext::venue()->id);
             $action($venue);
         }, 3);
     }
 
     private function saved(string $message, string $section)
     {
-        return redirect()->to(route('settings.customization').'#'.$section)->with('status', $message);
+        return redirect()->to(\App\Services\VenueContext::url('settings.customization').'#'.$section)->with('status', $message);
     }
 }
