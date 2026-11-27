@@ -17,7 +17,7 @@ class VenueSettingsController extends Controller
         $venue = \App\Services\VenueContext::venue();
         $courts = $venue->courts()->orderBy('id')->get();
         $hours = $venue->hours()->get()->keyBy('weekday');
-        $staff = $venue->members()->wherePivot('role', 'staff')->orderBy('name')->get();
+        $staff = $venue->members()->wherePivotIn('role', ['staff','manager'])->orderBy('name')->get();
 
         return view('staff.settings', compact('venue', 'courts', 'hours', 'staff'));
     }
@@ -115,8 +115,8 @@ class VenueSettingsController extends Controller
     public function removeStaff(Request $request, int $staff)
     {
         $venue = \App\Services\VenueContext::venue();
-        $venue->members()->wherePivot('role','staff')->findOrFail($staff);
-        $venue->members()->wherePivot('role','staff')->detach($staff);
+        $venue->members()->wherePivotIn('role',['staff','manager'])->findOrFail($staff);
+        $venue->members()->wherePivotIn('role',['staff','manager'])->detach($staff);
 
         return $this->saved('Staff access removed.');
     }
