@@ -108,6 +108,9 @@ class Schedule
             // Settings take an exclusive venue lock. Reservations can share it
             // and serialize only with other writes on the same court.
             $venue = Venue::query()->sharedLock()->findOrFail($venue->id);
+            if ($source === 'online' && !$venue->acceptsPublicBookings()) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['date'=>'This venue is not accepting online reservations.']);
+            }
             $court = $venue->courts()->lockForUpdate()->findOrFail($data['court_id']);
             $start = $this->time($venue, $data['date'], $data['start']);
             $end = $source
