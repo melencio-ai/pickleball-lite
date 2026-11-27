@@ -57,7 +57,37 @@
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && body.classList.contains('workspace-open')) {close(true);nav.inert=true;}
         });
+        nav.addEventListener('click',event=>{
+            const link=event.target.closest('a.workspace-nav-link');
+            if(!media.matches || !link || event.button!==0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey ||
+                link.matches('[data-notification-open],[data-rewards-open]'))return;
+            // Transient drawers preserve navigation context; normal navigation
+            // closes the mobile menu, including links opened in another tab.
+            close(link.target==='_blank');nav.inert=true;
+        });
         media.addEventListener('change',refresh);refresh();
+    }
+    const switcher=document.querySelector('[data-workspace-switcher]');
+    const switchTrigger=document.querySelector('[data-workspace-switch-open]');
+    if(switcher && switchTrigger && typeof switcher.showModal==='function') {
+        const close=switcher.querySelector('[data-workspace-switch-close]');
+        let pointerOutside=false;
+        const outside=e=>{const rect=switcher.getBoundingClientRect();return e.clientX<rect.left || e.clientX>rect.right || e.clientY<rect.top || e.clientY>rect.bottom;};
+        switchTrigger.addEventListener('click',event=>{
+            if(event.button!==0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)return;
+            event.preventDefault();
+            if(switcher.open)return;
+            switcher.showModal();switchTrigger.setAttribute('aria-expanded','true');close.focus();
+        });
+        close.addEventListener('click',()=>switcher.close());
+        switcher.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation();});
+        switcher.addEventListener('pointerdown',event=>{pointerOutside=event.target===switcher && outside(event);});
+        switcher.addEventListener('click',event=>{if(pointerOutside && event.target===switcher && outside(event))switcher.close();pointerOutside=false;});
+        switcher.addEventListener('close',()=>{
+            switchTrigger.setAttribute('aria-expanded','false');
+            if(nav?.inert)toggle?.focus();else switchTrigger.focus({preventScroll:true});
+        });
+        window.addEventListener('pageshow',event=>{if(event.persisted && switcher.open)switcher.close();});
     }
     const signOutDialog=document.querySelector('[data-sign-out-dialog]');
     if(signOutDialog) {

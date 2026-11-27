@@ -25,14 +25,15 @@
         <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
     @endif
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/workspace.css?v=6">
-<script src="/workspace.js?v=6" defer></script>
+<link rel="stylesheet" href="/workspace.css?v=7">
+<script src="/workspace.js?v=7" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
     $rewardsState = $appShell && $workspace && \App\Services\VenueContext::role()==='owner' &&
         \App\Services\PlatformRewards::visible($workspace,$subscriptionStatus)
         ? \App\Services\PlatformRewards::summary($workspace,$subscriptionStatus) : null;
+    $navigation = $appShell ? \App\Services\WorkspaceNavigation::build(auth()->user(),$staffVenue,$rewardsState) : null;
 @endphp
 <body @if($appShell) class="app-workspace" data-workspace-user="{{ auth()->id() }}" @endif>
     @if($publicVenue)
@@ -60,36 +61,7 @@
             <nav aria-label="Main navigation" @if($appShell) id="workspace-navigation" class="workspace-navigation" @endif>
                 @if(\App\Services\VenueContext::onApp())
                     @auth
-                        <a class="workspace-nav-link" href="{{ route('app.venues') }}" title="My venues"><x-workspace-icon name="grid"/><span>My venues</span></a>
-                        @can('platform-admin')
-                            <span class="workspace-nav-caption">Platform</span>
-                            <a class="workspace-nav-link" href="{{ route('app.admin.index') }}" title="Platform admin"><x-workspace-icon name="shield"/><span>Platform admin</span></a>
-                            <a class="workspace-nav-link" href="{{ route('app.admin.legal.index') }}" title="Legal policies"><x-workspace-icon name="file"/><span>Legal policies</span></a>
-                            <a class="workspace-nav-link" href="{{ route('app.admin.rewards.index') }}" title="Platform rewards"><x-workspace-icon name="gift"/><span>Platform rewards</span></a>
-                            <a class="workspace-nav-link" href="{{ route('app.admin.email.index') }}" title="Email service"><x-workspace-icon name="mail"/><span>Email service</span></a>
-                        @endcan
-                        @if($workspace)
-                            <span class="workspace-nav-caption">Venue</span>
-                            <a class="workspace-switch" href="{{ route('app.venues') }}" title="Switch venue" aria-label="Switch venue: {{ $workspace->name }}">@if($staffVenue && $logoUrl)<img class="workspace-switch-logo" src="{{ $logoUrl }}" alt="" width="24" height="24">@else<x-workspace-icon name="building"/>@endif<span>{{ $workspace->name }}</span></a>
-                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('landing') }}" target="_blank" rel="noopener" title="Venue website"><x-workspace-icon name="globe"/><span>Venue website</span></a>
-                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="Calendar" @if(\App\Services\VenueContext::is('staff.calendar*')) aria-current="page" @endif><x-workspace-icon name="calendar"/><span>Calendar</span></a>
-                            <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('staff.open-play') }}" title="Open Play" @if(\App\Services\VenueContext::is('staff.open-play*')) aria-current="page" @endif><x-workspace-icon name="users"/><span>Open Play</span></a>
-                            @can('manage-website')
-                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.website') }}" title="Website settings"><x-workspace-icon name="globe"/><span>Website settings</span></a>
-                            @endcan
-                            @can('manage-venue')
-                                @if($workspace->self_service && \Illuminate\Support\Facades\DB::table('venue_onboarding')->where('venue_id',$workspace->id)->whereNull('completed_at')->exists())
-                                    <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.onboarding') }}" title="Resume onboarding"><x-workspace-icon name="file"/><span>Resume onboarding</span></a>
-                                @endif
-                                @if($rewardsState)
-                                    <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.rewards') }}" data-rewards-open title="Rewards" aria-haspopup="dialog" aria-controls="rewards-drawer"><x-workspace-icon name="gift"/><span>Rewards</span></a>
-                                @endif
-                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings.subscription') }}" title="Subscription"><x-workspace-icon name="card"/><span>Subscription</span></a>
-                                <a class="workspace-nav-link" href="{{ \App\Services\VenueContext::url('settings') }}" title="Settings"><x-workspace-icon name="settings"/><span>Settings</span></a>
-                            @endcan
-                        @endif
-                        <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications" aria-label="Notifications" aria-haspopup="dialog" aria-controls="notification-drawer" aria-expanded="false" data-notification-open><x-workspace-icon name="bell"/><span>Notifications</span></a>
-                        <div class="workspace-logout"><button type="button" class="quiet workspace-nav-link" title="Sign out" aria-label="Sign out" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open><x-workspace-icon name="logout"/><span>Sign out</span></button></div>
+                        <x-workspace-navigation :navigation="$navigation" :venue="$staffVenue" :logo-url="$logoUrl"/>
                     @else
                         <a href="{{ route('product.home') }}">About Pickle Lite</a>
                     @endauth
@@ -159,7 +131,10 @@
         @endif
         <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
     </footer>
-@if($appShell)<x-notification-drawer />@endif
+@if($appShell)
+    <x-workspace-switcher :navigation="$navigation" :venue="$staffVenue"/>
+    <x-notification-drawer />
+@endif
 @if($rewardsState)<x-rewards-drawer :state="$rewardsState" :venue="$workspace"/>@endif
 @if(auth()->check() && !\App\Services\VenueContext::onBooking())
     <x-sign-out-dialog />
