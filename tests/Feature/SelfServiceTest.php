@@ -257,7 +257,7 @@ class SelfServiceTest extends TestCase
         $this->post($queue.'/'.$request->id.'/review',['decision'=>'reject','reason'=>'Not permitted'])->assertForbidden();
 
         $before=TrialAccess::subscription($venue);
-        $this->actingAs($admin)->get($queue)->assertOk()->assertSee($request->reference)->assertSee('submitted');
+        $this->actingAs($admin)->get($queue)->assertOk()->assertSee($request->reference)->assertSee('Submitted');
         $review=['decision'=>'approve','amount'=>'1000.00','bank_reference'=>'QR-001','received_on'=>now('Asia/Manila')->toDateString(),'verified_in_messenger'=>'1'];
         $this->post($queue.'/'.$request->id.'/review',array_replace($review,['amount'=>'999.00']))->assertSessionHasErrors('amount');
         $this->post($queue.'/'.$request->id.'/review',array_replace($review,['verified_in_messenger'=>'0']))->assertSessionHasErrors('verified_in_messenger');
