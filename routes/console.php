@@ -51,7 +51,7 @@ Artisan::command('platform:check-schema', function () {
     // A read-only readiness gate for services that must not run migrations.
     $schema = \Illuminate\Support\Facades\Schema::class;
     foreach (['venues', 'venue_memberships', 'venue_subscriptions', 'product_enquiries',
-        'marketing_sessions', 'booking_sessions', 'bookings', 'open_play_sessions', 'legal_documents', 'legal_document_versions', 'legal_acceptances', 'privacy_requests', 'venue_onboarding', 'trial_extensions', 'venue_notifications', 'notification_preferences', 'venue_reward_progress', 'venue_reward_days', 'venue_reward_testimonials', 'venue_reward_grants', 'migrations'] as $table) {
+        'marketing_sessions', 'booking_sessions', 'bookings', 'open_play_sessions', 'legal_documents', 'legal_document_versions', 'legal_acceptances', 'privacy_requests', 'venue_onboarding', 'trial_extensions', 'venue_notifications', 'notification_preferences', 'venue_reward_progress', 'venue_reward_days', 'venue_reward_testimonials', 'venue_reward_grants', 'platform_subscription_qr_settings', 'subscription_payment_requests', 'migrations'] as $table) {
         if (!$schema::hasTable($table)) {
             $this->error('Required schema missing: '.$table.'. Run migrations on the management service first.');
             return 1;
@@ -64,7 +64,7 @@ Artisan::command('platform:check-schema', function () {
     }
     $required = ['2026_11_27_000000_add_venue_tenancy','2026_11_27_000100_add_platform_operations',
         '2026_11_27_000200_add_public_service_sessions','2026_11_27_000300_add_legal_policies','2026_11_27_000400_add_self_service_platform',
-        '2026_11_27_000500_remove_setup_fee','2026_11_27_000600_add_platform_email_settings','2026_11_27_000700_add_platform_rewards','2026_11_28_000000_add_yearly_subscription_plans'];
+        '2026_11_27_000500_remove_setup_fee','2026_11_27_000600_add_platform_email_settings','2026_11_27_000700_add_platform_rewards','2026_11_28_000000_add_yearly_subscription_plans','2026_11_28_010000_add_platform_subscription_qr'];
     if (\Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration',$required)->count() !== count($required)) {
         $this->error('Management migrations have not completed.');
         return 1;

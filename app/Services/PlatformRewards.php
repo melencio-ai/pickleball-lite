@@ -167,7 +167,7 @@ final class PlatformRewards
     {
         if (!self::visible($venue,$sub) || $venue->status!=='active') return false;
         if ($sub->status==='active') return filled($sub->renewal_date);
-        if (($sub->reward_managed || SubscriptionPlans::annual($sub)) && $sub->status==='overdue' && $sub->renewal_date && $sub->renewal_date<=now($venue->timezone)->toDateString()) return true;
+        if (SubscriptionPlans::timed($sub) && $sub->status==='overdue' && $sub->renewal_date && $sub->renewal_date<=now($venue->timezone)->toDateString()) return true;
         return $venue->self_service && in_array($sub->status,['trial','trial_expired'],true) &&
             $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->lte(now());
     }
@@ -214,13 +214,13 @@ final class PlatformRewards
     public static function sweep(): void
     {
         // Expire only subscriptions that have used the reward-managed billing path.
-        DB::table('venue_subscriptions')->where(fn($q)=>$q->where('reward_managed',true)->orWhereIn('billing_plan',['yearly','yearly_promo']))->where('status','active')
+        DB::table('venue_subscriptions')->where(fn($q)=>$q->where('reward_managed',true)->orWhere('qr_managed',true)->orWhereIn('billing_plan',['yearly','yearly_promo']))->where('status','active')
             ->where('renewal_date','<=',now()->addDay()->toDateString())->orderBy('id')->chunkById(100,function($rows) {
                 foreach($rows as $row) DB::transaction(function() use($row) {
                     $venue=Venue::whereKey($row->venue_id)->lockForUpdate()->first();
                     if (!$venue) return;
                     $sub=TrialAccess::subscription($venue,true);
-                    if (!$sub || (!$sub->reward_managed && !SubscriptionPlans::annual($sub)) || $sub->status!=='active' || !$sub->renewal_date || $sub->renewal_date>now($venue->timezone)->toDateString()) return;
+                    if (!$sub || !SubscriptionPlans::timed($sub) || $sub->status!=='active' || !$sub->renewal_date || $sub->renewal_date>now($venue->timezone)->toDateString()) return;
                     DB::table('venue_subscriptions')->where('id',$sub->id)->update(['status'=>'overdue','updated_at'=>now()]);
                     self::notify($venue,'renewal-expired-'.$sub->renewal_date,'Subscription renewal due','Your subscription period has ended. Renew your subscription or apply an available reward.');
                 },3);

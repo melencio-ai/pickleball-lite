@@ -88,8 +88,8 @@ if (copyReference && reference && copyFeedback) {
     copyReference.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(reference.textContent.trim());
-            copyFeedback.textContent = 'Booking reference copied.';
-            copyReference.setAttribute('aria-label', 'Booking reference copied');
+            copyFeedback.textContent = 'Reference copied.';
+            copyReference.setAttribute('aria-label', 'Reference copied');
             copyReference.classList.add('reference-copied');
         } catch {
             const range = document.createRange();
@@ -97,7 +97,7 @@ if (copyReference && reference && copyFeedback) {
             const selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
-            copyFeedback.textContent = 'Booking reference selected. Copy it from the selection.';
+            copyFeedback.textContent = 'Reference selected. Copy it from the selection.';
         }
     });
 }

@@ -79,6 +79,8 @@ $staffRoutes = function () {
         Route::get('/subscription', [SubscriptionController::class,'index'])->name('settings.subscription');
         Route::post('/subscription/extend', [SubscriptionController::class,'extend'])->middleware('throttle:5,1,settings-subscription-extend:')->name('settings.subscription.extend');
         Route::post('/subscription/upgrade', [SubscriptionController::class,'upgrade'])->middleware('throttle:5,1,settings-subscription-upgrade:')->name('settings.subscription.upgrade');
+        Route::post('/subscription/checkout', [\App\Http\Controllers\SubscriptionQrController::class,'checkout'])->middleware('throttle:10,1')->name('settings.subscription.checkout');
+        Route::post('/subscription/payments/{payment}/{action}', [\App\Http\Controllers\SubscriptionQrController::class,'ownerAction'])->whereNumber('payment')->whereIn('action',['submit','cancel'])->middleware('throttle:10,1')->name('settings.subscription.payment.action');
         Route::get('/privacy-requests', [PrivacyRequestController::class,'index'])->name('settings.privacy');
         Route::post('/privacy-requests', [PrivacyRequestController::class,'store'])->name('settings.privacy.store');
         Route::patch('/privacy-requests/{record}', [PrivacyRequestController::class,'update'])->whereNumber('record')->name('settings.privacy.update');
@@ -157,6 +159,9 @@ Route::domain(config('pickle.app_host'))->name('app.')->group(function () use ($
             Route::get('/rewards', [\App\Http\Controllers\RewardAdminController::class,'index'])->name('rewards.index');
             Route::post('/rewards/testimonials/{record}', [\App\Http\Controllers\RewardAdminController::class,'review'])->whereNumber('record')->name('rewards.review');
             Route::post('/rewards/grants/{grant}/revoke', [\App\Http\Controllers\RewardAdminController::class,'revoke'])->whereNumber('grant')->name('rewards.revoke');
+            Route::get('/subscription-payments', [\App\Http\Controllers\SubscriptionQrController::class,'index'])->name('subscription-payments.index');
+            Route::patch('/subscription-payments/settings', [\App\Http\Controllers\SubscriptionQrController::class,'settings'])->middleware('throttle:10,1')->name('subscription-payments.settings');
+            Route::post('/subscription-payments/{payment}/review', [\App\Http\Controllers\SubscriptionQrController::class,'review'])->whereNumber('payment')->middleware('throttle:30,1')->name('subscription-payments.review');
             Route::get('/email', [\App\Http\Controllers\EmailAdminController::class,'index'])->name('email.index');
             Route::patch('/email', [\App\Http\Controllers\EmailAdminController::class,'save'])->middleware('throttle:platform-email-save')->name('email.save');
             Route::post('/email/test', [\App\Http\Controllers\EmailAdminController::class,'test'])->middleware('throttle:platform-email-test')->name('email.test');
