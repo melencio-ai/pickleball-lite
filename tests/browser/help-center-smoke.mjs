@@ -10,8 +10,7 @@ try {
     await page.getByRole('heading',{name:'How can we help you?'}).waitFor();
     assert.equal(await page.locator('.help-category').count(),9);
     assert.equal(await page.locator('.help-category').first().getAttribute('href'),'/category/getting-started');
-    const desktop=await page.locator('.help-category').first().boundingBox(), second=await page.locator('.help-category').nth(1).boundingBox();
-    assert.ok(second.x>desktop.x && Math.abs(desktop.y-second.y)<2,'Category cards align on desktop');
+    await page.waitForFunction(()=>{const [a,b]=[...document.querySelectorAll('.help-category')].slice(0,2).map(x=>x.getBoundingClientRect());return b.x>a.x+a.width && Math.abs(a.y-b.y)<2});
     await page.getByRole('searchbox',{name:'Search guides'}).fill('merchant QR');
     await page.locator('[data-help-suggestions]').waitFor();
     await page.locator('[data-help-suggestion-list]').getByRole('link',{name:/Configure your merchant QR code/}).click();
@@ -34,8 +33,6 @@ try {
     await page.goto(base);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage fits 320px');
     await page.waitForFunction(()=>{const [m,n]=[...document.querySelectorAll('.help-category')].slice(0,2).map(x=>x.getBoundingClientRect());return n.y>m.y+m.height && Math.abs(n.x-m.x)<2});
-    const m=await page.locator('.help-category').first().boundingBox(), n=await page.locator('.help-category').nth(1).boundingBox();
-    assert.ok(n.y>m.y+m.height && Math.abs(n.x-m.x)<2,'Categories stack on phones');
     await page.getByRole('searchbox',{name:'Search guides'}).fill('zzznotaguide');
     await page.getByRole('button',{name:'Search',exact:true}).click();
     await page.waitForURL(base+'/search?q=zzznotaguide');
