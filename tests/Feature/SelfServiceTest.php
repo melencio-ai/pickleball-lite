@@ -209,7 +209,7 @@ class SelfServiceTest extends TestCase
         $this->assertNotNull($paid->promo_redeemed_at);
         $this->assertDatabaseHas('subscription_payments',['kind'=>'yearly_promo','amount'=>500000,'reference'=>'PROMO-001']);
         $this->post($paymentUrl,array_replace($payment,['reference'=>'PROMO-002']))->assertSessionHasErrors('kind');
-        $this->actingAs($owner)->get($subscriptionUrl)->assertOk()->assertDontSee('Claim offer');
+        $this->actingAs($owner->fresh())->get($subscriptionUrl)->assertOk()->assertDontSee('Claim offer');
         $this->post($claimUrl,['plan'=>'yearly_promo'])->assertSessionHasErrors('plan');
         $this->actingAs($admin)->post($paymentUrl,array_replace($payment,['kind'=>'yearly','amount'=>'10000.00','reference'=>'YEAR-001']))->assertRedirect();
         $renewed=TrialAccess::subscription($venue);
