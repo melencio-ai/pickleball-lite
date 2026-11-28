@@ -63,7 +63,7 @@
                                         <form class="form-stack" method="post" action="{{ \App\Services\VenueContext::url('staff.open-play.action', [$record->id, $player->id, 'paid']) }}">
                                             @csrf @method('PATCH')
                                             <a href="{{ \App\Services\VenueContext::url('open-play.payment', $player->payment_token) }}" target="_blank" rel="noopener">Open payment link</a>
-                                            <a href="{{ $player->payment_messenger_url }}" target="_blank" rel="noopener noreferrer">Open Messenger</a>
+                                            <x-messenger-link :url="$player->payment_messenger_url" >Open Messenger</x-messenger-link>
                                             <label>Received amount (PHP)<input name="received_amount" required value="{{ number_format($player->total / 100, 2, '.', '') }}"></label>
                                             <label>Transaction reference<input name="payment_reference" maxlength="64" required></label>
                                             <label class="checkbox"><input type="checkbox" name="verified_in_messenger" value="1" required> I matched the Messenger receipt to the incoming payment.</label>

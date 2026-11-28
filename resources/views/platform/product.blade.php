@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pickle Lite | Your pickleball venue, online</title>
-    <meta name="description" content="A branded website, online court bookings, Open Play, QR payments and a staff calendar. ₱1,000 per month, with free setup.">
+    <meta name="description" content="A branded website, online court bookings, Open Play, QR payments and a staff calendar. ₱1,000 per month or ₱10,000 per year, with free setup.">
     <link rel="canonical" href="{{ route('product.home') }}">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
@@ -28,7 +28,7 @@
             <h1>More games. Less admin work.</h1>
             <p class="site-lead">Give your players a place to book courts, join Open Play and pay online. Manage your venue in one simple app.</p>
             <div class="site-actions"><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get Pickle Lite' }} <x-booking-icon name="chevron-right" /></a><a class="site-button site-outline" href="{{ route('product.demo') }}">Ask for a demo</a></div>
-            <p class="site-footnote">@if($selfSignup)30-day free trial · No credit card required · @endif Free setup · ₱1,000 per month</p>
+            <p class="site-footnote">@if($selfSignup)30-day free trial · No credit card required · @endif Free setup · ₱1,000/month or ₱10,000/year</p>
         </div></section>
         <section class="site-container site-section" id="features">
             <div class="site-section-heading"><p class="site-eyebrow">Everything you need to get started</p><h2>Make it easy to book your courts</h2><p>Give your staff fewer messages to answer and your players a faster way to find a game.</p></div>
@@ -47,7 +47,7 @@
         </section>
         <section class="site-band" id="pricing"><div class="site-container site-section site-two-column">
             <div class="site-section-heading"><p class="site-eyebrow">Simple pricing</p><h2>One venue. One affordable plan.</h2><p>Start with a branded booking website and management tools for your courts.</p></div>
-            <div class="site-data-panel"><span class="muted">Monthly maintenance</span><h2 class="site-price">₱1,000<span class="muted">/month</span></h2><div class="site-data-row"><strong>Account creation and setup</strong><strong>Free</strong></div><p>Includes the venue website, court booking, Open Play, QR payment workflow and staff calendar.</p><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a></div>
+            <div class="site-data-panel"><span class="muted">Flexible subscription</span><h2 class="site-price">₱1,000<span class="muted">/month</span></h2><div class="site-data-row"><strong>Yearly plan</strong><strong>₱10,000/year</strong></div><p class="muted">Save ₱2,000 compared with paying monthly.</p><div class="site-data-row"><strong>Account creation and setup</strong><strong>Free</strong></div><p>Includes the venue website, court booking, Open Play, QR payment workflow and staff calendar.</p><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a></div>
         </div></section>
         <section class="site-container site-section site-two-column" id="get-started">
             <div class="site-section-heading">

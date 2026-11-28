@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=8">
 <script src="/workspace.js?v=8" defer></script>
+<script src="{{ asset('messenger.js') }}?v=1" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;

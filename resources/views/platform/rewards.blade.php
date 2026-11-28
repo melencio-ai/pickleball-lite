@@ -10,7 +10,7 @@
         @if($state['activeDays']<15)<p>Unlock after 15 active days. {{ 15-$state['activeDays'] }} more days to go.</p>
         @elseif(!$state['grants']->has('testimonial') && (!$testimonial || $testimonial->status==='rejected'))
             <p>Record a short, honest video about your venue and actual experience. Send it to Pickle Lite via Messenger, then submit a reference below. Feedback does not need to be positive. Do not include player or banking information.</p>
-            <a class="button secondary" href="https://www.facebook.com/messages/t/pickleliteapp" target="_blank" rel="noopener noreferrer">Send video via Messenger <x-booking-icon name="chevron-right"/></a>
+            <x-messenger-link class="button secondary" :url="\App\Services\MessengerLinks::PLATFORM">Send video via Messenger <x-booking-icon name="chevron-right"/></x-messenger-link>
             <form method="post" class="form-stack" action="{{ \App\Services\VenueContext::url('settings.rewards.submit') }}" data-app-form>@csrf
                 <label>Video reference / Messenger sender and date<textarea name="submission_reference" maxlength="500" rows="3" required placeholder="Private video link or Messenger sender and date">{{ old('submission_reference') }}</textarea></label>
                 <label class="checkbox"><input type="checkbox" name="submitted" value="1" required> I sent my genuine video testimonial for review and understand the reward terms.</label>
