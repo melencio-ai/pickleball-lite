@@ -43,6 +43,7 @@ final class WorkspaceNavigation
             $groups=[
                 'Platform'=>[
                     self::item('platform-overview','Overview','grid',route('app.admin.index'),['app.admin.index','app.admin.billing*']),
+                    self::item('platform-payments','Subscription payments','card',route('app.admin.subscription-payments.index'),['app.admin.subscription-payments.*']),
                     self::item('platform-rewards','Rewards','gift',route('app.admin.rewards.index'),['app.admin.rewards.*']),
                 ],
                 'Configuration'=>[self::item('platform-email','Email service','mail',route('app.admin.email.index'),['app.admin.email.*'])],

@@ -20,6 +20,11 @@ final class SubscriptionPlans
         return in_array($sub?->billing_plan ?? 'monthly',['yearly','yearly_promo'],true);
     }
 
+    public static function timed(?object $sub): bool
+    {
+        return ($sub?->reward_managed ?? false) || ($sub?->qr_managed ?? false) || self::annual($sub);
+    }
+
     public static function offerOwner(Venue $venue, ?object $sub): ?User
     {
         if (!$venue->self_service || !$sub || !in_array($sub->status,['trial','trial_expired','active','overdue'],true) ||

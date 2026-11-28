@@ -17,7 +17,12 @@ class SubscriptionController extends Controller
         $subscription=TrialAccess::subscription($venue);
         $canExtend=$venue->self_service && TrialAccess::canExtend($subscription);
         $promo=\App\Services\SubscriptionPlans::eligible($venue,$subscription,auth()->user());
-        return view('platform.subscription',compact('venue','subscription','canExtend','promo'));
+        $qrEnabled=\App\Services\PlatformSubscriptionQr::enabled();
+        $pending=\App\Services\PlatformSubscriptionQr::pending($subscription);
+        $qr=$pending && $pending->status==='awaiting_payment' ? \Illuminate\Support\Facades\Crypt::decryptString($pending->qr_ciphertext) : null;
+        $payments=$subscription ? DB::table('subscription_payments')->where('venue_subscription_id',$subscription->id)->orderByDesc('received_on')->orderByDesc('id')->paginate(15) : collect();
+        $lastRequest=$subscription ? DB::table('subscription_payment_requests')->where('venue_subscription_id',$subscription->id)->latest('id')->first() : null;
+        return response()->view('platform.subscription',compact('venue','subscription','canExtend','promo','qrEnabled','pending','qr','payments','lastRequest'))->header('Cache-Control','private, no-store');
     }
 
     public function extend(Request $request)
@@ -34,6 +39,9 @@ class SubscriptionController extends Controller
             $venue=Venue::whereKey(VenueContext::venue()->id)->lockForUpdate()->firstOrFail();
             $sub=TrialAccess::subscription($venue,true);
             abort_unless($sub,404);
+            if (\App\Services\PlatformSubscriptionQr::pending($sub,true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['plan'=>'Resolve the existing QR payment before changing plans.']);
+            }
             if(in_array($sub->status,['suspended','cancelled'],true) ||
                 ($plan==='yearly_promo' && !\App\Services\SubscriptionPlans::eligible($venue,$sub,$request->user()))) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['plan'=>'This plan is not available for your account.']);

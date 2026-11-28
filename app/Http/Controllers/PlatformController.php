@@ -144,15 +144,15 @@ class PlatformController extends Controller
             if ($data['status']==='trial' && (!$current || !$current->trial_ends_at || \Carbon\CarbonImmutable::parse($current->trial_ends_at)->lte(now()))) {
                 throw ValidationException::withMessages(['status'=>'A trial can only remain active until its recorded expiration.']);
             }
-            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && ($data['expected_renewal'] ?? null)!==$current->renewal_date) {
+            if ((\App\Services\SubscriptionPlans::timed($current)) && ($data['expected_renewal'] ?? null)!==$current->renewal_date) {
                 throw ValidationException::withMessages(['renewal_date'=>'The subscription changed. Refresh before saving.']);
             }
-            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && $data['status']==='active' && $current->renewal_date &&
+            if ((\App\Services\SubscriptionPlans::timed($current)) && $data['status']==='active' && $current->renewal_date &&
                 $current->renewal_date>now($record->timezone)->toDateString() &&
                 ($data['renewal_date'] ?? '')<$current->renewal_date) {
                 throw ValidationException::withMessages(['renewal_date'=>'Do not shorten an existing reward-covered term here. Reconcile it separately.']);
             }
-            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && $data['status']==='active' &&
+            if ((\App\Services\SubscriptionPlans::timed($current)) && $data['status']==='active' &&
                 (!filled($data['renewal_date'] ?? null) || $data['renewal_date']<=now($record->timezone)->toDateString())) {
                 throw ValidationException::withMessages(['renewal_date'=>'A reward-managed subscription requires a future renewal date.']);
             }
@@ -179,11 +179,15 @@ class PlatformController extends Controller
         $amount = \App\Services\Pricing::centavos($data['amount']);
         if ($amount <= 0) throw ValidationException::withMessages(['amount'=>'Enter a positive payment amount.']);
         DB::transaction(function () use ($request,$data,$amount,$venue) {
+            \App\Services\PlatformSubscriptionQr::settings(true);
             $record = Venue::query()->lockForUpdate()->findOrFail($venue);
             $sub = DB::table('venue_subscriptions')->where('venue_id',$venue)->lockForUpdate()->first();
             abort_unless($sub,404);
+            if (\App\Services\PlatformSubscriptionQr::pending($sub,true)) {
+                throw ValidationException::withMessages(['reference'=>'Review the open payment in Subscription Payments instead.']);
+            }
             $ref = strtoupper(trim($data['reference']));
-            if (DB::table('subscription_payments')->where('venue_subscription_id',$sub->id)->where('reference',$ref)->exists()) {
+            if (!$ref || DB::table('subscription_payments')->where('reference',$ref)->exists()) {
                 throw ValidationException::withMessages(['reference'=>'This subscription payment is already recorded.']);
             }
             $changes=\App\Services\SubscriptionPlans::verifiedPayment($record,$sub,$data['kind'],$amount);

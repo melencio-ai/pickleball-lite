@@ -9,6 +9,7 @@ return [
     'help_preview_host' => env('PICKLE_HELP_PREVIEW_HOST'),
     'help_url' => env('PICKLE_HELP_URL'),
     'password_reset_enabled' => (bool) env('PICKLE_PASSWORD_RESET_ENABLED', false),
+    'subscription_qr_base' => env('PICKLE_PLATFORM_SUBSCRIPTION_QR_BASE'),
     'demo_slug' => env('PICKLE_DEMO_SLUG'),
     'walkthrough_video_url' => env('PICKLE_WALKTHROUGH_VIDEO_URL'),
     'legacy_host' => env('PICKLE_LEGACY_HOST', 'pickleball-lite-production.up.railway.app'),
