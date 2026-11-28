@@ -71,7 +71,37 @@ try {
     // Registration is enabled only in this CI fixture and the policies above
     // have been published. Use a separate guest context and never submit email.
     const registration=await browser.newPage({viewport:{width:1440,height:900}});
-    await registration.goto(app+'/register');
+    await registration.goto(web+'/#pricing');
+    const pricing=registration.locator('#pricing');
+    const cards=pricing.locator('[data-pricing-plan]');
+    const monthly=pricing.locator('[data-pricing-plan="monthly"]'),yearly=pricing.locator('[data-pricing-plan="yearly"]');
+    assert.equal(await cards.count(),2);
+    assert.equal(await monthly.locator('.site-pricing-price strong').textContent(),'₱1,000');
+    assert.equal(await yearly.locator('.site-pricing-price strong').textContent(),'₱10,000');
+    assert.equal(await yearly.locator('.site-pricing-badge').textContent(),'Save 17%');
+    assert.ok((await yearly.textContent()).includes('Save ₱2,000/year'));
+    assert.ok(!(await pricing.textContent()).includes('₱5,000'),'Private introductory offer must stay hidden');
+    assert.deepEqual(await monthly.locator('li').allTextContents(),await yearly.locator('li').allTextContents());
+    assert.equal(await monthly.locator('li').count(),8);
+    for(const card of await cards.all()){
+        assert.equal(await card.getByRole('link',{name:'Start free trial',exact:true}).getAttribute('href'),app+'/register');
+    }
+    const desktopMonthly=await monthly.boundingBox(),desktopYearly=await yearly.boundingBox();
+    assert.ok(desktopMonthly && desktopYearly && desktopYearly.x>desktopMonthly.x && Math.abs(desktopYearly.y-desktopMonthly.y)<2 && Math.abs(desktopMonthly.height-desktopYearly.height)<2,'Pricing cards must align side by side on desktop');
+    for(const width of [390,320]){
+        await registration.setViewportSize({width,height:844});
+        const m=await monthly.boundingBox(),y=await yearly.boundingBox();
+        assert.ok(m && y && y.y>m.y+m.height && Math.abs(m.x-y.x)<2,'Pricing cards stack on mobile');
+        assert.ok(await registration.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Pricing must not overflow on mobile');
+        for(const card of await cards.all()){
+            const cta=await card.getByRole('link',{name:'Start free trial',exact:true}).boundingBox();
+            assert.ok(cta && cta.height>=44);
+        }
+    }
+    await yearly.getByRole('link',{name:'Start free trial',exact:true}).click();
+    await registration.waitForURL(app+'/register');
+    await registration.setViewportSize({width:1440,height:900});
+    console.log('Product pricing passed: two plans, matching inclusions, annual savings, private promo hidden, desktop/mobile layout and free-trial links.');
     await registration.getByRole('heading',{name:'Start your free trial'}).waitFor();
     assert.ok(await registration.locator('body').evaluate(el=>el.classList.contains('auth-register')));
     const name=registration.locator('#signup-name'),email=registration.locator('#signup-email');
