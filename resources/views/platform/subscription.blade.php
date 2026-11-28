@@ -18,7 +18,7 @@ if($status==='active' && ($subscription?->reward_managed || \App\Services\Subscr
     @elseif($status==='trial_expired')
         <h2>Your free trial has ended</h2><p>New reservations are unavailable. Existing bookings, payments and account records remain accessible.</p>
     @elseif($status==='active')
-        <h2>{{ \App\Services\SubscriptionPlans::annual($subscription) ? 'Yearly subscription' : ($subscription->reward_managed ? 'Subscription (reward-managed)' : 'Paid subscription') }}</h2><p>Next renewal: {{ $subscription->renewal_date ?? 'Contact Pickle Lite' }}</p>
+        <h2>{{ \App\Services\SubscriptionPlans::annual($subscription) ? 'Yearly subscription' : ($subscription->reward_managed ? 'Subscription (reward-managed)' : 'Paid subscription') }}</h2><p>Next renewal: {{ $subscription->renewal_date ?? 'Contact Pickle Lite' }}.</p>@if(\App\Services\SubscriptionPlans::annual($subscription))<p class="muted">Standard yearly renewal: ₱10,000. No automatic charge.</p>@endif
     @else
         <h2>{{ ucfirst(str_replace('_',' ',$status)) }}</h2><p>Contact Pickle Lite for assistance with your subscription.</p>
     @endif

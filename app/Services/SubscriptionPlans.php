@@ -23,7 +23,7 @@ final class SubscriptionPlans
     public static function offerOwner(Venue $venue, ?object $sub): ?User
     {
         if (!$venue->self_service || !$sub || !in_array($sub->status,['trial','trial_expired','active','overdue'],true) ||
-            $sub->promo_redeemed_at || DB::table('subscription_payments')->where('venue_subscription_id',$sub->id)
+            ($sub->promo_redeemed_at ?? null) || DB::table('subscription_payments')->where('venue_subscription_id',$sub->id)
                 ->whereIn('kind',['monthly','yearly','yearly_promo'])->exists()) return null;
         // One offer per original, verified self-service account and its original venue.
         return $venue->members()->wherePivot('role','owner')->where('users.venue_id',$venue->id)

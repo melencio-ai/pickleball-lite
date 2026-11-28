@@ -167,7 +167,7 @@ final class PlatformRewards
     {
         if (!self::visible($venue,$sub) || $venue->status!=='active') return false;
         if ($sub->status==='active') return filled($sub->renewal_date);
-        if ($sub->reward_managed && $sub->status==='overdue' && $sub->renewal_date && $sub->renewal_date<=now($venue->timezone)->toDateString()) return true;
+        if (($sub->reward_managed || SubscriptionPlans::annual($sub)) && $sub->status==='overdue' && $sub->renewal_date && $sub->renewal_date<=now($venue->timezone)->toDateString()) return true;
         return $venue->self_service && in_array($sub->status,['trial','trial_expired'],true) &&
             $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->lte(now());
     }

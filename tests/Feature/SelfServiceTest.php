@@ -68,7 +68,7 @@ class SelfServiceTest extends TestCase
         config(['mail.default'=>'smtp','mail.mailers.smtp.host'=>'smtp.example.test','mail.from.address'=>'support@example.test']);
         $this->get($this->appUrl('/register'))->assertNotFound();
         $this->publishTestPolicies();
-        $this->get($this->appUrl('/register'))->assertOk()->assertSee('30 days free');
+        $this->get($this->appUrl('/register'))->assertOk()->assertSee('30 days free')->assertSee('₱10,000/year')->assertDontSee('extensions')->assertDontSee('₱5,000');
         $this->get('http://'.config('pickle.product_host'))->assertOk()->assertSee('Watch a 5-minute full walkthrough')
             ->assertSee('Create a free account')->assertSee('Walkthrough video coming soon.')
             ->assertDontSee("Let's get your venue online")->assertDontSee('Send enquiry');
@@ -138,7 +138,11 @@ class SelfServiceTest extends TestCase
         $this->actingAs($owner)->post($this->workspace($venue,'/subscription/extend'),['extension_count'=>0])->assertSessionHasErrors('trial');
         for($i=0;$i<3;$i++) {
             $sub=TrialAccess::subscription($venue);
-            $this->travelTo(\Carbon\CarbonImmutable::parse($sub->trial_ends_at)->subDays(3));
+            $this->travelTo(\Carbon\CarbonImmutable::parse($sub->trial_ends_at)->subDays(7)->subSecond());
+            $this->get($this->workspace($venue,'/subscription'))->assertOk()->assertDontSee('Extend free trial')->assertDontSee('extensions remaining');
+            $this->post($this->workspace($venue,'/subscription/extend'),['extension_count'=>$i])->assertSessionHasErrors('trial');
+            $this->travelTo(\Carbon\CarbonImmutable::parse($sub->trial_ends_at)->subDays(7));
+            $this->get($this->workspace($venue,'/subscription'))->assertOk()->assertSee('Extend free trial');
             $this->post($this->workspace($venue,'/subscription/extend'),['extension_count'=>$i])->assertRedirect();
             $this->post($this->workspace($venue,'/subscription/extend'),['extension_count'=>$i])->assertSessionHasErrors('trial');
         }
@@ -155,6 +159,67 @@ class SelfServiceTest extends TestCase
         VenueNotifications::sweep();VenueNotifications::sweep();
         $this->assertSame('trial_expired',TrialAccess::subscription($venue)->status);
         $this->assertSame(1,DB::table('venue_notifications')->where('event_key',$venue->id.':trial:expired-3')->count());
+    }
+
+
+    public function test_yearly_offer_appears_at_day_fourteen_is_delivered_once_and_requires_verified_payment(): void
+    {
+        $this->travelTo(now()->setTime(10,0));
+        [$owner,$venue]=$this->signup();
+        $this->verify($owner,$venue);
+        $created=\Carbon\CarbonImmutable::parse($owner->created_at);
+        $subscriptionUrl=$this->workspace($venue,'/subscription');
+        $claimUrl=$subscriptionUrl.'/upgrade';
+        $this->travelTo($created->addDays(14)->subSecond());
+        $this->get($subscriptionUrl)->assertOk()->assertSee('₱10,000')->assertDontSee('₱5,000')->assertDontSee('Claim offer');
+        $this->post($claimUrl,['plan'=>'yearly_promo'])->assertSessionHasErrors('plan');
+        \App\Services\SubscriptionPlans::sweep();
+        $this->assertDatabaseMissing('venue_notifications',['category'=>'promotion']);
+        $this->travelTo($created->addDays(14));
+        $this->get($subscriptionUrl)->assertOk()->assertSee('₱5,000')->assertSee('Claim offer');
+        $this->get($this->workspace($venue,'/onboarding'))->assertOk()->assertSee('data-subscription-promo',false);
+        Mail::shouldReceive('raw')->once()->withArgs(fn($body,$callback)=>str_contains($body,'PHP 5,000') && str_contains($body,'/subscription'))->andReturnNull();
+        \App\Services\SubscriptionPlans::sweep();
+        \App\Services\SubscriptionPlans::sweep();
+        $this->assertSame(1,DB::table('venue_notifications')->where('category','promotion')->count());
+        $this->assertNotNull(TrialAccess::subscription($venue)->promo_email_sent_at);
+        $this->post($claimUrl,['plan'=>'yearly_promo'])->assertRedirect();
+        $this->post($claimUrl,['plan'=>'yearly_promo'])->assertRedirect();
+        $sub=TrialAccess::subscription($venue);
+        $this->assertSame('yearly_promo',$sub->requested_plan);
+        $this->assertNull($sub->promo_redeemed_at);
+        $this->assertSame('trial',$sub->status);
+        $this->assertDatabaseCount('subscription_payments',0);
+        $admin=User::where('email','self-service-admin@example.test')->firstOrFail();
+        $this->actingAs($admin);
+        $paymentUrl=$this->appUrl('/admin/venues/'.$venue->id.'/billing/payments');
+        $payment=['kind'=>'yearly_promo','amount'=>'5000.00','reference'=>'PROMO-001','received_on'=>now()->toDateString()];
+        $this->post($paymentUrl,array_replace($payment,['amount'=>'4999.00']))->assertSessionHasErrors('amount');
+        $this->post($paymentUrl,$payment)->assertRedirect();
+        $paid=TrialAccess::subscription($venue);
+        $this->assertSame('active',$paid->status);
+        $this->assertSame('yearly_promo',$paid->billing_plan);
+        $this->assertSame(\Carbon\CarbonImmutable::parse($sub->trial_ends_at)->setTimezone($venue->timezone)->addYearNoOverflow()->toDateString(),$paid->renewal_date);
+        $this->assertNotNull($paid->promo_redeemed_at);
+        $this->assertDatabaseHas('subscription_payments',['kind'=>'yearly_promo','amount'=>500000,'reference'=>'PROMO-001']);
+        $this->post($paymentUrl,array_replace($payment,['reference'=>'PROMO-002']))->assertSessionHasErrors('kind');
+        $this->actingAs($owner)->get($subscriptionUrl)->assertOk()->assertDontSee('Claim offer');
+        $this->post($claimUrl,['plan'=>'yearly_promo'])->assertSessionHasErrors('plan');
+        $this->actingAs($admin)->post($paymentUrl,array_replace($payment,['kind'=>'yearly','amount'=>'10000.00','reference'=>'YEAR-001']))->assertRedirect();
+        $renewed=TrialAccess::subscription($venue);
+        $this->assertSame('yearly',$renewed->billing_plan);
+        $this->assertSame(\Carbon\CarbonImmutable::parse($paid->renewal_date)->addYearNoOverflow()->toDateString(),$renewed->renewal_date);
+        $this->travelTo(\Carbon\CarbonImmutable::parse($renewed->renewal_date,$venue->timezone));
+        $this->assertFalse(TrialAccess::allowed($venue));
+    }
+
+    public function test_messenger_variants_preserve_recipient_and_other_contact_links(): void
+    {
+        $variants=\App\Services\MessengerLinks::variants('https://www.facebook.com/messages/t/pickleliteapp');
+        $this->assertSame('https://m.me/pickleliteapp',$variants['mobile']);
+        $this->assertSame('https://www.facebook.com/messages/t/pickleliteapp',$variants['desktop']);
+        $this->assertSame('https://www.facebook.com/messages/t/12345',\App\Services\MessengerLinks::variants('https://m.me/12345')['desktop']);
+        $this->assertSame('https://example.com/contact',\App\Services\MessengerLinks::variants('https://example.com/contact')['mobile']);
     }
 
     public function test_notification_preferences_and_access_are_user_scoped(): void
