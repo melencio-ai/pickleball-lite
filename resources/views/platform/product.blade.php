@@ -133,7 +133,15 @@
             </section>
         </section>
     </main>
-    <footer class="site-footer"><div class="site-container"><span>Pickle Lite</span><a href="{{ route('app.login') }}">Venue staff sign in</a></div><div class="legal-footer"><x-legal-links :subscription="true"/></div></footer>
+    <footer class="site-footer">
+        <div class="site-container">
+            <span>Pickle Lite</span>
+            <a href="mailto:hello@picklelite.cloud">hello@picklelite.cloud</a>
+            <a href="https://www.facebook.com/pickleliteapp" target="_blank" rel="noopener noreferrer">Facebook page</a>
+            <a href="{{ route('app.login') }}">Venue staff sign in</a>
+        </div>
+        <div class="legal-footer"><x-legal-links :subscription="true"/></div>
+    </footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
 <div class="app-toast-region" data-toast-region aria-live="polite" aria-atomic="false"></div>
