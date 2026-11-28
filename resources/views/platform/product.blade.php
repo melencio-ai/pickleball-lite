@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=1">
 <script src="/workspace.js?v=1" defer></script>
-<link rel="stylesheet" href="/brand.css?v=court1">
+<link rel="stylesheet" href="/brand.css?v=roboto1">
 </head>
 <body class="venue-site">
     @php($selfSignup=\App\Services\PlatformEmail::registrationEnabled() && \App\Services\LegalPolicies::current()->count()===4)

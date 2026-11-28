@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ $definition->title }} · Pickle Lite</title><x-platform-favicon/><link rel="stylesheet" href="/app.css?v=legal1"><link rel="stylesheet" href="/legal.css?v=1"><link rel="stylesheet" href="/brand.css?v=court1"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ $definition->title }} · Pickle Lite</title><x-platform-favicon/><link rel="stylesheet" href="/app.css?v=legal1"><link rel="stylesheet" href="/legal.css?v=1"><link rel="stylesheet" href="/brand.css?v=roboto1"></head>
 <body>
 <header class="site-header"><div class="header-inner"><a class="brand" href="{{ route('product.home') }}"><x-platform-logo/></a><nav><a href="{{ route('product.home') }}">Home</a><a href="{{ route('app.login') }}">Sign in</a></nav></div></header>
 <main class="page legal-public">

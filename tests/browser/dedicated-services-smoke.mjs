@@ -14,6 +14,19 @@ const browser=await chromium.launch({headless:true,args:[
 const context=await browser.newContext({viewport:{width:1440,height:900}});
 const page=await context.newPage();
 
+async function assertRoboto(page) {
+    const font = await page.evaluate(async () => {
+        const faces = await document.fonts.load('500 16px Roboto', 'Pickle Lite ₱');
+        await document.fonts.ready;
+        return {
+            root: getComputedStyle(document.documentElement).fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+            loaded: faces.some(face => face.status === 'loaded' && face.family.replace(/["']/g, '') === 'Roboto'),
+        };
+    });
+    assert.equal(font.root, 'Roboto');
+    assert.equal(font.loaded, true, 'Self-hosted Roboto must load successfully');
+}
+
 function status(port,host,path='/') {
     return new Promise((resolve,reject)=>{
         const req=http.request({host:'127.0.0.1',port,path,headers:{Host:host}},res=>{
@@ -28,6 +41,8 @@ try {
     assert.equal(await status(8003,'pickle-app.test','/login'),404);
     assert.equal(await status(8003,'pickle-web.test'),404);
     await page.goto(web);
+    await assertRoboto(page);
+    assert.ok(await page.evaluate(async () => (await document.fonts.load('italic 400 16px Roboto')).some(face => face.status==='loaded' && face.style==='italic')), 'Italic Roboto loads from the same origin');
     await page.getByRole('heading',{name:'More games. Less admin work.'}).waitFor();
     const marketingLogo=page.locator('.site-logo [data-platform-brand="primary"]');
     await marketingLogo.evaluate(img=>img.decode());
@@ -49,6 +64,7 @@ try {
     await page.locator('.site-navigation nav').getByRole('link',{name:'Sign in'}).click();
     await page.waitForURL(app+'/login');
     await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+    await assertRoboto(page);
     assert.equal(await page.locator('.auth-aside').isVisible(),true);
     await page.locator('.auth-aside [data-platform-brand="reverse"]').evaluate(img=>img.decode());
     await page.setViewportSize({width:390,height:844});
@@ -72,6 +88,7 @@ try {
     await page.waitForURL(app+'/venues/'+slug+'/calendar');
     await page.setViewportSize({width:1440,height:900});
     const navigation = page.locator('#workspace-navigation');
+    await assertRoboto(page);
     assert.equal(await navigation.isVisible(),true);
     assert.equal(await navigation.locator('[data-nav-context]').getAttribute('data-nav-context'),'venue');
     assert.deepEqual(await navigation.locator('.workspace-nav-caption').allTextContents(),['Operations','Online booking','Membership','Administration']);
@@ -188,11 +205,13 @@ try {
     assert.equal(await website.getAttribute('href'),book+'/'+slug);
     // Test the new platform fallback without changing venue name or colors.
     await page.goto(book+'/'+slug);
+    await assertRoboto(page);
     const fallback=page.locator('.site-navigation .site-logo [data-platform-brand="mark"]');
     await fallback.evaluate(img=>img.decode());
     assert.equal(await fallback.getAttribute('src'),'/favicon.svg?v=court1');
     assert.ok(await page.locator('.platform-powered-by').isVisible());
     await page.goto(book+'/'+slug+'/book');
+    await assertRoboto(page);
     assert.equal(await page.locator('.site-navigation .site-logo [data-platform-brand="mark"]').getAttribute('src'),'/favicon.svg?v=court1');
     await page.goto(book);
     await page.locator('.platform-booking-brand [data-platform-brand="primary"]').evaluate(img=>img.decode());

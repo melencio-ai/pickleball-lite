@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=theme1">
     <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
 <link rel="stylesheet" href="/legal.css?v=1">
-<link rel="stylesheet" href="/brand.css?v=court1">
+<link rel="stylesheet" href="/brand.css?v=roboto1">
 </head>
 <body class="venue-site">
     <a class="site-skip" href="#main-content">Skip to content</a>

@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=2">
 <script src="/workspace.js?v=3" defer></script>
-<link rel="stylesheet" href="/brand.css?v=court1">
+<link rel="stylesheet" href="/brand.css?v=roboto1">
 </head>
 <body class="auth-page @yield('auth-page-class')">
     <main class="auth-shell">
