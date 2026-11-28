@@ -5,15 +5,16 @@
     <title>{{ $title }} · Pickle Lite Help Center</title>
     <meta name="description" content="{{ $description }}">
     <link rel="canonical" href="{{ $canonical }}">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <x-platform-favicon/>
     <link rel="stylesheet" href="/help.css?v=1">
     <script src="/help.js?v=1" defer></script>
     <script src="/messenger.js?v=1" defer></script>
+<link rel="stylesheet" href="/brand.css?v=court1">
 </head>
 <body class="help-site">
 <a class="help-skip" href="#main-content">Skip to content</a>
 <header class="help-header"><div class="help-container help-header-inner">
-    <a class="help-brand" href="/"><img src="/favicon.svg" width="36" height="36" alt=""><span><strong>Pickle Lite</strong><small>Help Center</small></span></a>
+    <a class="help-brand" href="/"><x-platform-logo/><small>Help Center</small></a>
     <nav aria-label="Help Center"><a href="/">All guides</a><a href="https://{{ config('pickle.product_host') }}">Website</a><a class="help-button help-outline" href="https://{{ config('pickle.app_host') }}/login">Sign in <x-booking-icon name="chevron-right"/></a></nav>
 </div></header>
 <main id="main-content" class="help-container">

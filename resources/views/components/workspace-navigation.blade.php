@@ -6,7 +6,7 @@
         @if($venue && $logoUrl)
             <img class="workspace-switch-logo" src="{{ $logoUrl }}" alt="" width="28" height="28">
         @else
-            <span class="workspace-switch-mark"><x-workspace-icon :name="$navigation['context']==='platform'?'shield':($venue?'building':'grid')"/></span>
+            <x-platform-mark class="workspace-switch-logo"/>
         @endif
         <span class="workspace-switch-copy"><strong>{{ $navigation['label'] }}</strong><small>{{ $navigation['description'] }}</small></span>
         <span class="workspace-switch-chevron"><x-workspace-icon name="chevrons"/></span>

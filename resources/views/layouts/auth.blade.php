@@ -6,17 +6,18 @@
     <meta name="robots" content="noindex,nofollow">
     <meta name="referrer" content="no-referrer">
     <title>@yield('title') · Pickle Lite</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <x-platform-favicon/>
     <link rel="stylesheet" href="/auth.css?v=2">
     <script src="/auth.js?v=1" defer></script>
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=2">
 <script src="/workspace.js?v=3" defer></script>
+<link rel="stylesheet" href="/brand.css?v=court1">
 </head>
 <body class="auth-page @yield('auth-page-class')">
     <main class="auth-shell">
         <aside class="auth-aside" aria-label="About Pickle Lite">
-            <a class="auth-brand" href="{{ route('product.home') }}"><img src="/favicon.svg" width="36" height="36" alt=""><span>Pickle Lite</span></a>
+            <a class="auth-brand" href="{{ route('product.home') }}"><x-platform-logo variant="reverse"/></a>
             <div class="auth-intro">
                 <p class="auth-eyebrow">BUILT FOR PICKLEBALL VENUES</p>
                 <h2>Your venue.<br>Simplified.</h2>
@@ -30,7 +31,7 @@
             <p class="auth-aside-footer">More games. Less admin work.</p>
         </aside>
         <section class="auth-main" aria-label="@yield('title')">
-            <a class="auth-brand auth-mobile-brand" href="{{ route('product.home') }}"><img src="/favicon.svg" width="36" height="36" alt=""><span>Pickle Lite</span></a>
+            <a class="auth-brand auth-mobile-brand" href="{{ route('product.home') }}"><x-platform-logo/></a>
             <div class="auth-content">
                 @if(session('status'))
                     <div class="auth-notice" role="status" data-toast-success>{{ session('status') }}</div>

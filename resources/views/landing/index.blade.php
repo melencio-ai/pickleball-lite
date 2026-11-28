@@ -13,10 +13,11 @@
     @if($media->has('cover'))
         <meta property="og:image" content="{{ \App\Services\VenueContext::url('book.image',['kind'=>'cover','version'=>$media['cover']->version]) }}">
     @endif
-    <link rel="icon" href="{{ $media->has('logo') ? \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) : asset('favicon.svg') }}">
+    @if($media->has('logo'))<link rel="icon" href="{{ \App\Services\VenueContext::url('book.image',['kind'=>'logo','version'=>$media['logo']->version]) }}">@else<x-platform-favicon/>@endif
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=theme1">
     <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
 <link rel="stylesheet" href="/legal.css?v=1">
+<link rel="stylesheet" href="/brand.css?v=court1">
 </head>
 <body class="venue-site">
     <a class="site-skip" href="#main-content">Skip to content</a>
@@ -251,7 +252,7 @@
             <a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book your next game <x-booking-icon name="chevron-right" /></a>
         </section>
     </main>
-    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ \App\Services\VenueContext::onBooking() || \App\Services\VenueContext::onApp() ? route('app.home') : (auth()->check() ? route('staff.calendar') : route('login')) }}">Staff sign in</a></span></div><div class="legal-footer"><x-legal-links :venue="$venue"/></div></footer>
+    <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span><x-powered-by/> · <a href="{{ \App\Services\VenueContext::onBooking() || \App\Services\VenueContext::onApp() ? route('app.home') : (auth()->check() ? route('staff.calendar') : route('login')) }}">Staff sign in</a></span></div><div class="legal-footer"><x-legal-links :venue="$venue"/></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
     <script src="{{ asset('messenger.js') }}?v=1" defer></script>
