@@ -32,6 +32,24 @@ try {
     assert.equal(await adminTabs.locator('[data-mobile-tab="calendar"]').count(),0);
     await page.setViewportSize({width:1440,height:900});
     await platformSwitcher.waitFor({state:'hidden'});
+    // Subscription payment confirmations must align horizontally at every screen size.
+    await page.goto(app+'/admin/subscription-payments');
+    await page.getByRole('heading',{name:'Subscription payments',exact:true}).waitFor();
+    for (const width of [1440,390,320]) {
+        await page.setViewportSize({width,height:900});
+        for (const name of ['enabled','provider_confirmed']) {
+            const checkbox=page.locator('input[name="'+name+'"]');
+            const label=checkbox.locator('..');
+            const text=label.locator('span');
+            const c=await checkbox.boundingBox(), t=await text.boundingBox(), l=await label.boundingBox();
+            assert.ok(c && t && l && c.width>=17 && c.width<=19 && c.height>=17 && c.x>=l.x && t.x>=c.x+c.width+6 && Math.abs(c.y-t.y)<4 && l.height>=44,'Checkbox must sit left of its label text at '+width+'px');
+            await text.click();
+            assert.equal(await checkbox.isChecked(),true,'Label text toggles its checkbox');
+            await text.click();
+            assert.equal(await checkbox.isChecked(),false);
+        }
+    }
+    await page.setViewportSize({width:1440,height:900});
     await platformNav.getByRole('link',{name:'Legal policies',exact:true}).click();
     await page.waitForURL(app+'/admin/legal');
     await page.getByRole('heading',{name:'Legal policies',exact:true}).waitFor();
