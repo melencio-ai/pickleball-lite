@@ -14,7 +14,7 @@
 <body class="help-site">
 <a class="help-skip" href="#main-content">Skip to content</a>
 <header class="help-header"><div class="help-container help-header-inner">
-    <a class="help-brand" href="/"><x-platform-logo/><small>Help Center</small></a>
+    <a class="help-brand" href="/"><span class="help-brand-copy"><x-platform-logo/><small>Help Center</small></span></a>
     <nav aria-label="Help Center"><a href="/">All guides</a><a href="https://{{ config('pickle.product_host') }}">Website</a><a class="help-button help-outline" href="https://{{ config('pickle.app_host') }}/login">Sign in <x-booking-icon name="chevron-right"/></a></nav>
 </div></header>
 <main id="main-content" class="help-container">
