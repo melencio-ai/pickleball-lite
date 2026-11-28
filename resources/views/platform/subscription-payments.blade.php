@@ -14,8 +14,8 @@
     @endif
     <form class="form-stack" method="post" action="{{ route('app.admin.subscription-payments.settings') }}">@csrf @method('PATCH')
         <label>Replace base EMV QR <textarea name="base" rows="3" maxlength="512" autocomplete="off" placeholder="{{ $preview?'Configured — leave blank to keep':'Paste base EMV code' }}"></textarea></label>
-        <label><input type="checkbox" name="enabled" value="1" @checked($settings->enabled)> Enable venue subscription QR payments</label>
-        <label><input type="checkbox" name="provider_confirmed" value="1"> I have verified the payment recipient and provider support for amount-adjusted reusable QR codes.</label>
+        <label class="checkbox subscription-checkbox"><input type="checkbox" name="enabled" value="1" @checked($settings->enabled)><span>Enable venue subscription QR payments</span></label>
+        <label class="checkbox subscription-checkbox"><input type="checkbox" name="provider_confirmed" value="1"><span>I have verified the payment recipient and provider support for amount-adjusted reusable QR codes.</span></label>
         <button>Save payment settings</button>
     </form>
     <x-messenger-link class="button secondary" :url="\App\Services\MessengerLinks::PLATFORM">Open Pickle Lite Messenger</x-messenger-link>
@@ -34,7 +34,7 @@
                         <label>Amount actually received (PHP)<input name="amount" type="number" min=".01" step=".01" required></label>
                         <label>Bank / wallet transaction reference<input name="bank_reference" maxlength="100" required></label>
                         <label>Date received<input name="received_on" type="date" required value="{{ now('Asia/Manila')->toDateString() }}" max="{{ now('Asia/Manila')->toDateString() }}"></label>
-                        <label><input type="checkbox" name="verified_in_messenger" value="1" required> I verified the Messenger receipt and matched the amount and reference to the actual received funds.</label>
+                        <label class="checkbox subscription-checkbox"><input type="checkbox" name="verified_in_messenger" value="1" required><span>I verified the Messenger receipt and matched the amount and reference to the actual received funds.</span></label>
                         <button>Approve and extend subscription</button>
                     </form>
                 </details>

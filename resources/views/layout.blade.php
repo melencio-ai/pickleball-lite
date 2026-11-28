@@ -15,7 +15,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1{{ $appShell ? ', viewport-fit=cover' : '' }}">
     <title>@yield('title') · {{ $brandVenue?->name ?? 'Pickle Lite' }}</title>
-    <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
+    <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant2">
     @if($logoUrl)
         <link rel="icon" href="{{ $logoUrl }}">
     @else

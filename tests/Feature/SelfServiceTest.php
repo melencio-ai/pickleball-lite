@@ -246,7 +246,7 @@ class SelfServiceTest extends TestCase
         $this->assertSame(100000,(int)$request->amount);
         $this->assertSame('awaiting_payment',$request->status);
         $this->assertSame(app(\App\Services\EmvPaymentQr::class)->generate(config('pickle.subscription_qr_base'),100000),\Illuminate\Support\Facades\Crypt::decryptString($request->qr_ciphertext));
-        $this->get($url,['User-Agent'=>'Mozilla/5.0 (iPhone)'])->assertOk()->assertSee('Send proof of payment')->assertSee('https://m.me/pickleliteapp');
+        $this->get($url,['User-Agent'=>'Mozilla/5.0 (iPhone)'])->assertOk()->assertSee('Send proof of payment')->assertSee('https://m.me/pickleliteapp')->assertSee('class="checkbox subscription-checkbox"><input type="checkbox" name="not_paid"',false);
         $this->post($url.'/checkout',['plan'=>'monthly'])->assertRedirect();
         $this->assertDatabaseCount('subscription_payment_requests',1);
         $this->post($url.'/checkout',['plan'=>'yearly'])->assertSessionHasErrors('plan');
@@ -257,7 +257,7 @@ class SelfServiceTest extends TestCase
         $this->post($queue.'/'.$request->id.'/review',['decision'=>'reject','reason'=>'Not permitted'])->assertForbidden();
 
         $before=TrialAccess::subscription($venue);
-        $this->actingAs($admin)->get($queue)->assertOk()->assertSee($request->reference)->assertSee('Submitted');
+        $this->actingAs($admin)->get($queue)->assertOk()->assertSee($request->reference)->assertSee('Submitted')->assertSee('class="checkbox subscription-checkbox"><input type="checkbox" name="verified_in_messenger"',false);
         $review=['decision'=>'approve','amount'=>'1000.00','bank_reference'=>'QR-001','received_on'=>now('Asia/Manila')->toDateString(),'verified_in_messenger'=>'1'];
         $this->post($queue.'/'.$request->id.'/review',array_replace($review,['amount'=>'999.00']))->assertSessionHasErrors('amount');
         $this->post($queue.'/'.$request->id.'/review',array_replace($review,['verified_in_messenger'=>'0']))->assertSessionHasErrors('verified_in_messenger');
