@@ -33,8 +33,18 @@ try {
     await marketingLogo.evaluate(img=>img.decode());
     assert.ok((await marketingLogo.getAttribute('src')).includes('pickle-lite-horizontal-primary.svg'));
     assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/favicon.svg?v=court1');
+    const heroImage=page.locator('.product-hero-visual img');
+    await heroImage.evaluate(img=>img.decode());
+    assert.equal(await heroImage.isVisible(),true);
+    assert.equal(await heroImage.evaluate(img=>img.naturalWidth),1040);
+    const heroCopy=page.locator('.product-hero .site-hero-copy');
+    const desktopCopy=await heroCopy.boundingBox(), desktopImage=await heroImage.boundingBox();
+    assert.ok(desktopImage.x>=desktopCopy.x+desktopCopy.width-1,'Hero image sits to the right on desktop');
     await page.setViewportSize({width:320,height:740});
     await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
+    const mobileCopy=await heroCopy.boundingBox(), mobileImage=await heroImage.boundingBox();
+    assert.ok(mobileImage.y>=mobileCopy.y+mobileCopy.height-1,'Hero image stacks below the CTA on mobile');
+    assert.ok(mobileImage.x>=0 && mobileImage.x+mobileImage.width<=321,'Hero image stays inside the mobile viewport');
     await page.setViewportSize({width:1440,height:900});
     await page.locator('.site-navigation nav').getByRole('link',{name:'Sign in'}).click();
     await page.waitForURL(app+'/login');
