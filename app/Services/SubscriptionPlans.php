@@ -45,16 +45,16 @@ final class SubscriptionPlans
     {
         // The Railway cron runs platform:notifications directly, not schedule:run.
         // Expire paid annual terms in that same worker so status and access agree.
-        DB::table('venue_subscriptions')->whereIn('billing_plan',['yearly','yearly_promo'])->where('status','active')
+        DB::table('venue_subscriptions')->where(fn($q)=>$q->whereIn('billing_plan',['yearly','yearly_promo'])->orWhere('qr_managed',true))->where('status','active')
             ->whereNotNull('renewal_date')->where('renewal_date','<=',now()->addDay()->toDateString())->orderBy('id')
             ->chunkById(100,function($rows) {
                 foreach($rows as $row) DB::transaction(function() use($row) {
                     $venue=Venue::whereKey($row->venue_id)->lockForUpdate()->first();
                     if(!$venue)return;
                     $sub=TrialAccess::subscription($venue,true);
-                    if(!self::annual($sub) || $sub->status!=='active' || !$sub->renewal_date || $sub->renewal_date>now($venue->timezone)->toDateString())return;
+                    if((!self::annual($sub) && !$sub?->qr_managed) || $sub->status!=='active' || !$sub->renewal_date || $sub->renewal_date>now($venue->timezone)->toDateString())return;
                     DB::table('venue_subscriptions')->where('id',$sub->id)->update(['status'=>'overdue','updated_at'=>now()]);
-                    VenueNotifications::emit($venue,'subscription','annual-expired-'.$sub->renewal_date,'Yearly subscription ended','Renew your yearly subscription or choose a monthly plan. No automatic charges apply.','subscription',true);
+                    VenueNotifications::emit($venue,'subscription','renewal-expired-'.$sub->renewal_date,'Subscription period ended','Renew your subscription to restore paid access. No automatic charges apply.','subscription',true);
                 },3);
             });
         DB::table('venue_subscriptions')->whereNull('promo_redeemed_at')->whereIn('status',['trial','trial_expired','active','overdue'])

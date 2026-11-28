@@ -224,6 +224,91 @@ class SelfServiceTest extends TestCase
         $this->assertSame('overdue',TrialAccess::subscription($venue)->status);
     }
 
+    public function test_platform_qr_checkout_requires_provider_confirmation_and_verified_payment(): void
+    {
+        config(['pickle.subscription_qr_base'=>'00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406200.005802PH5910LITE COURT6006MANILA63045AC6']);
+        [$owner,$venue]=$this->signup();
+        $this->verify($owner,$venue);
+        $venue->update(['status'=>'active','published'=>true]);
+        DB::table('venue_onboarding')->where('venue_id',$venue->id)->update(['completed_at'=>now()]);
+        $url=$this->workspace($venue,'/subscription');
+        $admin=User::where('email','self-service-admin@example.test')->firstOrFail();
+        LegalPolicies::record(LegalPolicies::context(),'user',$admin->id,$admin->venue_id,$admin->id);
+        $queue=$this->appUrl('/admin/subscription-payments');
+        $this->actingAs($owner->fresh())->post($url.'/checkout',['plan'=>'monthly'])->assertSessionHasErrors('plan');
+        $this->get($queue)->assertForbidden();
+        $this->actingAs($admin)->get($queue)->assertOk()->assertSee('Preview QR for ₱1,000');
+        $this->patch($queue.'/settings',['enabled'=>'1'])->assertSessionHasErrors('provider_confirmed');
+        $this->patch($queue.'/settings',['enabled'=>'1','provider_confirmed'=>'1'])->assertRedirect();
+        $this->actingAs($owner->fresh())->post($url.'/checkout',['plan'=>'yearly_promo'])->assertSessionHasErrors('plan');
+        $this->post($url.'/checkout',['plan'=>'monthly','amount'=>'1'])->assertRedirect();
+        $request=DB::table('subscription_payment_requests')->first();
+        $this->assertSame(100000,(int)$request->amount);
+        $this->assertSame('awaiting_payment',$request->status);
+        $this->assertSame(app(\App\Services\EmvPaymentQr::class)->generate(config('pickle.subscription_qr_base'),100000),\Illuminate\Support\Facades\Crypt::decryptString($request->qr_ciphertext));
+        $this->get($url,['User-Agent'=>'Mozilla/5.0 (iPhone)'])->assertOk()->assertSee('Send proof of payment')->assertSee('https://m.me/pickleliteapp');
+        $this->post($url.'/checkout',['plan'=>'monthly'])->assertRedirect();
+        $this->assertDatabaseCount('subscription_payment_requests',1);
+        $this->post($url.'/checkout',['plan'=>'yearly'])->assertSessionHasErrors('plan');
+        $this->post($url.'/payments/'.$request->id.'/submit')->assertRedirect();
+        $this->assertDatabaseHas('subscription_payment_requests',['id'=>$request->id,'status'=>'submitted']);
+        $this->assertDatabaseCount('subscription_payments',0);
+        $this->assertSame('trial',TrialAccess::subscription($venue)->status);
+        $this->post($queue.'/'.$request->id.'/review',['decision'=>'reject','reason'=>'Not permitted'])->assertForbidden();
+
+        $before=TrialAccess::subscription($venue);
+        $this->actingAs($admin)->get($queue)->assertOk()->assertSee($request->reference)->assertSee('submitted');
+        $review=['decision'=>'approve','amount'=>'1000.00','bank_reference'=>'QR-001','received_on'=>now('Asia/Manila')->toDateString(),'verified_in_messenger'=>'1'];
+        $this->post($queue.'/'.$request->id.'/review',array_replace($review,['amount'=>'999.00']))->assertSessionHasErrors('amount');
+        $this->post($queue.'/'.$request->id.'/review',array_replace($review,['verified_in_messenger'=>'0']))->assertSessionHasErrors('verified_in_messenger');
+        $this->post($queue.'/'.$request->id.'/review',$review)->assertRedirect();
+        $paid=TrialAccess::subscription($venue);
+        $this->assertSame('active',$paid->status);
+        $this->assertSame('monthly',$paid->billing_plan);
+        $this->assertSame(\Carbon\CarbonImmutable::parse($before->trial_ends_at)->setTimezone($venue->timezone)->addMonthNoOverflow()->toDateString(),$paid->renewal_date);
+        $this->assertDatabaseHas('subscription_payments',['amount'=>100000,'reference'=>'QR-001','kind'=>'monthly']);
+        $this->assertDatabaseHas('subscription_payment_requests',['id'=>$request->id,'status'=>'approved']);
+        $this->post($queue.'/'.$request->id.'/review',$review)->assertSessionHasErrors('payment');
+        $this->assertDatabaseCount('subscription_payments',1);
+
+        $this->actingAs($owner->fresh())->get($url)->assertOk()->assertSee('Payment history')->assertSee('QR-001');
+        $this->post($url.'/checkout',['plan'=>'yearly'])->assertRedirect();
+        $next=DB::table('subscription_payment_requests')->latest('id')->first();
+        $this->assertSame(1000000,(int)$next->amount);
+        $this->actingAs($admin)->post($queue.'/'.$next->id.'/review',array_replace($review,['amount'=>'10000.00']))->assertSessionHasErrors('bank_reference');
+        $this->post($queue.'/'.$next->id.'/review',['decision'=>'reject','reason'=>'No funds received'])->assertRedirect();
+        $this->actingAs($owner->fresh())->get($url)->assertOk()->assertSee('No funds received');
+        $this->travelTo(\Carbon\CarbonImmutable::parse($paid->renewal_date,$venue->timezone));
+        $this->assertFalse(TrialAccess::allowed($venue));
+        $this->artisan('platform:notifications')->assertSuccessful();
+        $this->assertSame('overdue',TrialAccess::subscription($venue)->status);
+    }
+
+    public function test_platform_qr_first_year_offer_is_consumed_only_after_payment_approval(): void
+    {
+        config(['pickle.subscription_qr_base'=>'00020101021226320014PH.PPMI.TESTQR0110TESTVENUE15204479953036085406200.005802PH5910LITE COURT6006MANILA63045AC6']);
+        [$owner,$venue]=$this->signup();
+        $this->verify($owner,$venue);
+        $venue->update(['status'=>'active','published'=>true]);
+        DB::table('venue_onboarding')->where('venue_id',$venue->id)->update(['completed_at'=>now()]);
+        DB::table('platform_subscription_qr_settings')->where('id',1)->update(['enabled'=>true]);
+        $this->travelTo(\Carbon\CarbonImmutable::parse($owner->created_at)->addDays(15));
+        $url=$this->workspace($venue,'/subscription');
+        $this->actingAs($owner->fresh())->post($url.'/checkout',['plan'=>'yearly_promo'])->assertRedirect();
+        $request=DB::table('subscription_payment_requests')->firstOrFail();
+        $this->assertSame(500000,(int)$request->amount);
+        $this->assertNull(TrialAccess::subscription($venue)->promo_redeemed_at);
+        $admin=User::where('email','self-service-admin@example.test')->firstOrFail();
+        LegalPolicies::record(LegalPolicies::context(),'user',$admin->id,$admin->venue_id,$admin->id);
+        $this->actingAs($admin)->post($this->appUrl('/admin/subscription-payments/'.$request->id.'/review'),[
+            'decision'=>'approve','amount'=>'5000.00','bank_reference'=>'QR-PROMO','received_on'=>now('Asia/Manila')->toDateString(),'verified_in_messenger'=>'1',
+        ])->assertRedirect();
+        $paid=TrialAccess::subscription($venue);
+        $this->assertSame('yearly_promo',$paid->billing_plan);
+        $this->assertNotNull($paid->promo_redeemed_at);
+        $this->actingAs($owner->fresh())->post($url.'/checkout',['plan'=>'yearly_promo'])->assertSessionHasErrors('plan');
+    }
+
     public function test_messenger_variants_preserve_recipient_and_other_contact_links(): void
     {
         $variants=\App\Services\MessengerLinks::variants('https://www.facebook.com/messages/t/pickleliteapp');

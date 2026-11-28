@@ -79,7 +79,7 @@ class SubscriptionQrController extends Controller
         $decision=$request->validate(['decision'=>'required|in:approve,reject'])['decision'];
         $data=$decision==='approve' ? $request->validate([
             'amount'=>['required','regex:'.Pricing::PESOS],
-            'bank_reference'=>'required|string|max:100','received_on'=>'required|date_format:Y-m-d|before_or_equal:today',
+            'bank_reference'=>'required|string|max:100','received_on'=>'required|date_format:Y-m-d|before_or_equal:'.now('Asia/Manila')->toDateString(),
             'verified_in_messenger'=>'accepted',
         ]) : $request->validate(['reason'=>'required|string|max:500']);
         PlatformSubscriptionQr::review($request->user(),$payment,$data+['decision'=>$decision]);

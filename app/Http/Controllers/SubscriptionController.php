@@ -34,6 +34,9 @@ class SubscriptionController extends Controller
 
     public function upgrade(Request $request)
     {
+        if (\App\Services\PlatformSubscriptionQr::enabled()) {
+            return app(SubscriptionQrController::class)->checkout($request);
+        }
         $plan=$request->validate(['plan'=>'sometimes|in:monthly,yearly,yearly_promo'])['plan'] ?? 'monthly';
         DB::transaction(function() use($request,$plan) {
             $venue=Venue::whereKey(VenueContext::venue()->id)->lockForUpdate()->firstOrFail();
