@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 final class VenueNotifications
 {
-    public const CATEGORIES = ['booking','payment','open_play','account','trial','subscription'];
+    public const CATEGORIES = ['booking','payment','open_play','account','trial','subscription','promotion'];
 
     public static function emit(Venue $venue,string $category,string $key,string $title,string $message,string $destination='calendar',bool $ownersOnly=false): void
     {
@@ -39,7 +39,7 @@ final class VenueNotifications
     public static function sweep(): void
     {
         DB::table('venue_subscriptions')->where('status','trial')->whereNotNull('trial_ends_at')
-            ->where('trial_ends_at','<=',now()->addDays(5))->orderBy('id')->chunkById(100,function($rows) {
+            ->where('trial_ends_at','<=',now()->addDays(config('selfservice.extension_window_days')))->orderBy('id')->chunkById(100,function($rows) {
                 foreach($rows as $row) DB::transaction(function() use($row) {
                     $venue=Venue::whereKey($row->venue_id)->lockForUpdate()->first();
                     if (!$venue || !$venue->self_service) return;
@@ -49,8 +49,9 @@ final class VenueNotifications
                     if ($end->lte(now())) {
                         DB::table('venue_subscriptions')->where('id',$sub->id)->update(['status'=>'trial_expired','updated_at'=>now()]);
                         self::emit($venue,'trial','expired-'.$sub->trial_extensions_count,'Free trial ended','New reservations are disabled. Existing bookings and payment links remain available.','subscription',true);
-                    } elseif ($end->lte(now()->addDays(5))) {
-                        self::emit($venue,'trial','ending-'.$sub->trial_extensions_count,'Free trial ending','Your free trial is ending soon. Review your extension or upgrade options.','subscription',true);
+                    } elseif ($end->lte(now()->addDays(config('selfservice.extension_window_days')))) {
+                        $message=TrialAccess::canExtend($sub) ? 'Your free trial is ending soon. You can extend it by 15 days or choose a paid plan.' : 'Your free trial is ending soon. Choose a paid plan to continue.';
+                        self::emit($venue,'trial','ending-'.$sub->trial_extensions_count,'Free trial ending',$message,'subscription',true);
                     }
                 },3);
             });

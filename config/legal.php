@@ -70,7 +70,7 @@ POLICY
             'title'=>'Venue Subscription Terms',
             'body'=><<<'POLICY'
 1. Service
-The standard plan is PHP 1,000 per month per venue. Account creation, standard self-service setup and activation are free. There is no setup or activation fee. Any separately requested optional services must be expressly agreed before they are charged. The service includes a branded venue website, court booking, Open Play, payment verification workflow and management tools.
+The standard plans are PHP 1,000 per month or PHP 10,000 per year per venue. Account creation, standard self-service setup and activation are free. There is no setup or activation fee. Any separately requested optional services must be expressly agreed before they are charged. The service includes a branded venue website, court booking, Open Play, payment verification workflow and management tools.
 
 2. Venue obligations
 Provide accurate business identity and contact details, authorized merchant QR details, truthful pricing, opening hours and lawful booking/cancellation rules. Invite only authorized personnel. The venue is responsible for the facilities, customer support, receipt verification, refunds and its own lawful processing of personal information.
@@ -79,7 +79,7 @@ Provide accurate business identity and contact details, authorized merchant QR d
 The venue authorizes the platform to host and process data needed to deliver the service. The parties must document applicable controller/processor responsibilities, authorized processing, confidentiality, security, retention, subprocessors, incident cooperation and return or deletion of records as required. The venue retains its rights to its uploaded branding; personal data remains subject to privacy rights.
 
 4. Billing, renewal and termination
-Payments and renewal status are recorded manually. No charge is made solely because a trial ends. The owner must request paid activation and arrange the first monthly payment. Monthly maintenance is payable in advance for the paid period. Cancellation stops future billing, subject to any amount already due. Refund requests for duplicate or incorrect subscription payments, undelivered services or other legal grounds will be reviewed. Cancellation does not automatically create a prorated refund. The agreed payment deadlines, cancellation notice, overdue procedure, support commitments and export/termination arrangements are provided in the commercial conditions below. Suspension or termination must respect existing reservations, lawful data retention and consumer rights. Nothing waives mandatory legal obligations.
+Payments and renewal status are recorded manually. No charge is made solely because a trial ends. The owner must request paid activation and arrange the first payment for the selected plan. Subscription fees are payable in advance for the paid period. Cancellation stops future billing, subject to any amount already due. Refund requests for duplicate or incorrect subscription payments, undelivered services or other legal grounds will be reviewed. Cancellation does not automatically create a prorated refund. The agreed payment deadlines, cancellation notice, overdue procedure, support commitments and export/termination arrangements are provided in the commercial conditions below. Suspension or termination must respect existing reservations, lawful data retention and consumer rights. Nothing waives mandatory legal obligations.
 POLICY
         ],
     ],

@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=8">
 <script src="/workspace.js?v=8" defer></script>
+<script src="{{ asset('messenger.js') }}?v=1" defer></script>
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
@@ -108,6 +109,9 @@
             @elseif(!\App\Services\TrialAccess::allowed($workspace))
                 <div class="workspace-trial expired"><x-workspace-icon name="clock"/><span>Subscription inactive. Existing bookings remain available.</span>@can('manage-venue')<a href="{{ \App\Services\VenueContext::url('settings.subscription') }}">View subscription</a>@endcan</div>
             @endif
+        @endif
+        @if($appShell && $workspace && \App\Services\VenueContext::role()==='owner' && !\App\Services\VenueContext::is('settings.subscription') && \App\Services\SubscriptionPlans::eligible($workspace,$subscriptionStatus,auth()->user()))
+            <div class="workspace-trial" data-subscription-promo><x-workspace-icon name="gift"/><span><strong>Special offer: 50% off your first year — ₱5,000</strong></span><a href="{{ \App\Services\VenueContext::url('settings.subscription') }}#special-offer">Claim offer</a></div>
         @endif
         @if($rewardsState && !\App\Services\VenueContext::is('settings.rewards'))
             <x-rewards-widget :state="$rewardsState"/>

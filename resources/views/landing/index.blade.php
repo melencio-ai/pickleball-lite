@@ -241,7 +241,7 @@
                 <div class="site-contact">
                     @if($venue->map_url)<a class="site-button site-outline" href="{{ $venue->map_url }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="map-pin" /> Get directions</a>@endif
                     @if($venue->phone)<a class="site-button site-outline" href="tel:{{ preg_replace('/[^+0-9]/','',$venue->phone) }}"><x-booking-icon name="phone" /> {{ $venue->phone }}</a>@endif
-                    @if($venue->messenger_url || $venue->payment_messenger_url)<a class="site-button site-outline" href="{{ $venue->messenger_url ?: $venue->payment_messenger_url }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="message-circle" /> Message us</a>@endif
+                    @if($venue->messenger_url || $venue->payment_messenger_url)<x-messenger-link :url="$venue->messenger_url ?: $venue->payment_messenger_url" class="site-button site-outline" ><x-booking-icon name="message-circle" /> Message us</x-messenger-link>@endif
                 </div>
             </div>
         </section>
@@ -254,5 +254,6 @@
     <footer class="site-footer"><div class="site-container"><span>{{ $venue->name }}</span><span>Powered by Pickle Lite · <a href="{{ \App\Services\VenueContext::onBooking() || \App\Services\VenueContext::onApp() ? route('app.home') : (auth()->check() ? route('staff.calendar') : route('login')) }}">Staff sign in</a></span></div><div class="legal-footer"><x-legal-links :venue="$venue"/></div></footer>
     <div class="site-mobile-cta"><a class="site-button site-primary" href="{{ \App\Services\VenueContext::url('book') }}">Book now <x-booking-icon name="chevron-right" /></a></div>
     <script src="{{ asset('landing-navigation.js') }}?v=2" defer></script>
+    <script src="{{ asset('messenger.js') }}?v=1" defer></script>
 </body>
 </html>

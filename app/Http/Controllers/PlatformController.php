@@ -51,13 +51,13 @@ class PlatformController extends Controller
     {
         $search = $request->validate(['q'=>'nullable|string|max:100'])['q'] ?? '';
         $query = Venue::query()->leftJoin('venue_subscriptions','venues.id','=','venue_subscriptions.venue_id')
-            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date','venue_subscriptions.upgrade_requested_at')
+            ->select('venues.*','venue_subscriptions.status as billing_status','venue_subscriptions.renewal_date','venue_subscriptions.upgrade_requested_at','venue_subscriptions.requested_plan')
             ->withCount('members');
         if ($search !== '') $query->where(fn ($q) => $q->where('venues.name','like','%'.$search.'%')->orWhere('venues.slug','like','%'.$search.'%'));
         $venues = $query->orderBy('venues.name')->paginate(25)->withQueryString();
         $stats = [
             'venues'=>Venue::count(),'active'=>Venue::where('status','active')->where('published',true)->count(),
-            'mrr'=>DB::table('venue_subscriptions')->where('status','active')->sum('monthly_fee'),
+            'mrr'=>DB::table('venue_subscriptions')->where('status','active')->selectRaw("COALESCE(SUM(CASE WHEN billing_plan='yearly' THEN 1000000.0/12 WHEN billing_plan='yearly_promo' THEN 500000.0/12 ELSE monthly_fee END),0) AS total")->value('total'),
             'overdue'=>DB::table('venue_subscriptions')->where('status','overdue')->count(),
         ];
         $enquiries = DB::table('product_enquiries')->latest()->limit(20)->get();
@@ -144,15 +144,15 @@ class PlatformController extends Controller
             if ($data['status']==='trial' && (!$current || !$current->trial_ends_at || \Carbon\CarbonImmutable::parse($current->trial_ends_at)->lte(now()))) {
                 throw ValidationException::withMessages(['status'=>'A trial can only remain active until its recorded expiration.']);
             }
-            if ($current?->reward_managed && ($data['expected_renewal'] ?? null)!==$current->renewal_date) {
+            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && ($data['expected_renewal'] ?? null)!==$current->renewal_date) {
                 throw ValidationException::withMessages(['renewal_date'=>'The subscription changed. Refresh before saving.']);
             }
-            if ($current?->reward_managed && $data['status']==='active' && $current->renewal_date &&
+            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && $data['status']==='active' && $current->renewal_date &&
                 $current->renewal_date>now($record->timezone)->toDateString() &&
                 ($data['renewal_date'] ?? '')<$current->renewal_date) {
                 throw ValidationException::withMessages(['renewal_date'=>'Do not shorten an existing reward-covered term here. Reconcile it separately.']);
             }
-            if ($current?->reward_managed && $data['status']==='active' &&
+            if (($current?->reward_managed || \App\Services\SubscriptionPlans::annual($current)) && $data['status']==='active' &&
                 (!filled($data['renewal_date'] ?? null) || $data['renewal_date']<=now($record->timezone)->toDateString())) {
                 throw ValidationException::withMessages(['renewal_date'=>'A reward-managed subscription requires a future renewal date.']);
             }
@@ -172,7 +172,7 @@ class PlatformController extends Controller
     public function recordPayment(Request $request,int $venue)
     {
         $data = $request->validate([
-            'kind'=>['required',Rule::in(['monthly'])],
+            'kind'=>['required',Rule::in(['monthly','yearly','yearly_promo'])],
             'amount'=>['required','regex:'.\App\Services\Pricing::PESOS],
             'reference'=>'required|string|max:100','received_on'=>'required|date_format:Y-m-d|before_or_equal:today',
         ]);
@@ -186,14 +186,16 @@ class PlatformController extends Controller
             if (DB::table('subscription_payments')->where('venue_subscription_id',$sub->id)->where('reference',$ref)->exists()) {
                 throw ValidationException::withMessages(['reference'=>'This subscription payment is already recorded.']);
             }
+            $changes=\App\Services\SubscriptionPlans::verifiedPayment($record,$sub,$data['kind'],$amount);
             DB::table('subscription_payments')->insert([
                 'venue_subscription_id'=>$sub->id,'kind'=>$data['kind'],'amount'=>$amount,'reference'=>$ref,
                 'received_on'=>$data['received_on'],'recorded_by'=>$request->user()->id,'created_at'=>now(),'updated_at'=>now(),
             ]);
+            DB::table('venue_subscriptions')->where('id',$sub->id)->update($changes+['updated_at'=>now()]);
             VenueInvitations::audit($request->user(),$record,'subscription.payment_recorded',['amount'=>$amount,'kind'=>$data['kind']]);
             \App\Services\VenueNotifications::emit($record,'subscription','payment-'.hash('sha256',$ref),'Subscription payment recorded','Your verified subscription payment has been recorded.','subscription',true);
         },3);
 
-        return back()->with('status','Subscription payment recorded. Update renewal date and status separately.');
+        return back()->with('status',$data['kind']==='monthly'?'Subscription payment recorded. Update renewal date and status separately.':'Yearly payment recorded and renewal date updated.');
     }
 }

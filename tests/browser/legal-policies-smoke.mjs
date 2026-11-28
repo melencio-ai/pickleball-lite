@@ -182,9 +182,13 @@ try {
     await rewardDrawer.getByRole('link',{name:/View rewards, submit testimonial/}).click();
     await walkthrough.waitForURL(app+'/venues/walkthrough-test-courts/rewards');
     await walkthrough.getByRole('heading',{name:'Pickle Lite Rewards',exact:true}).waitFor();
+    const testimonialLink=walkthrough.getByRole('link',{name:/Send video via Messenger/});
+    // Testimonial CTA is gated by activity; the contact destination is covered below when available.
+    if(await testimonialLink.count())assert.equal(await testimonialLink.getAttribute('href'),'https://www.facebook.com/messages/t/pickleliteapp');
     await walkthrough.getByText('Unlock after 15 active days.',{exact:false}).waitFor();
     assert.ok(await walkthrough.getByText('Optional Facebook review',{exact:true}).isVisible());
     await walkthrough.setViewportSize({width:320,height:740});
+    if(await testimonialLink.count())await walkthrough.waitForFunction(()=>document.querySelector('[data-messenger-mobile]').getAttribute('href')==='https://m.me/pickleliteapp');
     assert.ok(await walkthrough.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
     await walkthrough.close();
     console.log('Platform rewards passed: qualifying launch-day activity, one-day streak, mobile and desktop drawer, milestones and optional review.');

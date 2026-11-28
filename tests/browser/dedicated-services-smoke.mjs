@@ -171,13 +171,19 @@ try {
     execFileSync('php',['artisan','tinker','--execute='+[
         '$venue=App\\Models\\Venue::where("slug","pickleball-lite-courts")->firstOrFail();',
         '$png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII=";',
-        '$venue->media()->updateOrCreate(["kind"=>"logo"],["mime"=>"image/png","version"=>hash("sha256",base64_decode($png)),"content"=>$png]);',
+        '$venue->media()->updateOrCreate(["kind"=>"logo"],["mime"=>"image/png","version"=>hash("sha256",base64_decode($png)),"content"=>$png]); $venue->update(["messenger_url"=>"https://www.facebook.com/messages/t/testcourts"]);',
     ].join(' ')],{stdio:'pipe'});
     await page.goto(book+'/'+slug);
     const venueLogo=await page.locator('.site-navigation .site-logo img').getAttribute('src');
     const venueName=await page.locator('.site-navigation .site-logo strong').textContent();
     assert.ok(venueLogo.startsWith(book+'/'+slug+'/branding/logo/'));
     await page.getByRole('heading',{name:'Your next game starts here.'}).waitFor();
+    const messenger=page.getByRole('link',{name:'Message us',exact:true});
+    assert.equal(await messenger.getAttribute('href'),'https://www.facebook.com/messages/t/testcourts');
+    await page.setViewportSize({width:390,height:844});
+    await page.waitForFunction(()=>document.querySelector('[data-messenger-mobile]')?.getAttribute('href')==='https://m.me/testcourts');
+    await page.setViewportSize({width:1440,height:900});
+    await page.waitForFunction(()=>document.querySelector('[data-messenger-mobile]')?.getAttribute('href')==='https://www.facebook.com/messages/t/testcourts');
     await page.locator('.site-navigation').getByRole('link',{name:'Book now'}).click();
     await page.waitForURL(book+'/'+slug+'/book');
     await page.getByRole('heading',{name:'What would you like to book?'}).waitFor();

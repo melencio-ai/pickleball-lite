@@ -13,7 +13,7 @@
     </div>
     <div hidden aria-hidden="true"><label>Leave blank<input name="website" tabindex="-1" autocomplete="off"></label></div>
     <x-legal-acceptance :legal="$legal"/>
-    <p class="auth-help">Your trial begins when you verify your email. Up to three optional 15-day extensions. No automatic charges. Free setup. Continue after your trial for ₱1,000/month per venue.</p>
+    <p class="auth-help">Your trial begins when you verify your email. No automatic charges. Free setup. Optional account offers may be sent by email; you can opt out in notification preferences. Continue after your trial for ₱1,000/month or ₱10,000/year per venue.</p>
     <button type="submit" class="auth-submit" data-auth-submit data-busy-text="Creating account…"><span data-submit-label>Create free account</span><x-auth-icon name="arrow-right"/></button>
 </form>
 <div class="auth-secondary">Already have an account? <a href="{{ route('app.login') }}">Sign in</a></div>

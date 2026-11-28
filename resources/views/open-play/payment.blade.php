@@ -55,9 +55,9 @@
 
         <div class="actions payment-actions">
             @if($status !== 'confirmed')
-                <a class="button" href="{{ $registration->payment_messenger_url }}" target="_blank" rel="noopener noreferrer">
+                <x-messenger-link :url="$registration->payment_messenger_url" class="button" >
                     <x-booking-icon name="message-circle" /> {{ $open ? 'Send receipt in Messenger' : 'Contact venue in Messenger' }}
-                </a>
+                </x-messenger-link>
             @endif
             @if($open)
                 <a class="button secondary" href="{{ \App\Services\VenueContext::url('open-play.payment', $registration->payment_token) }}">Refresh status</a>

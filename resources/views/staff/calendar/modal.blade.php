@@ -90,7 +90,7 @@
         @if($entry->payment_token && !$entry->cancelled_at && !$entry->paid_at)
             <div class="actions calendar-modal-actions">
                 <a class="button secondary" href="{{ \App\Services\VenueContext::url('book.payment',$entry->payment_token) }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="link" /> Payment link</a>
-                <a class="button secondary" href="{{ $entry->payment_messenger_url }}" target="_blank" rel="noopener noreferrer"><x-booking-icon name="message-circle" /> Open Messenger</a>
+                <x-messenger-link :url="$entry->payment_messenger_url" class="button secondary" ><x-booking-icon name="message-circle" /> Open Messenger</x-messenger-link>
             </div>
             @if(!$entry->paymentExpired())
                 <details class="calendar-verify">
