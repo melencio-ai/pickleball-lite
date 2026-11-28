@@ -175,3 +175,35 @@
 .site-session progress { accent-color:var(--brand-ink); }
 .site-gallery-zoom { background:var(--brand-primary); color:var(--brand-on-primary); border:1px solid var(--brand-ink); }
 .site-gallery-dialog button { color:var(--brand-ink); }
+
+/* Product pricing only: equal inclusions, clear annual savings, accessible mobile CTAs. */
+.site-pricing{max-width:1000px}
+.site-pricing-heading{max-width:650px;margin-inline:auto;text-align:center;justify-items:center}
+.site-pricing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;max-width:850px;margin-inline:auto;align-items:stretch}
+.site-pricing-card{display:flex;flex-direction:column;gap:1.15rem;min-width:0;padding:clamp(1.1rem,3vw,1.85rem);background:#fff;border:1px solid var(--brand-border);border-radius:.9rem}
+.site-pricing-featured{border-color:var(--brand-ink);box-shadow:inset 0 0 0 1px var(--brand-ink)}
+.site-pricing-title{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap;min-height:30px}
+.site-pricing-title h3{font-size:1.25rem;letter-spacing:-.025em}
+.site-pricing-top>p{color:var(--muted);font-size:.9rem;margin-top:.35rem}
+.site-pricing-badge{background:var(--brand-soft);color:var(--brand-ink);border-radius:999px;padding:.3rem .7rem;font-size:.78rem;font-weight:750;white-space:nowrap}
+.site-pricing-amount{display:grid;gap:.35rem;padding-bottom:1rem;border-bottom:1px solid var(--brand-border)}
+.site-pricing-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem}
+.site-pricing-price strong{font-size:clamp(2rem,4vw,2.85rem);line-height:1.15;color:var(--brand-ink);letter-spacing:-.05em}
+.site-pricing-price span{font-size:.95rem;color:var(--muted)}
+.site-pricing-saving{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;min-height:1.4rem;font-size:.86rem;color:var(--muted)}
+.site-pricing-saving strong{color:var(--brand-ink);font-weight:750}
+.site-pricing-inclusions{display:grid;gap:.7rem}
+.site-pricing-inclusions h4{font-size:.92rem;font-weight:750}
+.site-pricing-inclusions ul{list-style:none;display:grid;gap:.65rem;margin:0;padding:0}
+.site-pricing-inclusions li{display:flex;align-items:flex-start;gap:.6rem;font-size:.9rem;line-height:1.45}
+.site-pricing-inclusions li svg{width:18px;height:18px;flex:0 0 18px;color:var(--brand-ink);margin-top:1px}
+.site-pricing-action{display:grid;gap:.6rem;margin-top:auto}
+.site-pricing-action .site-button{width:100%;min-height:48px}
+.site-pricing-action .site-footnote,.site-pricing-note{text-align:center}
+.site-pricing-note{margin:1.1rem auto 0;max-width:850px}
+@media(max-width:640px){
+    .site-pricing-grid{grid-template-columns:minmax(0,1fr);max-width:420px;gap:1rem}
+    .site-pricing-card{gap:1rem;padding:1.2rem}
+    .site-pricing-price strong{font-size:2.35rem}
+    .site-pricing-heading{margin-bottom:1.2rem}
+}

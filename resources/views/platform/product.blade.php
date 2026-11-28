@@ -7,7 +7,7 @@
     <link rel="canonical" href="{{ route('product.home') }}">
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
-    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
+    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=pricing2">
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=1">
 <script src="/workspace.js?v=1" defer></script>
@@ -45,10 +45,67 @@
                 @endforeach
             </div>
         </section>
-        <section class="site-band" id="pricing"><div class="site-container site-section site-two-column">
-            <div class="site-section-heading"><p class="site-eyebrow">Simple pricing</p><h2>One venue. One affordable plan.</h2><p>Start with a branded booking website and management tools for your courts.</p></div>
-            <div class="site-data-panel"><span class="muted">Flexible subscription</span><h2 class="site-price">₱1,000<span class="muted">/month</span></h2><div class="site-data-row"><strong>Yearly plan</strong><strong>₱10,000/year</strong></div><p class="muted">Save ₱2,000 compared with paying monthly.</p><div class="site-data-row"><strong>Account creation and setup</strong><strong>Free</strong></div><p>Includes the venue website, court booking, Open Play, QR payment workflow and staff calendar.</p><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a></div>
-        </div></section>
+        <section class="site-band" id="pricing" aria-labelledby="pricing-heading">
+            <div class="site-container site-section site-pricing">
+                @php
+                    $monthly=\App\Services\SubscriptionPlans::MONTHLY/100;
+                    $yearly=\App\Services\SubscriptionPlans::YEARLY/100;
+                    $annualMonthly=$monthly*12;
+                    $annualSavings=$annualMonthly-$yearly;
+                    $discount=(int)round(100*$annualSavings/$annualMonthly);
+                    $inclusions=[
+                        'Your own branded venue website',
+                        'Online court reservations',
+                        'Open Play sessions and sign-ups',
+                        'QR payments and Messenger verification',
+                        'Staff calendar and booking management',
+                        'Staff accounts and notifications',
+                        'Shareable venue booking link',
+                        'Free account setup and activation',
+                    ];
+                @endphp
+                <div class="site-section-heading site-pricing-heading">
+                    <p class="site-eyebrow">Simple pricing</p>
+                    <h2 id="pricing-heading">One venue. Everything included.</h2>
+                    <p>Choose monthly or save with yearly billing. Both plans give you the same tools to run your venue.</p>
+                </div>
+                <div class="site-pricing-grid">
+                    @foreach([['monthly','Monthly','Pay month to month.',$monthly,'month'],['yearly','Yearly','Pay once a year and save.',$yearly,'year']] as [$plan,$name,$description,$price,$period])
+                        <article class="site-pricing-card {{ $plan==='yearly'?'site-pricing-featured':'' }}" data-pricing-plan="{{ $plan }}" aria-labelledby="pricing-{{ $plan }}-title">
+                            <div class="site-pricing-top">
+                                <div class="site-pricing-title">
+                                    <h3 id="pricing-{{ $plan }}-title">{{ $name }}</h3>
+                                    @if($plan==='yearly')<span class="site-pricing-badge">Save {{ $discount }}%</span>@endif
+                                </div>
+                                <p>{{ $description }}</p>
+                            </div>
+                            <div class="site-pricing-amount">
+                                <p class="site-pricing-price"><strong>₱{{ number_format($price) }}</strong><span>/{{ $period }}</span></p>
+                                @if($plan==='yearly')
+                                    <p class="site-pricing-saving"><s>₱{{ number_format($annualMonthly) }}/year</s><strong>Save ₱{{ number_format($annualSavings) }}/year</strong></p>
+                                @else
+                                    <p class="site-pricing-saving">₱{{ number_format($annualMonthly) }} over 12 months</p>
+                                @endif
+                                <p class="site-footnote">Per venue · Free setup</p>
+                            </div>
+                            <div class="site-pricing-inclusions">
+                                <h4>What's included</h4>
+                                <ul>
+                                    @foreach($inclusions as $inclusion)
+                                        <li><x-booking-icon name="circle-check"/><span>{{ $inclusion }}</span></li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <div class="site-pricing-action">
+                                <a class="site-button {{ $plan==='yearly'?'site-primary':'site-outline' }}" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }} <x-booking-icon name="chevron-right"/></a>
+                                <p class="site-footnote">30 days free · No credit card required</p>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+                <p class="site-pricing-note site-footnote">No setup fees. No automatic charges when your trial ends.</p>
+            </div>
+        </section>
         <section class="site-container site-section site-two-column" id="get-started">
             <div class="site-section-heading">
                 <p class="site-eyebrow">See how Pickle Lite works</p>

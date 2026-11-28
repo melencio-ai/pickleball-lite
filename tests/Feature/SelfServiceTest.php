@@ -71,7 +71,10 @@ class SelfServiceTest extends TestCase
         $this->get($this->appUrl('/register'))->assertOk()->assertSee('30 days free')->assertSee('₱10,000/year')->assertDontSee('extensions')->assertDontSee('₱5,000');
         $this->get('http://'.config('pickle.product_host'))->assertOk()->assertSee('Watch a 5-minute full walkthrough')
             ->assertSee('Create a free account')->assertSee('Walkthrough video coming soon.')
-            ->assertDontSee("Let's get your venue online")->assertDontSee('Send enquiry');
+            ->assertDontSee("Let's get your venue online")->assertDontSee('Send enquiry')
+            ->assertSee('data-pricing-plan="monthly"',false)->assertSee('data-pricing-plan="yearly"',false)
+            ->assertSee('₱10,000')->assertSee('Save ₱2,000/year')->assertSee('Save 17%')
+            ->assertSee('Online court reservations')->assertDontSee('₱5,000')->assertDontSee('extensions remaining');
         $this->post($this->appUrl('/register'),['name'=>'Unaccepted','email'=>'reject@example.test','password'=>'test-password-123','password_confirmation'=>'test-password-123'])
             ->assertSessionHasErrors('legal_accepted');
         $this->assertDatabaseMissing('users',['email'=>'reject@example.test']);
