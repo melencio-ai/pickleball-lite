@@ -2,10 +2,24 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 const base='http://pickle-help.test',preview='http://pickle-help-preview.test';
 const browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP pickle-help.test 127.0.0.1:8004, MAP pickle-help-preview.test 127.0.0.1:8004']});
+async function assertRoboto(page) {
+    const font = await page.evaluate(async () => {
+        const faces = await document.fonts.load('500 16px Roboto', 'Pickle Lite ₱');
+        await document.fonts.ready;
+        return {
+            root: getComputedStyle(document.documentElement).fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+            loaded: faces.some(face => face.status === 'loaded' && face.family.replace(/["']/g, '') === 'Roboto'),
+        };
+    });
+    assert.equal(font.root, 'Roboto');
+    assert.equal(font.loaded, true, 'Self-hosted Roboto must load successfully');
+}
+
 try {
     const page=await browser.newPage({viewport:{width:1440,height:900}});
     const response=await page.goto(base);
     assert.equal(response.status(),200);
+    await assertRoboto(page);
     await page.locator('.help-brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
     assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/favicon.svg?v=court1');
     assert.ok(!response.headers()['set-cookie']);
