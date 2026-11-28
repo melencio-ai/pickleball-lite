@@ -178,6 +178,11 @@ class SelfServiceTest extends TestCase
         $this->travelTo($created->addDays(14));
         $this->get($subscriptionUrl)->assertOk()->assertSee('₱5,000')->assertSee('Claim offer');
         $this->get($this->workspace($venue,'/onboarding'))->assertOk()->assertSee('data-subscription-promo',false);
+        $this->patch($this->appUrl('/notifications/preferences'),['enabled'=>['account']])->assertRedirect();
+        \App\Services\SubscriptionPlans::sweep();
+        $this->assertDatabaseMissing('venue_notifications',['category'=>'promotion']);
+        $this->assertNull(TrialAccess::subscription($venue)->promo_email_attempted_at);
+        $this->patch($this->appUrl('/notifications/preferences'),['enabled'=>['account','promotion']])->assertRedirect();
         Mail::shouldReceive('raw')->once()->withArgs(fn($body,$callback)=>str_contains($body,'PHP 5,000') && str_contains($body,'/subscription'))->andReturnNull();
         \App\Services\SubscriptionPlans::sweep();
         \App\Services\SubscriptionPlans::sweep();
@@ -191,6 +196,7 @@ class SelfServiceTest extends TestCase
         $this->assertSame('trial',$sub->status);
         $this->assertDatabaseCount('subscription_payments',0);
         $admin=User::where('email','self-service-admin@example.test')->firstOrFail();
+        LegalPolicies::record(LegalPolicies::context(),'user',$admin->id,$admin->venue_id,$admin->id);
         $this->actingAs($admin);
         $paymentUrl=$this->appUrl('/admin/venues/'.$venue->id.'/billing/payments');
         $payment=['kind'=>'yearly_promo','amount'=>'5000.00','reference'=>'PROMO-001','received_on'=>now()->toDateString()];
