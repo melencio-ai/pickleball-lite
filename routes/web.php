@@ -28,6 +28,8 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\NotificationController;
 
 require __DIR__.'/help.php';
+// Preserve the existing robots response on other domains; help has its own sitemap.
+Route::get('/robots.txt',fn()=>response("User-agent: *\nDisallow:\n",200,['Content-Type'=>'text/plain; charset=UTF-8']))->withoutMiddleware('web');
 
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');

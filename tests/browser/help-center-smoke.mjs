@@ -1,0 +1,50 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+const base='http://pickle-help.test',preview='http://pickle-help-preview.test';
+const browser=await chromium.launch({headless:true,args:['--no-proxy-server','--host-resolver-rules=MAP pickle-help.test 127.0.0.1:8004, MAP pickle-help-preview.test 127.0.0.1:8004']});
+try {
+    const page=await browser.newPage({viewport:{width:1440,height:900}});
+    const response=await page.goto(base);
+    assert.equal(response.status(),200);
+    assert.ok(!response.headers()['set-cookie']);
+    await page.getByRole('heading',{name:'How can we help you?'}).waitFor();
+    assert.equal(await page.locator('.help-category').count(),9);
+    assert.equal(await page.locator('.help-category').first().getAttribute('href'),'/category/getting-started');
+    const desktop=await page.locator('.help-category').first().boundingBox(), second=await page.locator('.help-category').nth(1).boundingBox();
+    assert.ok(second.x>desktop.x && Math.abs(desktop.y-second.y)<2,'Category cards align on desktop');
+    await page.getByRole('searchbox',{name:'Search guides'}).fill('merchant QR');
+    await page.locator('[data-help-suggestions]').waitFor();
+    await page.locator('[data-help-suggestion-list]').getByRole('link',{name:/Configure your merchant QR code/}).click();
+    await page.waitForURL(base+'/articles/payments/configure-qr');
+    await page.getByRole('heading',{name:'Configure your merchant QR code',exact:true}).waitFor();
+    assert.ok(await page.getByRole('navigation',{name:'On this page'}).getByRole('link').count()>=2);
+    const link=page.getByRole('link',{name:'Message Pickle Lite',exact:true});
+    assert.equal(await link.getAttribute('href'),'https://www.facebook.com/messages/t/pickleliteapp');
+    await page.getByRole('navigation',{name:'On this page'}).getByRole('link',{name:'Configure payments'}).click();
+    assert.ok(page.url().endsWith('#configure-payments'));
+    for(const width of [390,320]){
+        await page.setViewportSize({width,height:844});
+        await page.waitForFunction(()=>document.querySelector('.help-support a').getAttribute('href')==='https://m.me/pickleliteapp');
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Article fits narrow screen');
+        assert.equal(await page.locator('.help-sidebar').isVisible(),false);
+        await page.locator('.help-sidebar-mobile summary').click();
+        assert.ok(await page.locator('.help-sidebar-mobile nav').isVisible());
+        await page.locator('.help-sidebar-mobile summary').click();
+    }
+    await page.goto(base);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage fits 320px');
+    const m=await page.locator('.help-category').first().boundingBox(), n=await page.locator('.help-category').nth(1).boundingBox();
+    assert.ok(n.y>m.y+m.height && Math.abs(n.x-m.x)<2,'Categories stack on phones');
+    await page.getByRole('searchbox',{name:'Search guides'}).fill('zzznotaguide');
+    await page.getByRole('button',{name:'Search',exact:true}).click();
+    await page.waitForURL(base+'/search?q=zzznotaguide');
+    await page.getByText('No matching guides.',{exact:false}).waitFor();
+    assert.equal((await page.goto(base+'/admin')).status(),404);
+    const previewResponse=await page.goto(preview);
+    assert.equal(previewResponse.status(),200);
+    assert.equal(previewResponse.headers()['x-robots-tag'],'noindex, follow');
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'),'https://pickle-help.test/');
+    assert.equal((await page.goto(base+'/robots.txt')).status(),200);
+    assert.ok((await page.locator('body').textContent()).includes('Sitemap: https://pickle-help.test/sitemap.xml'));
+    console.log('Help Center browser passed: nine categories, instant search, article navigation, mobile widths, Messenger, no session, preview and robots.');
+}finally{await browser.close()}
