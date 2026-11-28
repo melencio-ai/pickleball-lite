@@ -27,6 +27,8 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\NotificationController;
 
+require __DIR__.'/help.php';
+
 $publicRoutes = function () {
     Route::get('/', [VenueLandingController::class, 'index'])->name('landing');
     Route::get('/policies', [LegalController::class,'venue'])->name('policies');

@@ -1,0 +1,1 @@
+<aside class="help-support"><div><h2>Still need help?</h2><p>Send us a message and tell us what you need help with. Never send passwords, PINs or one-time codes.</p></div><x-messenger-link class="help-button" :url="\App\Services\MessengerLinks::PLATFORM"><x-booking-icon name="message-circle"/> Message Pickle Lite</x-messenger-link></aside>

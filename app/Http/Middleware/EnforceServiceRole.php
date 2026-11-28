@@ -15,11 +15,12 @@ final class EnforceServiceRole
         $hosts = match ($role) {
             'marketing' => [config('pickle.product_host')],
             'booking' => [config('pickle.book_host')],
+            'help' => array_values(array_filter([config('pickle.help_host'), config('pickle.help_preview_host')])),
             // Only the original deployment keeps the historical URLs. The
             // canonical booking host is always served by the booking service.
             'management' => [config('pickle.app_host'), $legacy],
             'combined' => app()->environment('local', 'testing')
-                ? [config('pickle.product_host'), config('pickle.app_host'), config('pickle.book_host'), $legacy, 'localhost', '127.0.0.1']
+                ? [config('pickle.product_host'), config('pickle.app_host'), config('pickle.book_host'), config('pickle.help_host'), config('pickle.help_preview_host'), $legacy, 'localhost', '127.0.0.1']
                 : [],
             default => [],
         };
