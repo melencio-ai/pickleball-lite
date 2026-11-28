@@ -76,7 +76,8 @@ Artisan::command('platform:check-schema', function () {
 
 Artisan::command('platform:notifications', function () {
     \App\Services\VenueNotifications::sweep();
-    $this->info('Trial and subscription reminders reconciled.');
+    \App\Services\SubscriptionPlans::sweep();
+    $this->info('Trial, subscription reminders and eligible yearly offers reconciled.');
 })->purpose('Reconcile trial expiry and deduplicated subscription reminders');
 
 \Illuminate\Support\Facades\Schedule::command('platform:notifications')->everyFiveMinutes()->withoutOverlapping(10);
@@ -100,4 +101,3 @@ Artisan::command('platform:subscription-promotions',function() {
     \App\Services\SubscriptionPlans::sweep();
     $this->info('Eligible yearly offers reconciled.');
 })->purpose('Deliver eligible first-year subscription offers once');
-\Illuminate\Support\Facades\Schedule::command('platform:subscription-promotions')->everyFiveMinutes()->withoutOverlapping(10);

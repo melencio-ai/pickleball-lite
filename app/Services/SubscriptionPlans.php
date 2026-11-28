@@ -38,6 +38,20 @@ final class SubscriptionPlans
 
     public static function sweep(): void
     {
+        // The Railway cron runs platform:notifications directly, not schedule:run.
+        // Expire paid annual terms in that same worker so status and access agree.
+        DB::table('venue_subscriptions')->whereIn('billing_plan',['yearly','yearly_promo'])->where('status','active')
+            ->whereNotNull('renewal_date')->where('renewal_date','<=',now()->addDay()->toDateString())->orderBy('id')
+            ->chunkById(100,function($rows) {
+                foreach($rows as $row) DB::transaction(function() use($row) {
+                    $venue=Venue::whereKey($row->venue_id)->lockForUpdate()->first();
+                    if(!$venue)return;
+                    $sub=TrialAccess::subscription($venue,true);
+                    if(!self::annual($sub) || $sub->status!=='active' || !$sub->renewal_date || $sub->renewal_date>now($venue->timezone)->toDateString())return;
+                    DB::table('venue_subscriptions')->where('id',$sub->id)->update(['status'=>'overdue','updated_at'=>now()]);
+                    VenueNotifications::emit($venue,'subscription','annual-expired-'.$sub->renewal_date,'Yearly subscription ended','Renew your yearly subscription or choose a monthly plan. No automatic charges apply.','subscription',true);
+                },3);
+            });
         DB::table('venue_subscriptions')->whereNull('promo_redeemed_at')->whereIn('status',['trial','trial_expired','active','overdue'])
             ->whereExists(fn($q)=>$q->selectRaw('1')->from('users')->whereColumn('users.venue_id','venue_subscriptions.venue_id')
                 ->where('users.self_registered',true)->whereNotNull('users.email_verified_at')->where('users.created_at','<=',now()->subDays(14)))

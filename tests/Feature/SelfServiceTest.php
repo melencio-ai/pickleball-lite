@@ -184,8 +184,8 @@ class SelfServiceTest extends TestCase
         $this->assertNull(TrialAccess::subscription($venue)->promo_email_attempted_at);
         $this->patch($this->appUrl('/notifications/preferences'),['enabled'=>['account','promotion']])->assertRedirect();
         Mail::shouldReceive('raw')->once()->withArgs(fn($body,$callback)=>str_contains($body,'PHP 5,000') && str_contains($body,'/subscription'))->andReturnNull();
-        \App\Services\SubscriptionPlans::sweep();
-        \App\Services\SubscriptionPlans::sweep();
+        $this->artisan('platform:notifications')->assertSuccessful();
+        $this->artisan('platform:notifications')->assertSuccessful();
         $this->assertSame(1,DB::table('venue_notifications')->where('category','promotion')->count());
         $this->assertNotNull(TrialAccess::subscription($venue)->promo_email_sent_at);
         $this->post($claimUrl,['plan'=>'yearly_promo'])->assertRedirect();
@@ -217,6 +217,8 @@ class SelfServiceTest extends TestCase
         $this->assertSame(\Carbon\CarbonImmutable::parse($paid->renewal_date)->addYearNoOverflow()->toDateString(),$renewed->renewal_date);
         $this->travelTo(\Carbon\CarbonImmutable::parse($renewed->renewal_date,$venue->timezone));
         $this->assertFalse(TrialAccess::allowed($venue));
+        $this->artisan('platform:notifications')->assertSuccessful();
+        $this->assertSame('overdue',TrialAccess::subscription($venue)->status);
     }
 
     public function test_messenger_variants_preserve_recipient_and_other_contact_links(): void
