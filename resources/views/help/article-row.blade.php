@@ -1,0 +1,1 @@
+<a class="help-article-row" href="{{ $item['path'] }}"><span><strong>{{ $item['title'] }}</strong><small>{{ $item['description'] }}</small></span><x-booking-icon name="chevron-right"/></a>

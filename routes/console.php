@@ -101,3 +101,18 @@ Artisan::command('platform:subscription-promotions',function() {
     \App\Services\SubscriptionPlans::sweep();
     $this->info('Eligible yearly offers reconciled.');
 })->purpose('Deliver eligible first-year subscription offers once');
+
+Artisan::command('help:check', function () {
+    $articles=\App\Services\HelpLibrary::articles();
+    if(count($articles)<50 || count(array_unique(array_column($articles,'path')))!==count($articles)) {
+        $this->error('Help library is missing articles or contains duplicate paths.'); return 1;
+    }
+    foreach($articles as $article) {
+        $rendered=\App\Services\HelpLibrary::render($article);
+        if(!$rendered['toc'] || !$rendered['html'] || !$article['description'] || !$article['updated']) {
+            $this->error('Incomplete article: '.$article['path']); return 1;
+        }
+    }
+    $this->info(count($articles).' help articles are ready. No database connection required.');
+    return 0;
+})->purpose('Validate the read-only help library');

@@ -86,12 +86,10 @@ try {
     for(const card of await cards.all()){
         assert.equal(await card.getByRole('link',{name:'Start free trial',exact:true}).getAttribute('href'),app+'/register');
     }
-    const desktopMonthly=await monthly.boundingBox(),desktopYearly=await yearly.boundingBox();
-    assert.ok(desktopMonthly && desktopYearly && desktopYearly.x>desktopMonthly.x && Math.abs(desktopYearly.y-desktopMonthly.y)<2 && Math.abs(desktopMonthly.height-desktopYearly.height)<2,'Pricing cards must align side by side on desktop');
+    await registration.waitForFunction(()=>{const m=document.querySelector('[data-pricing-plan="monthly"]').getBoundingClientRect(),y=document.querySelector('[data-pricing-plan="yearly"]').getBoundingClientRect();return y.x>m.x+m.width && Math.abs(m.y-y.y)<2 && Math.abs(m.height-y.height)<2});
     for(const width of [390,320]){
         await registration.setViewportSize({width,height:844});
-        const m=await monthly.boundingBox(),y=await yearly.boundingBox();
-        assert.ok(m && y && y.y>m.y+m.height && Math.abs(m.x-y.x)<2,'Pricing cards stack on mobile');
+        await registration.waitForFunction(()=>{const m=document.querySelector('[data-pricing-plan="monthly"]').getBoundingClientRect(),y=document.querySelector('[data-pricing-plan="yearly"]').getBoundingClientRect();return y.y>m.y+m.height && Math.abs(m.x-y.x)<2});
         assert.ok(await registration.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Pricing must not overflow on mobile');
         for(const card of await cards.all()){
             const cta=await card.getByRole('link',{name:'Start free trial',exact:true}).boundingBox();

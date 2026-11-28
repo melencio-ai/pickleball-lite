@@ -23,6 +23,7 @@
     @endforeach
 </div>
 <div class="workspace-navigation-footer">
+    @if($helpUrl=\App\Services\HelpLibrary::appLink())<a class="workspace-nav-link" href="{{ $helpUrl }}" target="_blank" rel="noopener noreferrer" title="Help & Support" aria-label="Help & Support"><x-workspace-icon name="file"/><span>Help & Support</span></a>@endif
     <a class="workspace-nav-link workspace-notifications" href="{{ route('app.notifications.index') }}" title="Notifications" aria-label="Notifications" aria-haspopup="dialog" aria-controls="notification-drawer" aria-expanded="false" data-notification-open @if(request()->routeIs('app.notifications.index')) aria-current="page" @endif><x-workspace-icon name="bell"/><span>Notifications</span></a>
     <div class="workspace-logout"><button type="button" class="quiet workspace-nav-link" title="Sign out" aria-label="Sign out" aria-haspopup="dialog" aria-controls="sign-out-confirmation" data-sign-out-open><x-workspace-icon name="logout"/><span>Sign out</span></button></div>
 </div>

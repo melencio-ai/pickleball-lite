@@ -19,7 +19,7 @@
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header"><div class="site-container site-navigation">
         <a class="site-logo" href="{{ route('product.home') }}"><img src="{{ asset('favicon.svg') }}" alt=""><strong>Pickle Lite</strong></a>
-        <nav aria-label="Product navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a><a href="{{ route('app.login') }}">Sign in</a></nav>
+        <nav aria-label="Product navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a>@if($helpUrl=\App\Services\HelpLibrary::appLink())<a href="{{ $helpUrl }}">Help Center</a>@endif<a href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a><a href="{{ route('app.login') }}">Sign in</a></nav>
         <a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a>
     </div></header>
     <main id="main-content">

@@ -131,6 +131,7 @@
         @yield('content')
     </main>
     <footer class="legal-footer">
+        @if($appShell && ($helpPath=\App\Services\HelpLibrary::contextPath()) && ($helpUrl=\App\Services\HelpLibrary::appLink($helpPath)))<p style="text-align:center;margin:0 0 12px;font-size:12px"><a href="{{ $helpUrl }}" target="_blank" rel="noopener noreferrer">Help with this page <x-booking-icon name="chevron-right"/></a></p>@endif
         @if($publicVenue)
             <p style="text-align:center;margin:0 0 12px;font-size:12px">{{ $publicVenue->name }} · Powered by Pickle Lite · <a href="{{ route('app.login') }}">Staff sign in</a></p>
         @endif
