@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\HelpLibrary;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class HelpCenterTest extends TestCase
@@ -11,14 +11,14 @@ class HelpCenterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['pickle.service_role'=>'help','session.driver'=>'database','cache.default'=>'array']);
+        config(['pickle.service_role'=>'help','session.driver'=>'array','cache.default'=>'array','database.default'=>'help_unavailable']);
     }
 
     private function help(string $path='/'): string { return 'http://'.config('pickle.help_host').$path; }
 
     public function test_help_serves_all_guides_without_database_or_session(): void
     {
-        DB::shouldReceive('connection')->never();
+        $this->assertNotContains('web',Route::getRoutes()->getByName('help.index')->gatherMiddleware());
         $this->get($this->help())->assertOk()->assertSee('How can we help you?')->assertSee('50 guides')->assertHeaderMissing('Set-Cookie');
         $articles=HelpLibrary::articles();
         $this->assertCount(50,$articles);
@@ -35,7 +35,6 @@ class HelpCenterTest extends TestCase
 
     public function test_search_seo_mobile_messenger_and_unknown_routes(): void
     {
-        DB::shouldReceive('connection')->never();
         $this->get($this->help('/search?q=merchant+QR'))->assertOk()->assertSee('Configure your merchant QR code')->assertHeader('X-Robots-Tag','noindex, follow');
         $this->get($this->help('/search?q=zzzznotaguide'))->assertOk()->assertSee('No matching guides');
         $this->get($this->help('/search?q[]=bad'))->assertOk()->assertSee('Find an article');

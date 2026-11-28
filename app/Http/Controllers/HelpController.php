@@ -16,6 +16,7 @@ final class HelpController extends Controller
             ->header('Cache-Control','public, max-age=300')
             ->header('X-Content-Type-Options','nosniff')
             ->header('Referrer-Policy','no-referrer')
+            ->header('Vary','User-Agent, Sec-CH-UA-Mobile')
             ->header('X-Robots-Tag',request()->getHost()===config('pickle.help_host')?'index, follow':'noindex, follow');
     }
 

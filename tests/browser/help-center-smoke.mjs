@@ -33,6 +33,7 @@ try {
     }
     await page.goto(base);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Homepage fits 320px');
+    await page.waitForFunction(()=>{const [m,n]=[...document.querySelectorAll('.help-category')].slice(0,2).map(x=>x.getBoundingClientRect());return n.y>m.y+m.height && Math.abs(n.x-m.x)<2});
     const m=await page.locator('.help-category').first().boundingBox(), n=await page.locator('.help-category').nth(1).boundingBox();
     assert.ok(n.y>m.y+m.height && Math.abs(n.x-m.x)<2,'Categories stack on phones');
     await page.getByRole('searchbox',{name:'Search guides'}).fill('zzznotaguide');
