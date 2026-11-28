@@ -16,7 +16,8 @@ class SubscriptionController extends Controller
         $venue=VenueContext::venue();
         $subscription=TrialAccess::subscription($venue);
         $canExtend=$venue->self_service && TrialAccess::canExtend($subscription);
-        return view('platform.subscription',compact('venue','subscription','canExtend'));
+        $promo=\App\Services\SubscriptionPlans::eligible($venue,$subscription,auth()->user());
+        return view('platform.subscription',compact('venue','subscription','canExtend','promo'));
     }
 
     public function extend(Request $request)
@@ -28,15 +29,20 @@ class SubscriptionController extends Controller
 
     public function upgrade(Request $request)
     {
-        DB::transaction(function() use($request) {
+        $plan=$request->validate(['plan'=>'sometimes|in:monthly,yearly,yearly_promo'])['plan'] ?? 'monthly';
+        DB::transaction(function() use($request,$plan) {
             $venue=Venue::whereKey(VenueContext::venue()->id)->lockForUpdate()->firstOrFail();
             $sub=TrialAccess::subscription($venue,true);
             abort_unless($sub,404);
-            if(!$sub->upgrade_requested_at && $sub->status!=='active') {
-                DB::table('venue_subscriptions')->where('id',$sub->id)->update(['upgrade_requested_at'=>now(),'updated_at'=>now()]);
-                VenueInvitations::audit($request->user(),$venue,'subscription.upgrade_requested');
+            if(in_array($sub->status,['suspended','cancelled'],true) ||
+                ($plan==='yearly_promo' && !\App\Services\SubscriptionPlans::eligible($venue,$sub,$request->user()))) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['plan'=>'This plan is not available for your account.']);
+            }
+            if(!$sub->upgrade_requested_at || $sub->requested_plan!==$plan) {
+                DB::table('venue_subscriptions')->where('id',$sub->id)->update(['upgrade_requested_at'=>now(),'requested_plan'=>$plan,'updated_at'=>now()]);
+                VenueInvitations::audit($request->user(),$venue,'subscription.upgrade_requested',['plan'=>$plan]);
             }
         },3);
-        return VenueContext::redirect('settings.subscription')->with('status','Upgrade requested. Pickle Lite will contact you to arrange payment.');
+        return VenueContext::redirect('settings.subscription')->with('status','Plan requested. Message Pickle Lite to arrange payment.');
     }
 }

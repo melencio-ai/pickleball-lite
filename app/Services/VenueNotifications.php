@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 final class VenueNotifications
 {
-    public const CATEGORIES = ['booking','payment','open_play','account','trial','subscription'];
+    public const CATEGORIES = ['booking','payment','open_play','account','trial','subscription','promotion'];
 
     public static function emit(Venue $venue,string $category,string $key,string $title,string $message,string $destination='calendar',bool $ownersOnly=false): void
     {

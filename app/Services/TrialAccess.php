@@ -24,11 +24,11 @@ final class TrialAccess
             // A nonlocking read inside an InnoDB booking transaction can establish
             // a stale consistent snapshot before the court/session lock is acquired.
             $legacy=self::subscription($venue, shared:DB::transactionLevel()>0);
-            if (!$legacy?->reward_managed) return true;
+            if (!$legacy?->reward_managed && !SubscriptionPlans::annual($legacy)) return true;
             return $legacy->status==='active' && $legacy->renewal_date && $legacy->renewal_date>now($venue->timezone)->toDateString();
         }
         $sub = self::subscription($venue, shared:DB::transactionLevel()>0);
-        return $sub && (($sub->status === 'active' && (!$sub->reward_managed ||
+        return $sub && (($sub->status === 'active' && ((!$sub->reward_managed && !SubscriptionPlans::annual($sub)) ||
             ($sub->renewal_date && $sub->renewal_date>now($venue->timezone)->toDateString()))) ||
             ($sub->status === 'trial' && $sub->trial_ends_at && CarbonImmutable::parse($sub->trial_ends_at)->isFuture()));
     }

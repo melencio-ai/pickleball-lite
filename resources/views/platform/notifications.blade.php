@@ -6,9 +6,9 @@
 @include('platform.partials.notification-rows')
 {{ $records->links() }}
 </section>
-<section class="panel legal-section"><h2>Notification preferences</h2><p class="muted">Choose which optional in-app notifications to receive. Essential trial and subscription notices stay enabled.</p>
+<section class="panel legal-section"><h2>Notification preferences</h2><p class="muted">Choose which optional notifications to receive. Promotional offers also control optional offer emails. Essential trial and subscription notices stay enabled.</p>
 <form method="post" action="{{ route('app.notifications.preferences') }}" class="form-stack">@csrf @method('PATCH')
-@foreach(['booking'=>'Court bookings','payment'=>'Payment activity','open_play'=>'Open Play','account'=>'Account activity'] as $category=>$label)
+@foreach(['booking'=>'Court bookings','payment'=>'Payment activity','open_play'=>'Open Play','account'=>'Account activity','promotion'=>'Promotional offers and emails'] as $category=>$label)
 <label class="checkbox"><input type="checkbox" name="enabled[]" value="{{ $category }}" @checked($preferences[$category] ?? true)> {{ $label }}</label>
 @endforeach
 <button>Save preferences</button></form></section>

@@ -65,8 +65,8 @@ class NotificationController extends Controller
 
     public function preferences(Request $request)
     {
-        $data=$request->validate(['enabled'=>'sometimes|array','enabled.*'=>'in:booking,payment,open_play,account']);
-        foreach(['booking','payment','open_play','account'] as $category) {
+        $data=$request->validate(['enabled'=>'sometimes|array','enabled.*'=>'in:booking,payment,open_play,account,promotion']);
+        foreach(['booking','payment','open_play','account','promotion'] as $category) {
             DB::table('notification_preferences')->updateOrInsert(['user_id'=>$request->user()->id,'category'=>$category],
                 ['enabled'=>in_array($category,$data['enabled'] ?? [],true)]);
         }

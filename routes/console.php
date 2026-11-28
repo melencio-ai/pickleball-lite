@@ -64,7 +64,7 @@ Artisan::command('platform:check-schema', function () {
     }
     $required = ['2026_11_27_000000_add_venue_tenancy','2026_11_27_000100_add_platform_operations',
         '2026_11_27_000200_add_public_service_sessions','2026_11_27_000300_add_legal_policies','2026_11_27_000400_add_self_service_platform',
-        '2026_11_27_000500_remove_setup_fee','2026_11_27_000600_add_platform_email_settings','2026_11_27_000700_add_platform_rewards'];
+        '2026_11_27_000500_remove_setup_fee','2026_11_27_000600_add_platform_email_settings','2026_11_27_000700_add_platform_rewards','2026_11_28_000000_add_yearly_subscription_plans'];
     if (\Illuminate\Support\Facades\DB::table('migrations')->whereIn('migration',$required)->count() !== count($required)) {
         $this->error('Management migrations have not completed.');
         return 1;
@@ -95,3 +95,9 @@ Artisan::command('platform:rewards',function() {
     $this->info('Reward reminders, expirations and activity retention reconciled.');
 })->purpose('Reconcile platform reward-covered terms and streak reminders');
 \Illuminate\Support\Facades\Schedule::command('platform:rewards')->hourly()->withoutOverlapping(10);
+
+Artisan::command('platform:subscription-promotions',function() {
+    \App\Services\SubscriptionPlans::sweep();
+    $this->info('Eligible yearly offers reconciled.');
+})->purpose('Deliver eligible first-year subscription offers once');
+\Illuminate\Support\Facades\Schedule::command('platform:subscription-promotions')->everyFiveMinutes()->withoutOverlapping(10);
