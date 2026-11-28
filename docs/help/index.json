@@ -1,0 +1,738 @@
+{
+  "categories": {
+    "getting-started": {
+      "title": "Getting started",
+      "icon": "layout-grid",
+      "description": "Create an account and launch your venue.",
+      "articles": [
+        {
+          "slug": "what-is-pickle-lite",
+          "title": "What is Pickle Lite?",
+          "description": "A quick guide to the tools available for your venue.",
+          "keywords": [
+            "overview",
+            "platform",
+            "software"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "create-account",
+          "title": "Create your free account",
+          "description": "Start a free trial with your venue owner account.",
+          "keywords": [
+            "register",
+            "signup",
+            "trial",
+            "free",
+            "owner"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "verify-email",
+          "title": "Verify your email address",
+          "description": "Activate your owner account and start your trial.",
+          "keywords": [
+            "email",
+            "verify",
+            "confirmation",
+            "resend",
+            "inbox"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "venue-setup",
+          "title": "Complete your venue setup",
+          "description": "Work through the seven-step setup survey.",
+          "keywords": [
+            "onboarding",
+            "questionnaire",
+            "survey",
+            "setup",
+            "launch",
+            "hours",
+            "courts"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "walkthrough",
+          "title": "Watch the full walkthrough",
+          "description": "Find the five-minute venue walkthrough.",
+          "keywords": [
+            "tutorial",
+            "video",
+            "tour",
+            "demo",
+            "play"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "launch-website",
+          "title": "Launch your booking website",
+          "description": "Make your venue available for public bookings.",
+          "keywords": [
+            "publish",
+            "launch",
+            "website",
+            "booking",
+            "live"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "court-bookings": {
+      "title": "Court bookings",
+      "icon": "calendar-days",
+      "description": "Manage reservations, holds and court availability.",
+      "articles": [
+        {
+          "slug": "calendar",
+          "title": "Understanding your court calendar",
+          "description": "See court bookings, blocks and Open Play in one place.",
+          "keywords": [
+            "calendar",
+            "schedule",
+            "dashboard",
+            "availability"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "manual-booking",
+          "title": "Create a manual booking",
+          "description": "Add a reservation for a walk-in or Messenger customer.",
+          "keywords": [
+            "manual",
+            "reservation",
+            "new",
+            "walk",
+            "in",
+            "add",
+            "customer"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "online-bookings",
+          "title": "Accept online bookings",
+          "description": "Understand how players reserve a court from your website.",
+          "keywords": [
+            "player",
+            "public",
+            "booking",
+            "customer",
+            "link"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "change-cancel",
+          "title": "Reschedule or cancel a reservation",
+          "description": "Handle booking changes without leaving a court double-booked.",
+          "keywords": [
+            "cancel",
+            "reschedule",
+            "change",
+            "refund"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "block-court",
+          "title": "Block unavailable court schedules",
+          "description": "Close court time for maintenance or private use.",
+          "keywords": [
+            "block",
+            "closure",
+            "unavailable",
+            "maintenance"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "booking-status",
+          "title": "Understand booking statuses",
+          "description": "Know the difference between a hold, confirmed booking and cancellation.",
+          "keywords": [
+            "pending",
+            "paid",
+            "status",
+            "expired",
+            "hold",
+            "confirmed",
+            "cancelled"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "open-play": {
+      "title": "Open Play",
+      "icon": "users",
+      "description": "Create sessions, share registration links and manage players.",
+      "articles": [
+        {
+          "slug": "create-session",
+          "title": "Create an Open Play session",
+          "description": "Publish a player registration session for your courts.",
+          "keywords": [
+            "create",
+            "open",
+            "play",
+            "session",
+            "recurring",
+            "publish"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "limits-pricing",
+          "title": "Set player limits and pricing",
+          "description": "Choose session capacity and price per player.",
+          "keywords": [
+            "capacity",
+            "price",
+            "player",
+            "skill",
+            "level"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "share-registration",
+          "title": "Share your registration link",
+          "description": "Invite players to join an Open Play session.",
+          "keywords": [
+            "share",
+            "public",
+            "link",
+            "registration",
+            "facebook"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "manage-players",
+          "title": "Manage registered players",
+          "description": "Review your roster, add walk-ins and check in players.",
+          "keywords": [
+            "roster",
+            "walk",
+            "in",
+            "check-in",
+            "player",
+            "registration"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "verify-payments",
+          "title": "Verify Open Play payments",
+          "description": "Match player receipts to your actual incoming payments.",
+          "keywords": [
+            "open",
+            "play",
+            "payment",
+            "reference",
+            "qr",
+            "receipt",
+            "verify"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "cancel-session",
+          "title": "Cancel an Open Play session",
+          "description": "Release the courts and cancel registrations safely.",
+          "keywords": [
+            "cancel",
+            "session",
+            "courts",
+            "refund"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "payments": {
+      "title": "Payments",
+      "icon": "qr-code",
+      "description": "Set up QR payments and verify receipts.",
+      "articles": [
+        {
+          "slug": "configure-qr",
+          "title": "Configure your merchant QR code",
+          "description": "Set up amount-prefilled QR payments for new bookings.",
+          "keywords": [
+            "qr",
+            "ph",
+            "emv",
+            "merchant",
+            "code",
+            "configure",
+            "payment"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "messenger",
+          "title": "Connect your Facebook Messenger",
+          "description": "Set the page where players send receipts and questions.",
+          "keywords": [
+            "messenger",
+            "facebook",
+            "m.me",
+            "chat",
+            "contact"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "automatic-amounts",
+          "title": "How automatic QR amounts work",
+          "description": "Understand how the booking total is inserted into a QR code.",
+          "keywords": [
+            "emv",
+            "amount",
+            "dynamic",
+            "qr",
+            "total",
+            "price"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "verify-receipt",
+          "title": "Verify payment receipts",
+          "description": "Confirm the actual transfer before marking a booking paid.",
+          "keywords": [
+            "receipt",
+            "transaction",
+            "verify",
+            "qr",
+            "mark",
+            "paid"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "payment-holds",
+          "title": "Understand unpaid booking holds",
+          "description": "Know how a temporary QR payment hold works.",
+          "keywords": [
+            "countdown",
+            "pending",
+            "hold",
+            "expire",
+            "20",
+            "minutes"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "late-payments",
+          "title": "Handle expired holds and late payments",
+          "description": "Reconcile a transfer after the reservation hold has ended.",
+          "keywords": [
+            "late",
+            "expired",
+            "payment",
+            "reconcile",
+            "refund"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "venue-website": {
+      "title": "Venue website",
+      "icon": "map-pin",
+      "description": "Build and share your branded booking website.",
+      "articles": [
+        {
+          "slug": "branding",
+          "title": "Customize your venue branding",
+          "description": "Update your venue color, contact links and branding.",
+          "keywords": [
+            "brand",
+            "logo",
+            "color",
+            "website",
+            "settings"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "logo-cover",
+          "title": "Upload your logo and cover photo",
+          "description": "Add images that represent your venue.",
+          "keywords": [
+            "upload",
+            "logo",
+            "cover",
+            "image",
+            "branding"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "venue-information",
+          "title": "Update your venue information",
+          "description": "Keep your contact details and public website accurate.",
+          "keywords": [
+            "address",
+            "phone",
+            "timezone",
+            "hours",
+            "contact",
+            "information"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "facilities-photos",
+          "title": "Add facilities and photos",
+          "description": "Show players what your venue offers.",
+          "keywords": [
+            "facilities",
+            "gallery",
+            "photos",
+            "amenities"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "share-website",
+          "title": "Share your booking website",
+          "description": "Send players a direct link to your venue.",
+          "keywords": [
+            "website",
+            "share",
+            "booking",
+            "link",
+            "facebook"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "download-booking-qr",
+          "title": "Download your venue booking QR code",
+          "description": "Give players a scannable link to the booking page.",
+          "keywords": [
+            "booking",
+            "qr",
+            "poster",
+            "download",
+            "share"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "venue-administration": {
+      "title": "Venue administration",
+      "icon": "layout-grid",
+      "description": "Set up courts, hours, pricing and staff access.",
+      "articles": [
+        {
+          "slug": "courts",
+          "title": "Add and manage courts",
+          "description": "Configure court names, rates and availability.",
+          "keywords": [
+            "court",
+            "add",
+            "edit",
+            "inactive",
+            "settings"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "operating-hours",
+          "title": "Configure operating hours",
+          "description": "Choose which days and times customers can book.",
+          "keywords": [
+            "weekly",
+            "hours",
+            "open",
+            "close",
+            "schedule"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "court-pricing",
+          "title": "Set court pricing",
+          "description": "Set the standard hourly price for each court.",
+          "keywords": [
+            "rate",
+            "pricing",
+            "hourly",
+            "php",
+            "court"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "time-based-rates",
+          "title": "Configure time-based rates",
+          "description": "Use different rates for busy or quiet time windows.",
+          "keywords": [
+            "peak",
+            "off",
+            "peak",
+            "weekday",
+            "rate",
+            "schedule"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "invite-staff",
+          "title": "Invite staff members",
+          "description": "Give your team secure access to the venue.",
+          "keywords": [
+            "staff",
+            "invitation",
+            "email",
+            "manager",
+            "access"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "staff-permissions",
+          "title": "Understand staff permissions",
+          "description": "Choose the right role for each team member.",
+          "keywords": [
+            "role",
+            "permissions",
+            "owner",
+            "manager",
+            "staff"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "subscriptions": {
+      "title": "Account and subscription",
+      "icon": "clock",
+      "description": "Manage your trial, subscription, account and notifications.",
+      "articles": [
+        {
+          "slug": "free-trial",
+          "title": "Understanding your free trial",
+          "description": "Learn when your 30-day trial begins and what happens when it ends.",
+          "keywords": [
+            "free",
+            "trial",
+            "account",
+            "duration",
+            "billing"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "plans",
+          "title": "Monthly and yearly subscription plans",
+          "description": "Compare the standard prices and included tools.",
+          "keywords": [
+            "subscription",
+            "pricing",
+            "monthly",
+            "yearly",
+            "discount",
+            "cost"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "activate-subscription",
+          "title": "Activate your paid subscription",
+          "description": "Request a plan and arrange payment with Pickle Lite.",
+          "keywords": [
+            "upgrade",
+            "activation",
+            "payment",
+            "claim",
+            "plan"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "renewal",
+          "title": "Manage subscription renewals",
+          "description": "Check your renewal date and avoid losing new booking access.",
+          "keywords": [
+            "renew",
+            "due",
+            "annual",
+            "monthly",
+            "overdue"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "notifications",
+          "title": "Manage notifications",
+          "description": "Review alerts and change optional notification preferences.",
+          "keywords": [
+            "alerts",
+            "bell",
+            "email",
+            "preferences",
+            "unread"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "reset-password",
+          "title": "Reset your password",
+          "description": "Recover access when password recovery is available.",
+          "keywords": [
+            "forgot",
+            "password",
+            "reset",
+            "login",
+            "account"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "rewards": {
+      "title": "Rewards",
+      "icon": "circle-check",
+      "description": "Earn and use subscription credits.",
+      "articles": [
+        {
+          "slug": "overview",
+          "title": "Understanding Pickle Lite rewards",
+          "description": "Learn about activity streaks and testimonial rewards.",
+          "keywords": [
+            "rewards",
+            "credits",
+            "free",
+            "months",
+            "streak",
+            "testimonial"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "activity-streak",
+          "title": "How activity streaks work",
+          "description": "Understand which days count toward your venue streak.",
+          "keywords": [
+            "streak",
+            "daily",
+            "consecutive",
+            "activity",
+            "qualifying",
+            "days"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "milestones",
+          "title": "Earn rewards at 100 and 300 days",
+          "description": "See the consecutive activity milestones.",
+          "keywords": [
+            "100",
+            "300",
+            "streak",
+            "milestone",
+            "free",
+            "months"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "video-testimonial",
+          "title": "Submit a video testimonial",
+          "description": "Send honest feedback for review and an eligible reward.",
+          "keywords": [
+            "video",
+            "review",
+            "testimonial",
+            "messenger",
+            "feedback",
+            "reward"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "apply-credits",
+          "title": "Apply earned subscription credits",
+          "description": "Use available reward months on eligible subscription access.",
+          "keywords": [
+            "apply",
+            "credit",
+            "renewal",
+            "free",
+            "months",
+            "rewards"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    },
+    "troubleshooting": {
+      "title": "Troubleshooting",
+      "icon": "circle-alert",
+      "description": "Solve common problems and contact support.",
+      "articles": [
+        {
+          "slug": "website-unavailable",
+          "title": "Why is my booking website unavailable?",
+          "description": "Check publishing, subscription and URL issues.",
+          "keywords": [
+            "unavailable",
+            "404",
+            "not",
+            "found",
+            "website",
+            "booking",
+            "inactive"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "qr-not-working",
+          "title": "Why is my payment QR code not working?",
+          "description": "Find the cause of invalid or unscannable payment QR codes.",
+          "keywords": [
+            "qr",
+            "invalid",
+            "scanner",
+            "emv",
+            "code",
+            "amount",
+            "issue"
+          ],
+          "updated": "2026-11-28"
+        },
+        {
+          "slug": "contact-support",
+          "title": "How to contact Pickle Lite support",
+          "description": "Get help with the software or your venue account.",
+          "keywords": [
+            "support",
+            "contact",
+            "messenger",
+            "help",
+            "issue",
+            "bug"
+          ],
+          "updated": "2026-11-28"
+        }
+      ]
+    }
+  }
+}
