@@ -8,11 +8,13 @@ const page=await browser.newPage({viewport:{width:1440,height:900}});
 try {
     await page.goto(web+'/terms');
     await page.getByRole('heading',{name:'Policy not yet published'}).waitFor();
+    await page.locator('.site-header [data-platform-brand="primary"]').evaluate(img=>img.decode());
     await page.goto(app+'/login');
     await page.getByLabel('Email address',{exact:true}).fill('browser-calendar@example.test');
     await page.getByLabel('Password',{exact:true}).fill('browser-test-password-123');
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
     await page.waitForURL(app+'/admin');
+    await page.locator('.site-header .brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
     const platformNav=page.locator('#workspace-navigation');
     assert.equal(await platformNav.locator('[data-nav-context]').getAttribute('data-nav-context'),'platform');
     assert.deepEqual(await platformNav.locator('.workspace-nav-caption').allTextContents(),['Platform','Configuration','Compliance']);

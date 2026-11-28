@@ -14,12 +14,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1{{ $appShell ? ', viewport-fit=cover' : '' }}">
-    <title>@yield('title') · {{ $brandVenue?->name ?? 'Pickleball Lite' }}</title>
+    <title>@yield('title') · {{ $brandVenue?->name ?? 'Pickle Lite' }}</title>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     @if($logoUrl)
         <link rel="icon" href="{{ $logoUrl }}">
     @else
-        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+        <x-platform-favicon/>
     @endif
     @if($publicVenue)
         <link rel="stylesheet" href="{{ asset('landing.css') }}?v=theme1">
@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="/workspace.css?v=8">
 <script src="/workspace.js?v=8" defer></script>
 <script src="{{ asset('messenger.js') }}?v=1" defer></script>
+<link rel="stylesheet" href="/brand.css?v=court1">
 </head>
 @php
     $subscriptionStatus = $appShell && $workspace ? \App\Services\TrialAccess::subscription($workspace) : null;
@@ -46,12 +47,12 @@
             @if($staffVenue)
                 <a class="brand workspace-venue-brand" href="{{ \App\Services\VenueContext::url('staff.calendar') }}" title="{{ $staffVenue->name }}" @if($appShell) data-mobile-workspace-switch @endif>
                     @if($logoUrl)<img class="workspace-venue-logo" src="{{ $logoUrl }}" alt="" width="32" height="32">
-                    @else<span class="workspace-venue-mark"><x-workspace-icon name="building"/></span>@endif
+                    @else<x-platform-mark class="workspace-venue-logo"/>@endif
                     <span class="workspace-brand-name">{{ $staffVenue->name }}</span>
                     @if($appShell)<span class="mobile-brand-chevron"><x-workspace-icon name="chevron-down"/></span>@endif
                 </a>
             @else
-                <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}" @if($appShell) data-mobile-workspace-switch @endif><span class="brand-mark" aria-hidden="true"></span> Pickle Lite @if($appShell)<span class="mobile-brand-chevron"><x-workspace-icon name="chevron-down"/></span>@endif</a>
+                <a class="brand" href="{{ \App\Services\VenueContext::onApp() ? route('app.home') : \App\Services\VenueContext::url('landing') }}" @if($appShell) data-mobile-workspace-switch @endif><x-platform-logo/> @if($appShell)<span class="mobile-brand-chevron"><x-workspace-icon name="chevron-down"/></span>@endif</a>
             @endif
             @if($appShell)
             <div class="workspace-top-actions">
@@ -133,7 +134,7 @@
     <footer class="legal-footer">
         @if($appShell && ($helpPath=\App\Services\HelpLibrary::contextPath()) && ($helpUrl=\App\Services\HelpLibrary::appLink($helpPath)))<p style="text-align:center;margin:0 0 12px;font-size:12px"><a href="{{ $helpUrl }}" target="_blank" rel="noopener noreferrer">Help with this page <x-booking-icon name="chevron-right"/></a></p>@endif
         @if($publicVenue)
-            <p style="text-align:center;margin:0 0 12px;font-size:12px">{{ $publicVenue->name }} · Powered by Pickle Lite · <a href="{{ route('app.login') }}">Staff sign in</a></p>
+            <p style="text-align:center;margin:0 0 12px;font-size:12px">{{ $publicVenue->name }} · <x-powered-by/> · <a href="{{ route('app.login') }}">Staff sign in</a></p>
         @endif
         <x-legal-links :venue="$publicVenue ?? $venue ?? null" />
     </footer>

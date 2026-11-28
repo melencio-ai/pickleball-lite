@@ -5,12 +5,13 @@
     <title>Pickle Lite | Your pickleball venue, online</title>
     <meta name="description" content="A branded website, online court bookings, Open Play, QR payments and a staff calendar. ₱1,000 per month or ₱10,000 per year, with free setup.">
     <link rel="canonical" href="{{ route('product.home') }}">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <x-platform-favicon/>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
     <link rel="stylesheet" href="{{ asset('landing.css') }}?v=pricing2">
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=1">
 <script src="/workspace.js?v=1" defer></script>
+<link rel="stylesheet" href="/brand.css?v=court1">
 </head>
 <body class="venue-site">
     @php($selfSignup=\App\Services\PlatformEmail::registrationEnabled() && \App\Services\LegalPolicies::current()->count()===4)
@@ -18,7 +19,7 @@
     @php($walkthrough=\App\Services\WalkthroughVideo::source())
     <a class="site-skip" href="#main-content">Skip to content</a>
     <header class="venue-site-header"><div class="site-container site-navigation">
-        <a class="site-logo" href="{{ route('product.home') }}"><img src="{{ asset('favicon.svg') }}" alt=""><strong>Pickle Lite</strong></a>
+        <a class="site-logo" href="{{ route('product.home') }}"><x-platform-logo/></a>
         <nav aria-label="Product navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a>@if($helpUrl=\App\Services\HelpLibrary::appLink())<a href="{{ $helpUrl }}">Help Center</a>@endif<a href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a><a href="{{ route('app.login') }}">Sign in</a></nav>
         <a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a>
     </div></header>

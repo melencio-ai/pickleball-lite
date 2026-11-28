@@ -29,12 +29,22 @@ try {
     assert.equal(await status(8003,'pickle-web.test'),404);
     await page.goto(web);
     await page.getByRole('heading',{name:'More games. Less admin work.'}).waitFor();
+    const marketingLogo=page.locator('.site-logo [data-platform-brand="primary"]');
+    await marketingLogo.evaluate(img=>img.decode());
+    assert.ok((await marketingLogo.getAttribute('src')).includes('pickle-lite-horizontal-primary.svg'));
+    assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/favicon.svg?v=court1');
+    await page.setViewportSize({width:320,height:740});
+    await page.waitForFunction(()=>document.documentElement.scrollWidth<=innerWidth+1);
+    await page.setViewportSize({width:1440,height:900});
     await page.locator('.site-navigation nav').getByRole('link',{name:'Sign in'}).click();
     await page.waitForURL(app+'/login');
     await page.getByRole('heading',{name:'Welcome back'}).waitFor();
     assert.equal(await page.locator('.auth-aside').isVisible(),true);
+    await page.locator('.auth-aside [data-platform-brand="reverse"]').evaluate(img=>img.decode());
     await page.setViewportSize({width:390,height:844});
+    await page.locator('.auth-mobile-brand [data-platform-brand="primary"]').waitFor();
     assert.equal(await page.locator('.auth-aside').isVisible(),false);
+    await page.locator('.auth-mobile-brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
     await page.getByLabel('Email address',{exact:true}).fill('browser-calendar@example.test');
     const password=page.getByLabel('Password',{exact:true});
@@ -166,6 +176,16 @@ try {
     await page.goto(app+'/venues/'+slug+'/calendar');
     const website=page.locator('.site-header').getByRole('link',{name:'Venue website'});
     assert.equal(await website.getAttribute('href'),book+'/'+slug);
+    // Test the new platform fallback without changing venue name or colors.
+    await page.goto(book+'/'+slug);
+    const fallback=page.locator('.site-navigation .site-logo [data-platform-brand="mark"]');
+    await fallback.evaluate(img=>img.decode());
+    assert.equal(await fallback.getAttribute('src'),'/favicon.svg?v=court1');
+    assert.ok(await page.locator('.platform-powered-by').isVisible());
+    await page.goto(book+'/'+slug+'/book');
+    assert.equal(await page.locator('.site-navigation .site-logo [data-platform-brand="mark"]').getAttribute('src'),'/favicon.svg?v=court1');
+    await page.goto(book);
+    await page.locator('.platform-booking-brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
     // Fixture-only uploaded venue logo. Use the same image endpoint on the
     // website and booking pages, and verify the browser can decode it.
     execFileSync('php',['artisan','tinker','--execute='+[
@@ -248,6 +268,8 @@ try {
     console.log('Grouped navigation passed: active routes, context isolation, collapsed and mobile switcher, venue selection, and mobile navigation dismissal.');
     assert.equal(await page.locator('.workspace-venue-brand').count(),0);
     assert.equal(await page.locator('.site-header .brand').textContent().then(s=>s.trim()),'Pickle Lite');
+    await page.locator('.site-header .brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
+    assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/favicon.svg?v=court1');
     console.log('Signed-in venue branding passed: logo, name, favicon, sidebar, mobile fit, platform branding isolation, and inline calendar icons.');
     const signOut=page.locator('[data-sign-out-open]');
     const confirmation=page.getByRole('dialog',{name:'Sign out?'});

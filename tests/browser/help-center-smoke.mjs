@@ -6,6 +6,8 @@ try {
     const page=await browser.newPage({viewport:{width:1440,height:900}});
     const response=await page.goto(base);
     assert.equal(response.status(),200);
+    await page.locator('.help-brand [data-platform-brand="primary"]').evaluate(img=>img.decode());
+    assert.equal(await page.locator('link[rel="icon"]').getAttribute('href'),'/favicon.svg?v=court1');
     assert.ok(!response.headers()['set-cookie']);
     await page.getByRole('heading',{name:'How can we help you?'}).waitFor();
     assert.equal(await page.locator('.help-category').count(),9);

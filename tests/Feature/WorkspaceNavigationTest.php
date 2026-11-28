@@ -26,7 +26,7 @@ class WorkspaceNavigationTest extends TestCase
         DB::table('venue_subscriptions')->where('venue_id',$a->id)->update(['status'=>'active','renewal_date'=>now('Asia/Manila')->addMonth()->toDateString()]);
         config(['pickle.demo_slug'=>null]);
         $this->actingAs($owner)->get($this->venueUrl($a,'/calendar'))->assertOk()
-            ->assertSee('data-nav-context="venue"',false)
+            ->assertSee('data-nav-context="venue"',false)->assertSee('data-platform-brand="mark"',false)
             ->assertSee('data-mobile-tab="calendar"',false)->assertSee('data-mobile-tab="open-play"',false)
             ->assertSee('data-mobile-tab="alerts"',false)->assertSee('data-mobile-more',false)
             ->assertDontSee('data-mobile-tab="platform-overview"',false)
@@ -55,7 +55,7 @@ class WorkspaceNavigationTest extends TestCase
         $this->get($this->appUrl('/admin'))->assertForbidden();
         $owner->forceFill(['platform_admin'=>true])->save();
         $this->actingAs($owner)->get($this->appUrl('/admin'))->assertOk()
-            ->assertSee('data-nav-context="platform"',false)->assertSee('data-nav-item="platform-overview"',false)
+            ->assertSee('data-nav-context="platform"',false)->assertSee('data-platform-brand="primary"',false)->assertSee('data-nav-item="platform-overview"',false)
             ->assertSee('data-mobile-tab="platform-overview"',false)->assertSee('data-mobile-tab="platform-rewards"',false)
             ->assertDontSee('data-mobile-tab="calendar"',false)
             ->assertSee('data-nav-item="platform-rewards"',false)->assertSee('data-nav-item="platform-email"',false)

@@ -81,7 +81,7 @@ class MultiVenueTest extends TestCase
         }
         $this->get($logo)->assertOk()->assertHeader('Content-Type','image/png');
         $this->get($this->publicUrl($this->a,'/branding/logo/'.$version))->assertNotFound();
-        $this->get($this->publicUrl($this->a,'/book'))->assertOk()->assertDontSee($logo)->assertSee('site-mark');
+        $this->get($this->publicUrl($this->a,'/book'))->assertOk()->assertDontSee($logo)->assertSee('data-platform-brand="mark"',false)->assertSee('rel="icon" href="/favicon.svg?v=court1"',false);
         $this->get($this->productUrl())->assertOk()->assertDontSee('public-booking-header');
         $this->actingAs($this->owner)->get($this->workspace($this->a,'/calendar'))->assertOk()->assertDontSee('public-booking-header');
     }
@@ -106,12 +106,12 @@ class MultiVenueTest extends TestCase
                 ->assertDontSee('class="brand-mark"',false);
         }
         $this->get($this->workspace($this->a,'/calendar'))->assertOk()
-            ->assertSee('workspace-venue-mark')->assertDontSee($logo)
+            ->assertSee('data-platform-brand="mark"',false)->assertSee('rel="icon" href="/favicon.svg?v=court1"',false)->assertDontSee($logo)
             ->assertSee('class="workspace-brand-name">'.$this->a->name,false);
-        $this->get($this->appUrl('/venues'))->assertOk()->assertSee('class="brand-mark"',false)
+        $this->get($this->appUrl('/venues'))->assertOk()->assertSee('data-platform-brand="primary"',false)
             ->assertDontSee('class="brand workspace-venue-brand"',false);
         $this->owner->forceFill(['platform_admin'=>true])->save();
-        $this->get($this->appUrl('/admin'))->assertOk()->assertSee('class="brand-mark"',false)
+        $this->get($this->appUrl('/admin'))->assertOk()->assertSee('data-platform-brand="primary"',false)
             ->assertDontSee('class="brand workspace-venue-brand"',false);
     }
 

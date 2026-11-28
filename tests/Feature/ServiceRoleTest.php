@@ -21,7 +21,7 @@ class ServiceRoleTest extends TestCase
         $legacy = 'http://'.config('pickle.legacy_host');
 
         config(['pickle.service_role' => 'marketing']);
-        $this->get($web)->assertOk()->assertSee('More games. Less admin work.');
+        $this->get($web)->assertOk()->assertSee('More games. Less admin work.')->assertSee('data-platform-brand="primary"',false)->assertSee('/favicon.svg?v=court1');
         $this->get($app.'/login')->assertNotFound();
         $this->get($book.'/'.$venue->slug)->assertNotFound();
         $this->get($legacy)->assertNotFound();
@@ -30,14 +30,14 @@ class ServiceRoleTest extends TestCase
         $this->assertDatabaseHas('product_enquiries', ['email'=>'service@example.test']);
 
         config(['pickle.service_role' => 'booking']);
-        $this->get($book.'/'.$venue->slug)->assertOk()->assertSee($venue->name);
+        $this->get($book.'/'.$venue->slug)->assertOk()->assertSee($venue->name)->assertSee('data-platform-brand="mark"',false);
         $this->get($book.'/'.$venue->slug.'/book')->assertOk();
         $this->get($app.'/login')->assertNotFound();
         $this->get($web)->assertNotFound();
         $this->get($legacy)->assertNotFound();
 
         config(['pickle.service_role' => 'management']);
-        $this->get($app.'/login')->assertOk();
+        $this->get($app.'/login')->assertOk()->assertSee('data-platform-brand="reverse"',false)->assertSee('data-platform-brand="primary"',false);
         $this->get($legacy)->assertOk()->assertSee($venue->name);
         $this->get($book.'/'.$venue->slug)->assertNotFound();
         $this->get($web)->assertNotFound();
