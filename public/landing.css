@@ -207,3 +207,18 @@
     .site-pricing-price strong{font-size:2.35rem}
     .site-pricing-heading{margin-bottom:1.2rem}
 }
+
+/* Marketing-only product hero; never applied to venue landing pages. */
+.site-hero.product-hero { grid-template-columns:minmax(0,56fr) minmax(0,44fr); align-items:center; gap:0; }
+.site-hero.product-hero .site-hero-copy { min-width:0; padding:3rem 0 3rem clamp(1.5rem,5vw,4rem); }
+.product-hero-visual { min-width:0; padding:.75rem 1.1rem .75rem 0; }
+.product-hero-visual img { display:block; width:100%; height:auto; aspect-ratio:1040 / 880; }
+@media(max-width:900px) {
+    .site-hero.product-hero { grid-template-columns:minmax(0,1fr); }
+    .site-hero.product-hero .site-hero-copy { padding:2.5rem clamp(1.5rem,5vw,4rem) .5rem; }
+    .product-hero-visual { width:100%; max-width:620px; justify-self:center; padding:0 1rem 1rem; box-sizing:border-box; }
+}
+@media(max-width:600px) {
+    .site-hero.product-hero .site-hero-copy { padding:1.6rem 1rem .4rem; }
+    .product-hero-visual { padding:0 .5rem .6rem; }
+}

@@ -7,7 +7,7 @@
     <link rel="canonical" href="{{ route('product.home') }}">
     <x-platform-favicon/>
     <link rel="stylesheet" href="{{ asset('app.css') }}?v=tenant1">
-    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=pricing2">
+    <link rel="stylesheet" href="{{ asset('landing.css') }}?v=hero1">
 <link rel="stylesheet" href="/legal.css?v=1">
 <link rel="stylesheet" href="/workspace.css?v=1">
 <script src="/workspace.js?v=1" defer></script>
@@ -24,13 +24,17 @@
         <a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get started' }}</a>
     </div></header>
     <main id="main-content">
-        <section class="site-container site-hero no-cover"><div class="site-hero-copy">
+        <section class="site-container site-hero no-cover product-hero"><div class="site-hero-copy">
             <p class="site-eyebrow">Built for pickleball venues</p>
             <h1>More games. Less admin work.</h1>
             <p class="site-lead">Give your players a place to book courts, join Open Play and pay online. Manage your venue in one simple app.</p>
             <div class="site-actions"><a class="site-button site-primary" href="{{ $signupUrl }}">{{ $selfSignup?'Start free trial':'Get Pickle Lite' }} <x-booking-icon name="chevron-right" /></a><a class="site-button site-outline" href="{{ route('product.demo') }}">Ask for a demo</a></div>
             <p class="site-footnote">@if($selfSignup)30-day free trial · No credit card required · @endif Free setup · ₱1,000/month or ₱10,000/year</p>
-        </div></section>
+        </div>
+            <div class="product-hero-visual">
+                <img src="{{ asset('brand/pickle-lite-product-hero.svg') }}?v=1" width="1040" height="880" alt="Illustrative Pickle Lite product preview showing a staff court calendar and the mobile court booking flow." fetchpriority="high" decoding="async">
+            </div>
+        </section>
         <section class="site-container site-section" id="features">
             <div class="site-section-heading"><p class="site-eyebrow">Everything you need to get started</p><h2>Make it easy to book your courts</h2><p>Give your staff fewer messages to answer and your players a faster way to find a game.</p></div>
             <div class="site-option-grid">
