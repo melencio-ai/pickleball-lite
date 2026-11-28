@@ -47,7 +47,7 @@
         </section>
         <section class="site-band" id="pricing" aria-labelledby="pricing-heading">
             <div class="site-container site-section site-pricing">
-                @php
+                <?php
                     $monthly=\App\Services\SubscriptionPlans::MONTHLY/100;
                     $yearly=\App\Services\SubscriptionPlans::YEARLY/100;
                     $annualMonthly=$monthly*12;
@@ -63,7 +63,7 @@
                         'Shareable venue booking link',
                         'Free account setup and activation',
                     ];
-                @endphp
+                ?>
                 <div class="site-section-heading site-pricing-heading">
                     <p class="site-eyebrow">Simple pricing</p>
                     <h2 id="pricing-heading">One venue. Everything included.</h2>
